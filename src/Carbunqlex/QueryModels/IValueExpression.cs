@@ -1,8 +1,6 @@
 ﻿namespace Carbunqlex.QueryModels;
 
-public interface IValueExpression
+public interface IValueExpression : ISqlComponent
 {
     string DefaultName { get; }
-    string ToSql();
-    IEnumerable<Lexeme> GetLexemes();
 }

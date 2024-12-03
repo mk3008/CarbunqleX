@@ -1,7 +1,5 @@
 ﻿namespace Carbunqlex;
 
-public interface IQuery
+public interface IQuery : ISqlComponent
 {
-    string ToSql();
-    IEnumerable<Lexeme> GetLexemes();
 }

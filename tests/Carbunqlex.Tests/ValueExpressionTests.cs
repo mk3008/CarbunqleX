@@ -4,7 +4,7 @@ using Carbunqlex.QueryModels;
 using Xunit;
 using Xunit.Abstractions;
 
-public class ExpressionValueTests(ITestOutputHelper output)
+public class ValueExpressionTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
 
