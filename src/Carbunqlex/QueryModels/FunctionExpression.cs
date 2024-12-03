@@ -33,7 +33,7 @@ public class FunctionExpression : IValueExpression
             }
             if (i < Arguments.Count - 1)
             {
-                yield return new Lexeme(LexType.ArgumentSplitterComma, ",");
+                yield return new Lexeme(LexType.Comma, ",");
             }
         }
         yield return new Lexeme(LexType.CloseParen, ")");

@@ -7,8 +7,9 @@ public enum LexType : byte
     Operator,
     OpenParen,
     CloseParen,
-    ArgumentSplitterComma,
+    Comma,
     Dot,
     Identifier,
     Keyword,
+    Value,
 }

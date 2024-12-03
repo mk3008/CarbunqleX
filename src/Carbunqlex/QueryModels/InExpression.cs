@@ -31,7 +31,7 @@ public class InExpression : IValueExpression
             }
             if (i < Right.Count - 1)
             {
-                yield return new Lexeme(LexType.ArgumentSplitterComma, ",");
+                yield return new Lexeme(LexType.Comma, ",");
             }
         }
         yield return new Lexeme(LexType.CloseParen, ")");
