@@ -1,8 +1,7 @@
-﻿namespace Carbunqlex.Tests;
-
-using Carbunqlex.QueryModels;
-using Xunit;
+﻿using Carbunqlex.QueryModels;
 using Xunit.Abstractions;
+
+namespace Carbunqlex.Tests;
 
 public class ValueExpressionTests(ITestOutputHelper output)
 {
