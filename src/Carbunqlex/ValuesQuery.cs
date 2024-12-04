@@ -109,9 +109,9 @@ public class ValuesRow
     }
 }
 
-public struct ValuesColumn
+public readonly struct ValuesColumn
 {
-    public string Value { get; set; }
+    public string Value { get; }
     public ValuesColumn(string value)
     {
         Value = value;
@@ -138,3 +138,4 @@ public struct ValuesColumn
         return new ValuesColumn(columnValue);
     }
 }
+
