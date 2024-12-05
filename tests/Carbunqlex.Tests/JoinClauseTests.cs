@@ -1,9 +1,9 @@
 using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
-using Carbunqlex.QueryModels;
+using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests.Clauses;
+namespace Carbunqlex.Tests;
 
 public class JoinClauseTests(ITestOutputHelper output)
 {
@@ -45,7 +45,7 @@ public class JoinClauseTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal(" inner join table_b as b on a.table_a_id = b.table_a_id and a.table_a_sub_id = b.table_a_sub_id", sql);
+        Assert.Equal("inner join table_b as b on a.table_a_id = b.table_a_id and a.table_a_sub_id = b.table_a_sub_id", sql);
     }
 
     [Fact]
@@ -59,6 +59,6 @@ public class JoinClauseTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal(" cross join table_b as b", sql);
+        Assert.Equal("cross join table_b as b", sql);
     }
 }

@@ -6,14 +6,14 @@ public readonly struct Lexeme
     {
         Type = type;
         Value = value;
-        Clause = clause;
+        Identifier = clause.ToLower();
     }
 
-    public Lexeme(LexType lexType, string value) : this(lexType, value, string.Empty)
+    public Lexeme(LexType lexType, string value) : this(lexType, value, value)
     {
     }
 
     public LexType Type { get; }
     public string Value { get; }
-    public string Clause { get; }
+    public string Identifier { get; }
 }

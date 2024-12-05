@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Carbunqlex.DatasourceExpressions;
-using Carbunqlex.QueryModels;
+using Carbunqlex.ValueExpressions;
 using Xunit;
 using Xunit.Abstractions;
 

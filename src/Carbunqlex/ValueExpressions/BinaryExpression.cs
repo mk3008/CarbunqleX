@@ -1,4 +1,4 @@
-﻿namespace Carbunqlex.QueryModels;
+﻿namespace Carbunqlex.ValueExpressions;
 
 /// <summary>
 /// Represents a binary expression, which consists of a left operand, an operator, and a right operand.

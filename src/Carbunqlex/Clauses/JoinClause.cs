@@ -1,5 +1,5 @@
 ﻿using Carbunqlex.DatasourceExpressions;
-using Carbunqlex.QueryModels;
+using Carbunqlex.ValueExpressions;
 using System.Text;
 
 namespace Carbunqlex.Clauses;
@@ -44,11 +44,11 @@ public class JoinClause : ISqlComponent
 
         if (Condition == null)
         {
-            return $" {joinTypeString} {Datasource.ToSql()}";
+            return $"{joinTypeString} {Datasource.ToSql()}";
         }
 
         var conditionString = Condition?.ToSql() ?? string.Empty;
-        return $" {joinTypeString} {Datasource.ToSql()} on {conditionString}";
+        return $"{joinTypeString} {Datasource.ToSql()} on {conditionString}";
     }
 
     public IEnumerable<Lexeme> GetLexemes()

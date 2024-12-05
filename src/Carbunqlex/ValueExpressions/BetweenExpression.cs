@@ -1,4 +1,4 @@
-﻿namespace Carbunqlex.QueryModels;
+﻿namespace Carbunqlex.ValueExpressions;
 
 public class BetweenExpression : IValueExpression
 {

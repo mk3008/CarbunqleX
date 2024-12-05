@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Carbunqlex.QueryModels;
+namespace Carbunqlex.ValueExpressions;
 
 public class CaseExpression : IValueExpression
 {

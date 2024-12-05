@@ -1,10 +1,10 @@
 using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
-using Carbunqlex.QueryModels;
+using Carbunqlex.ValueExpressions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests.Clauses;
+namespace Carbunqlex.Tests;
 
 public class FromClauseTests(ITestOutputHelper output)
 {
@@ -60,7 +60,7 @@ public class FromClauseTests(ITestOutputHelper output)
         var sql = fromClause.ToSql();
 
         // Assert
-        Assert.Equal(" from table_a as a", sql);
+        Assert.Equal("from table_a as a", sql);
     }
 
     [Fact]
@@ -77,6 +77,6 @@ public class FromClauseTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal(" from table_a as a inner join table_b as b on a.table_a_id = b.table_a_id and a.table_a_sub_id = b.table_a_sub_id", sql);
+        Assert.Equal("from table_a as a inner join table_b as b on a.table_a_id = b.table_a_id and a.table_a_sub_id = b.table_a_sub_id", sql);
     }
 }

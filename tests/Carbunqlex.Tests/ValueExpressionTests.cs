@@ -1,4 +1,4 @@
-﻿using Carbunqlex.QueryModels;
+﻿using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests;

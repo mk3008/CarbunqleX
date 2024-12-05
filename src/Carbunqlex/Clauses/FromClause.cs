@@ -17,9 +17,10 @@ public class FromClause : ISqlComponent
     public string ToSql()
     {
         var sb = new StringBuilder();
-        sb.Append($" from {RootDatasource.ToSql()}");
+        sb.Append($"from {RootDatasource.ToSql()}");
         if (joinClauses.Count > 0)
         {
+            sb.Append(" ");
             joinClauses.Select(j => j.ToSql()).ToList().ForEach(j => sb.Append(j));
         }
         return sb.ToString();
