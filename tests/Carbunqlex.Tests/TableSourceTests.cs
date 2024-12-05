@@ -24,7 +24,7 @@ public class TableSourceTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("dbo.schema.Users AS U", sql);
+        Assert.Equal("dbo.schema.Users as U", sql);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class TableSourceTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("Users AS U", sql);
+        Assert.Equal("Users as U", sql);
     }
 
     [Fact]

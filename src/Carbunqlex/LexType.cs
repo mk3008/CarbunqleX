@@ -12,4 +12,7 @@ public enum LexType : byte
     Identifier,
     Keyword,
     Value,
+    StartClause,
+    EndClause,
+
 }

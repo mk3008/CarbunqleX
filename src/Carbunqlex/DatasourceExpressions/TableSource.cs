@@ -32,7 +32,7 @@ public class TableSource : IDatasource
         {
             return $"{namespacePart}{TableName}";
         }
-        return $"{namespacePart}{TableName} AS {Alias}";
+        return $"{namespacePart}{TableName} as {Alias}";
     }
 
     public IEnumerable<Lexeme> GetLexemes()
@@ -52,7 +52,7 @@ public class TableSource : IDatasource
 
         if (!string.IsNullOrEmpty(Alias) && Alias != TableName)
         {
-            lexemes.Add(new Lexeme(LexType.Keyword, "AS"));
+            lexemes.Add(new Lexeme(LexType.Keyword, "as"));
             lexemes.Add(new Lexeme(LexType.Identifier, Alias));
         }
 

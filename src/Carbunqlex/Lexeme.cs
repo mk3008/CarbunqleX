@@ -1,7 +1,19 @@
 ﻿namespace Carbunqlex;
 
-public readonly struct Lexeme(LexType type, string value)
+public readonly struct Lexeme
 {
-    public LexType Type { get; } = type;
-    public string Value { get; } = value;
+    public Lexeme(LexType type, string value, string clause)
+    {
+        Type = type;
+        Value = value;
+        Clause = clause;
+    }
+
+    public Lexeme(LexType lexType, string value) : this(lexType, value, string.Empty)
+    {
+    }
+
+    public LexType Type { get; }
+    public string Value { get; }
+    public string Clause { get; }
 }
