@@ -1,7 +1,4 @@
-﻿using Carbunqlex.DatasourceExpressions;
-using System.Text;
-
-namespace Carbunqlex.Clauses;
+﻿namespace Carbunqlex.Clauses;
 
 public enum LockType
 {
