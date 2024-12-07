@@ -1,4 +1,5 @@
-﻿using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Clauses;
+using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests;
@@ -207,5 +208,56 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var sql = caseExpression.ToSql();
         output.WriteLine(sql);
         Assert.Equal("case TableName.ColumnName when 1 then 'One' when 2 then 'Two' else 'Other' end", sql);
+    }
+
+    [Fact]
+    public void FunctionExpression_WithOverClause_ReturnsCorrectSql()
+    {
+        // Arrange
+        var partitionBy = new PartitionByClause();
+        partitionBy.PartitionByColumns.Add(new ColumnExpression("a", "value"));
+
+        var orderBy = new OrderByClause();
+        orderBy.OrderByColumns.Add(new OrderByColumn(new ColumnExpression("a", "id")));
+
+        var windowFrame = new WindowFrame(
+            WindowFrameBoundary.UnboundedPreceding,
+            WindowFrameBoundary.CurrentRow,
+            FrameType.Rows);
+
+        var windowFunction = new WindowFunction(partitionBy, orderBy, windowFrame);
+
+        var overClause = new OverClause(windowFunction);
+
+        var functionExpression = new FunctionExpression("sum", new ColumnExpression("a", "value"))
+        {
+            OverClause = overClause
+        };
+
+        // Act
+        var sql = functionExpression.ToSql();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("sum(a.value) over (partition by a.value order by a.id rows between unbounded preceding and current row)", sql);
+    }
+
+    [Fact]
+    public void FunctionExpression_WithEmptyOverClause_ReturnsCorrectSql()
+    {
+        // Arrange
+        var overClause = new OverClause();
+
+        var functionExpression = new FunctionExpression("sum", new ColumnExpression("a", "value"))
+        {
+            OverClause = overClause
+        };
+
+        // Act
+        var sql = functionExpression.ToSql();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("sum(a.value) over ()", sql);
     }
 }
