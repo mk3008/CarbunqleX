@@ -1,10 +1,13 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
+using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ClauseTests;
 
-public class PagingClauseTests
+public class PagingClauseTests(ITestOutputHelper output)
 {
+    private readonly ITestOutputHelper output = output;
+
     [Fact]
     public void ToSql_ReturnsCorrectSql()
     {
@@ -15,6 +18,7 @@ public class PagingClauseTests
 
         // Act
         var sql = pagingClause.ToSql();
+        output.WriteLine(sql);
 
         // Assert
         Assert.Equal("offset 10 rows fetch next 20 rows only", sql);
@@ -30,6 +34,7 @@ public class PagingClauseTests
 
         // Act
         var sql = pagingClause.ToSql();
+        output.WriteLine(sql);
 
         // Assert
         Assert.Equal("offset @offset rows fetch next @fetch rows only", sql);

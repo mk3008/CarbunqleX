@@ -5,14 +5,9 @@ using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests;
 
-public class UnionQueryTests
+public class UnionQueryTests(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper output;
-
-    public UnionQueryTests(ITestOutputHelper output)
-    {
-        this.output = output;
-    }
+    private readonly ITestOutputHelper output = output;
 
     private ColumnExpression CreateColumnExpression(string columnName)
     {

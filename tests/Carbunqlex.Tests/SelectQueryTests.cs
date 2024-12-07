@@ -6,14 +6,9 @@ using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests;
 
-public class SelectQueryTests
+public class SelectQueryTests(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper output;
-
-    public SelectQueryTests(ITestOutputHelper output)
-    {
-        this.output = output;
-    }
+    private readonly ITestOutputHelper output = output;
 
     private ColumnExpression CreateColumnExpression(string columnName)
     {
@@ -34,10 +29,10 @@ public class SelectQueryTests
         var whereClause = new WhereClause(
             new BinaryExpression(
                 "=",
-                new ColumnExpression("ColumnName1")
-                , new ConstantExpression(1)
-                )
-            );
+                new ColumnExpression("ColumnName1"),
+                new ConstantExpression(1)
+            )
+        );
 
         var groupByClause = new GroupByClause(
             CreateColumnExpression("ColumnName1"),
@@ -49,8 +44,8 @@ public class SelectQueryTests
                 ">",
                 new ColumnExpression("ColumnName1"),
                 new ConstantExpression(10)
-                )
-            );
+            )
+        );
 
         var orderByClause = new OrderByClause(
             new OrderByColumn(CreateColumnExpression("ColumnName1")),
