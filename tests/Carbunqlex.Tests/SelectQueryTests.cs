@@ -101,4 +101,48 @@ public class SelectQueryTests(ITestOutputHelper output)
         // Assert
         Assert.Equal("select ColumnName1", sql);
     }
+
+    [Fact]
+    public void ToSql_WithWithClause_ReturnsCorrectSql()
+    {
+        // Arrange
+        var commonTableClause = new CommonTableClause(new SimpleQuery("SELECT * FROM table"), "cte");
+
+        var selectClause = new SelectClause(
+            new SelectExpression(CreateColumnExpression("ColumnName1"))
+        );
+
+        var fromClause = new FromClause(new TableSource("cte"));
+
+        var selectQuery = new SelectQuery(selectClause, fromClause);
+        selectQuery.WithClause.CommonTableClauses.Add(commonTableClause);
+
+        // Act
+        var sql = selectQuery.ToSql();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("with cte as (SELECT * FROM table) select ColumnName1 from cte", sql);
+    }
+
+    // Simple implementation of IQuery for testing purposes
+    private class SimpleQuery : IQuery
+    {
+        private readonly string _sql;
+
+        public SimpleQuery(string sql)
+        {
+            _sql = sql;
+        }
+
+        public string ToSql()
+        {
+            return _sql;
+        }
+
+        public IEnumerable<Lexeme> GetLexemes()
+        {
+            return Enumerable.Empty<Lexeme>();
+        }
+    }
 }

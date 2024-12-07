@@ -1,7 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using System.Collections.Generic;
-
-namespace Carbunqlex.ValueExpressions;
+﻿namespace Carbunqlex.ValueExpressions;
 
 public class InlineQuery : IValueExpression
 {

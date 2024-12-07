@@ -5,6 +5,7 @@ namespace Carbunqlex;
 
 public class SelectQuery : IQuery
 {
+    public WithClause WithClause { get; } = new WithClause();
     public SelectClause SelectClause { get; }
     public IFromClause FromClause { get; set; }
     public IWhereClause WhereClause { get; set; } = EmptyWhereClause.Instance;
@@ -31,6 +32,12 @@ public class SelectQuery : IQuery
     {
         var sb = new StringBuilder();
 
+        var withSql = WithClause.ToSql();
+        if (!string.IsNullOrEmpty(withSql))
+        {
+            sb.Append(withSql)
+                .Append(" ");
+        }
         sb.Append(SelectClause.ToSql());
 
         var fromSql = FromClause.ToSql();
@@ -88,6 +95,7 @@ public class SelectQuery : IQuery
     {
         var lexemes = new List<Lexeme>();
 
+        lexemes.AddRange(WithClause.GetLexemes());
         lexemes.AddRange(SelectClause.GetLexemes());
         lexemes.AddRange(FromClause.GetLexemes());
         lexemes.AddRange(WhereClause.GetLexemes());
