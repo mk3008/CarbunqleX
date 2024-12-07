@@ -1,29 +1,32 @@
+﻿using Carbunqlex.ValueExpressions;
+
 namespace Carbunqlex.Clauses;
 
 public class WindowFrameBoundary : ISqlComponent
 {
-    public string Boundary { get; }
-    public string DefaultName => string.Empty;
+    public WindowFrameBoundaryExpression Boundary { get; }
 
-    private WindowFrameBoundary(string boundary)
+    private WindowFrameBoundary(WindowFrameBoundaryExpression boundary)
     {
         Boundary = boundary;
     }
 
-    public static WindowFrameBoundary UnboundedPreceding => new WindowFrameBoundary("unbounded preceding");
-    public static WindowFrameBoundary CurrentRow => new WindowFrameBoundary("current row");
-    public static WindowFrameBoundary UnboundedFollowing => new WindowFrameBoundary("unbounded following");
+    public static WindowFrameBoundary UnboundedPreceding => new WindowFrameBoundary(WindowFrameBoundaryExpression.UnboundedPreceding);
+    public static WindowFrameBoundary CurrentRow => new WindowFrameBoundary(WindowFrameBoundaryExpression.CurrentRow);
+    public static WindowFrameBoundary UnboundedFollowing => new WindowFrameBoundary(WindowFrameBoundaryExpression.UnboundedFollowing);
 
-    public static WindowFrameBoundary Preceding(int rows) => new WindowFrameBoundary($"{rows} preceding");
-    public static WindowFrameBoundary Following(int rows) => new WindowFrameBoundary($"{rows} following");
+    public static WindowFrameBoundary Preceding(IValueExpression rows) => new WindowFrameBoundary(WindowFrameBoundaryExpression.Preceding(rows));
+    public static WindowFrameBoundary Following(IValueExpression rows) => new WindowFrameBoundary(WindowFrameBoundaryExpression.Following(rows));
+    public static WindowFrameBoundary Preceding(int rows) => new WindowFrameBoundary(WindowFrameBoundaryExpression.Preceding(new ConstantExpression(rows)));
+    public static WindowFrameBoundary Following(int rows) => new WindowFrameBoundary(WindowFrameBoundaryExpression.Following(new ConstantExpression(rows)));
 
     public string ToSql()
     {
-        return Boundary;
+        return Boundary.ToSql();
     }
 
     public IEnumerable<Lexeme> GetLexemes()
     {
-        return new List<Lexeme> { new Lexeme(LexType.Keyword, Boundary) };
+        return Boundary.GetLexemes();
     }
 }

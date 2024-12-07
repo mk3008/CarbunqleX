@@ -14,5 +14,5 @@ public enum LexType : byte
     Value,
     StartClause,
     EndClause,
-
+    Parameter,
 }
