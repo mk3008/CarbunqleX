@@ -29,12 +29,7 @@ public class ColumnExpression : IValueExpression
 
     public IEnumerable<Lexeme> GetLexemes()
     {
-        foreach (var ns in Namespaces)
-        {
-            yield return new Lexeme(LexType.Identifier, ns);
-            yield return new Lexeme(LexType.Dot, ".");
-        }
-        yield return new Lexeme(LexType.Identifier, ColumnName);
+        yield return new Lexeme(LexType.Identifier, ToSql());
     }
 
     public string ToSql()
@@ -44,12 +39,14 @@ public class ColumnExpression : IValueExpression
             throw new InvalidOperationException("Column name cannot be null or empty.");
         }
 
-        var sb = new StringBuilder();
-        if (Namespaces.Count > 0)
+        if (Namespaces.Count == 0)
         {
-            sb.Append(string.Join(".", Namespaces));
-            sb.Append(".");
+            return ColumnName;
         }
+
+        var sb = new StringBuilder();
+        sb.Append(string.Join(".", Namespaces));
+        sb.Append(".");
         sb.Append(ColumnName);
         return sb.ToString();
     }
