@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.DatasourceExpressions;
+﻿using System.Text;
+
+namespace Carbunqlex.DatasourceExpressions;
 
 public class ValuesQuerySource : IDatasource
 {
@@ -22,8 +24,17 @@ public class ValuesQuerySource : IDatasource
 
     public string ToSql()
     {
-        var columnAliasesPart = ColumnAliases.ToSql();
-        return $"({Query.ToSql()}) AS {Alias}{columnAliasesPart}";
+        if (string.IsNullOrWhiteSpace(Alias))
+        {
+            throw new ArgumentException("Alias is required for a function source.", nameof(Alias));
+        }
+        var sb = new StringBuilder();
+        sb.Append("(");
+        sb.Append(Query.ToSql());
+        sb.Append(") as ");
+        sb.Append(Alias);
+        sb.Append(ColumnAliases.ToSql());
+        return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GetLexemes()
@@ -36,7 +47,7 @@ public class ValuesQuerySource : IDatasource
         lexemes.AddRange(Query.GetLexemes());
 
         lexemes.Add(new Lexeme(LexType.CloseParen, ")"));
-        lexemes.Add(new Lexeme(LexType.Keyword, "AS"));
+        lexemes.Add(new Lexeme(LexType.Keyword, "as"));
         lexemes.Add(new Lexeme(LexType.Identifier, Alias));
 
         lexemes.AddRange(ColumnAliases.GetLexemes());

@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.DatasourceExpressions;
+﻿using System.Text;
+
+namespace Carbunqlex.DatasourceExpressions;
 
 public class TableSource : IDatasource
 {
@@ -27,12 +29,19 @@ public class TableSource : IDatasource
 
     public string ToSql()
     {
-        var namespacePart = Namespaces.Any() ? $"{string.Join(".", Namespaces)}." : string.Empty;
-        if (string.IsNullOrEmpty(Alias) || Alias == TableName)
+        var sb = new StringBuilder();
+        if (Namespaces.Any())
         {
-            return $"{namespacePart}{TableName}";
+            sb.Append(string.Join(".", Namespaces));
+            sb.Append(".");
         }
-        return $"{namespacePart}{TableName} as {Alias}";
+        sb.Append(TableName);
+        if (!string.IsNullOrEmpty(Alias) && Alias != TableName)
+        {
+            sb.Append(" as ");
+            sb.Append(Alias);
+        }
+        return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GetLexemes()

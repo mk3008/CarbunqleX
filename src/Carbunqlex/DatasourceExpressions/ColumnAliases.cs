@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.DatasourceExpressions;
+﻿using System.Text;
+
+namespace Carbunqlex.DatasourceExpressions;
 
 public class ColumnAliases : ISqlComponent
 {
@@ -11,7 +13,16 @@ public class ColumnAliases : ISqlComponent
 
     public string ToSql()
     {
-        return Aliases.Any() ? $"({string.Join(", ", Aliases)})" : string.Empty;
+        if (!Aliases.Any())
+        {
+            return string.Empty;
+        }
+
+        var sb = new StringBuilder();
+        sb.Append("(");
+        sb.Append(string.Join(", ", Aliases));
+        sb.Append(")");
+        return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GetLexemes()

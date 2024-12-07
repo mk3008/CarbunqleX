@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.Clauses;
+﻿using System.Text;
+
+namespace Carbunqlex.Clauses;
 
 public class WindowClause : ISqlComponent
 {
@@ -13,8 +15,18 @@ public class WindowClause : ISqlComponent
 
     public string ToSql()
     {
-        var functionSql = WindowFunction.ToSql();
-        return string.IsNullOrEmpty(functionSql) ? string.Empty : $"window {Alias} as ({functionSql})";
+        if (string.IsNullOrWhiteSpace(Alias))
+        {
+            throw new ArgumentException("Alias is required for a window clause.", nameof(Alias));
+        }
+
+        var sb = new StringBuilder();
+        sb.Append("window ");
+        sb.Append(Alias);
+        sb.Append(" as (");
+        sb.Append(WindowFunction.ToSql());
+        sb.Append(")");
+        return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GetLexemes()

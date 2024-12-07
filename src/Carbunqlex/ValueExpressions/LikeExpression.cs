@@ -1,17 +1,22 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using System.Text;
+
+namespace Carbunqlex.ValueExpressions;
 
 public class LikeExpression : IValueExpression
 {
     public IValueExpression Left { get; set; }
     public IValueExpression Right { get; set; }
     public bool IsNotLike { get; set; }
+
     public LikeExpression(IValueExpression left, bool isNotLike, IValueExpression right)
     {
         Left = left;
         IsNotLike = isNotLike;
         Right = right;
     }
+
     public string DefaultName => Left.DefaultName;
+
     public IEnumerable<Lexeme> GetLexemes()
     {
         foreach (var lexeme in Left.GetLexemes())
@@ -24,8 +29,13 @@ public class LikeExpression : IValueExpression
             yield return lexeme;
         }
     }
+
     public string ToSql()
     {
-        return $"{Left.ToSql()} {(IsNotLike ? "not like" : "like")} {Right.ToSql()}";
+        var sb = new StringBuilder();
+        sb.Append(Left.ToSql());
+        sb.Append(IsNotLike ? " not like " : " like ");
+        sb.Append(Right.ToSql());
+        return sb.ToString();
     }
 }

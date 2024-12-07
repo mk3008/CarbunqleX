@@ -1,8 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
 using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests;
@@ -26,6 +23,6 @@ public class FunctionSourceTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("TestFunction(1, 2) AS TestAlias(col1, col2)", sql);
+        Assert.Equal("TestFunction(1, 2) as TestAlias(col1, col2)", sql);
     }
 }

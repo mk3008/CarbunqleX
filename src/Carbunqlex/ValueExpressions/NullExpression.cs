@@ -1,10 +1,10 @@
 ﻿namespace Carbunqlex.ValueExpressions;
 
-public class NullValue : IValueExpression
+public class NullExpression : IValueExpression
 {
     public bool IsNotNull { get; set; }
 
-    public NullValue(bool isNotNull = false)
+    public NullExpression(bool isNotNull = false)
     {
         IsNotNull = isNotNull;
     }

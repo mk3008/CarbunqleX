@@ -1,8 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
 using Carbunqlex.DatasourceExpressions;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests;
@@ -47,7 +43,7 @@ public class ValuesQuerySourceTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        var expectedSql = $"({query.ToSql()}) AS {alias}({string.Join(", ", columnAliases)})";
+        var expectedSql = $"({query.ToSql()}) as {alias}({string.Join(", ", columnAliases)})";
         Assert.Equal(expectedSql, sql);
     }
 }

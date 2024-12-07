@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.Clauses;
+﻿using System.Text;
+
+namespace Carbunqlex.Clauses;
 
 public class WindowFunction : ISqlComponent
 {
@@ -15,22 +17,24 @@ public class WindowFunction : ISqlComponent
 
     public string ToSql()
     {
-        var components = new List<string>();
+        var sb = new StringBuilder();
 
         if (PartitionBy != null)
         {
-            components.Add(PartitionBy.ToSql());
+            sb.Append(PartitionBy.ToSql());
         }
         if (OrderBy != null)
         {
-            components.Add(OrderBy.ToSql());
+            if (sb.Length > 0) sb.Append(" ");
+            sb.Append(OrderBy.ToSql());
         }
         if (WindowFrame != null)
         {
-            components.Add(WindowFrame.ToSql());
+            if (sb.Length > 0) sb.Append(" ");
+            sb.Append(WindowFrame.ToSql());
         }
 
-        return string.Join(" ", components);
+        return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GetLexemes()

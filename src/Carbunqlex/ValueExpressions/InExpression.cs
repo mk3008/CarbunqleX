@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using System.Text;
+
+namespace Carbunqlex.ValueExpressions;
 
 public class InExpression : IValueExpression
 {
@@ -39,7 +41,11 @@ public class InExpression : IValueExpression
 
     public string ToSql()
     {
-        var right = string.Join(", ", Right.Select(arg => arg.ToSql()));
-        return $"{Left.ToSql()} {(IsNotIn ? "not in" : "in")} ({right})";
+        var sb = new StringBuilder();
+        sb.Append(Left.ToSql());
+        sb.Append(IsNotIn ? " not in (" : " in (");
+        sb.Append(string.Join(", ", Right.Select(arg => arg.ToSql())));
+        sb.Append(")");
+        return sb.ToString();
     }
 }

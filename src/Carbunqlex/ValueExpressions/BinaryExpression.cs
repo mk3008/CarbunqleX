@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using System.Text;
+
+namespace Carbunqlex.ValueExpressions;
 
 /// <summary>
 /// Represents a binary expression, which consists of a left operand, an operator, and a right operand.
@@ -10,12 +12,6 @@ public class BinaryExpression : IValueExpression
     public IValueExpression Left { get; set; }
     public IValueExpression Right { get; set; }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BinaryExpression"/> class.
-    /// </summary>
-    /// <param name="operator">The operator to apply between the left and right operands.</param>
-    /// <param name="left">The left operand.</param>
-    /// <param name="right">The right operand.</param>
     public BinaryExpression(string @operator, IValueExpression left, IValueExpression right)
     {
         Operator = @operator;
@@ -40,6 +36,12 @@ public class BinaryExpression : IValueExpression
 
     public string ToSql()
     {
-        return $"{Left.ToSql()} {Operator} {Right.ToSql()}";
+        var sb = new StringBuilder();
+        sb.Append(Left.ToSql());
+        sb.Append(" ");
+        sb.Append(Operator);
+        sb.Append(" ");
+        sb.Append(Right.ToSql());
+        return sb.ToString();
     }
 }

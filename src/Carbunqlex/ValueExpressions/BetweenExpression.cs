@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using System.Text;
+
+namespace Carbunqlex.ValueExpressions;
 
 public class BetweenExpression : IValueExpression
 {
@@ -6,6 +8,7 @@ public class BetweenExpression : IValueExpression
     public IValueExpression Start { get; set; }
     public IValueExpression End { get; set; }
     public bool IsNotBetween { get; set; }
+
     public BetweenExpression(IValueExpression left, bool isNotBetween, IValueExpression start, IValueExpression end)
     {
         Left = left;
@@ -13,7 +16,9 @@ public class BetweenExpression : IValueExpression
         Start = start;
         End = end;
     }
+
     public string DefaultName => Left.DefaultName;
+
     public IEnumerable<Lexeme> GetLexemes()
     {
         foreach (var lexeme in Left.GetLexemes())
@@ -31,8 +36,15 @@ public class BetweenExpression : IValueExpression
             yield return lexeme;
         }
     }
+
     public string ToSql()
     {
-        return $"{Left.ToSql()} {(IsNotBetween ? "not between" : "between")} {Start.ToSql()} and {End.ToSql()}";
+        var sb = new StringBuilder();
+        sb.Append(Left.ToSql());
+        sb.Append(IsNotBetween ? " not between " : " between ");
+        sb.Append(Start.ToSql());
+        sb.Append(" and ");
+        sb.Append(End.ToSql());
+        return sb.ToString();
     }
 }

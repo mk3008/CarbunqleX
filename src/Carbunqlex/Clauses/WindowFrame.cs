@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.Clauses;
+﻿using System.Text;
+
+namespace Carbunqlex.Clauses;
 
 public enum FrameType : byte
 {
@@ -33,6 +35,12 @@ public class WindowFrame : ISqlComponent
 
     public string ToSql()
     {
-        return $"{(FrameType == FrameType.Rows ? "rows" : "range")} between {Start.ToSql()} and {End.ToSql()}";
+        var sb = new StringBuilder();
+        sb.Append(FrameType == FrameType.Rows ? "rows" : "range");
+        sb.Append(" between ");
+        sb.Append(Start.ToSql());
+        sb.Append(" and ");
+        sb.Append(End.ToSql());
+        return sb.ToString();
     }
 }

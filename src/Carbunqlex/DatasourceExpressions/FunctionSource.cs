@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.ValueExpressions;
+using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
 
@@ -35,8 +36,22 @@ public class FunctionSource : IDatasource, ISqlComponent
 
     public string ToSql()
     {
-        var argsSql = string.Join(", ", Arguments.Select(arg => arg.ToSql()));
-        return $"{FunctionName}({argsSql}) AS {Alias}{ColumnAliases.ToSql()}";
+        if (string.IsNullOrWhiteSpace(FunctionName))
+        {
+            throw new ArgumentException("FunctionName is required for a function source.", nameof(FunctionName));
+        }
+        if (string.IsNullOrWhiteSpace(Alias))
+        {
+            throw new ArgumentException("Alias is required for a function source.", nameof(Alias));
+        }
+        var sb = new StringBuilder();
+        sb.Append(FunctionName);
+        sb.Append("(");
+        sb.Append(string.Join(", ", Arguments.Select(arg => arg.ToSql())));
+        sb.Append(") as ");
+        sb.Append(Alias);
+        sb.Append(ColumnAliases.ToSql());
+        return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GetLexemes()

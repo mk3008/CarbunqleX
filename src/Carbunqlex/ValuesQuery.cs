@@ -138,4 +138,3 @@ public readonly struct ValuesColumn
         return new ValuesColumn(columnValue);
     }
 }
-

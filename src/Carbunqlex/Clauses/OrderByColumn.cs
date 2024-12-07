@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.ValueExpressions;
+using System.Text;
 
 namespace Carbunqlex.Clauses;
 
@@ -15,11 +16,13 @@ public class OrderByColumn : ISqlComponent
 
     public string ToSql()
     {
-        if (Ascending)
+        var sb = new StringBuilder();
+        sb.Append(Column.ToSql());
+        if (!Ascending)
         {
-            return Column.ToSql();
+            sb.Append(" desc");
         }
-        return $"{Column.ToSql()} desc";
+        return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GetLexemes()

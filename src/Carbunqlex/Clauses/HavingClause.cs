@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.ValueExpressions;
+using System.Text;
 
 namespace Carbunqlex.Clauses;
 
@@ -13,7 +14,10 @@ public class HavingClause : ISqlComponent
 
     public string ToSql()
     {
-        return $"having {Condition.ToSql()}";
+        var sb = new StringBuilder();
+        sb.Append("having ");
+        sb.Append(Condition.ToSql());
+        return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GetLexemes()
@@ -25,5 +29,4 @@ public class HavingClause : ISqlComponent
         lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "having"));
         return lexemes;
     }
-
 }

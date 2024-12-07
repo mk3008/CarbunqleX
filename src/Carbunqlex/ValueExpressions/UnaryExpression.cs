@@ -1,9 +1,12 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using System.Text;
+
+namespace Carbunqlex.ValueExpressions;
 
 public class UnaryExpression : IValueExpression
 {
     public string Operator { get; set; }
     public IValueExpression Operand { get; set; }
+
     public UnaryExpression(string @operator, IValueExpression operand)
     {
         Operator = @operator;
@@ -23,6 +26,10 @@ public class UnaryExpression : IValueExpression
 
     public string ToSql()
     {
-        return $"{Operator} {Operand.ToSql()}";
+        var sb = new StringBuilder();
+        sb.Append(Operator);
+        sb.Append(" ");
+        sb.Append(Operand.ToSql());
+        return sb.ToString();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.ValueExpressions;
+using System.Text;
 
 namespace Carbunqlex.Clauses;
 
@@ -13,7 +14,10 @@ public class WhereClause : ISqlComponent
 
     public string ToSql()
     {
-        return $"where {Condition.ToSql()}";
+        var sb = new StringBuilder();
+        sb.Append("where ");
+        sb.Append(Condition.ToSql());
+        return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GetLexemes()

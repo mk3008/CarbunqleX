@@ -1,6 +1,5 @@
 using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests;
@@ -48,4 +47,3 @@ public class WindowFunctionTests(ITestOutputHelper output)
         Assert.Equal("partition by a.value order by a.id rows between unbounded preceding and current row", result);
     }
 }
-

@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.Clauses;
+﻿using System.Text;
+
+namespace Carbunqlex.Clauses;
 
 public class OverClause : ISqlComponent
 {
@@ -11,7 +13,14 @@ public class OverClause : ISqlComponent
 
     public string ToSql()
     {
-        return WindowFunction != null ? $"over ({WindowFunction.ToSql()})" : "over ()";
+        var sb = new StringBuilder();
+        sb.Append("over (");
+        if (WindowFunction != null)
+        {
+            sb.Append(WindowFunction.ToSql());
+        }
+        sb.Append(")");
+        return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GetLexemes()

@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using System.Text;
+
+namespace Carbunqlex.ValueExpressions;
 
 public class ColumnExpression : IValueExpression
 {
@@ -10,11 +12,13 @@ public class ColumnExpression : IValueExpression
         Namespaces = new List<string>();
         ColumnName = columnName;
     }
+
     public ColumnExpression(string tableName, string columnName)
     {
         Namespaces = new List<string> { tableName };
         ColumnName = columnName;
     }
+
     public ColumnExpression(List<string> namespaces, string columnName)
     {
         Namespaces = namespaces;
@@ -35,7 +39,18 @@ public class ColumnExpression : IValueExpression
 
     public string ToSql()
     {
-        var namespaces = string.Join(".", Namespaces);
-        return $"{namespaces}.{ColumnName}";
+        if (string.IsNullOrWhiteSpace(ColumnName))
+        {
+            throw new InvalidOperationException("Column name cannot be null or empty.");
+        }
+
+        var sb = new StringBuilder();
+        if (Namespaces.Count > 0)
+        {
+            sb.Append(string.Join(".", Namespaces));
+            sb.Append(".");
+        }
+        sb.Append(ColumnName);
+        return sb.ToString();
     }
 }

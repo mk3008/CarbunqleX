@@ -79,34 +79,3 @@ public class CaseExpression : IValueExpression
         return sql.ToString();
     }
 }
-
-public class WhenThenPair
-{
-    public IValueExpression When { get; }
-    public IValueExpression Then { get; }
-
-    public WhenThenPair(IValueExpression when, IValueExpression then)
-    {
-        When = when;
-        Then = then;
-    }
-
-    public string ToSql()
-    {
-        return $"when {When.ToSql()} then {Then.ToSql()}";
-    }
-
-    public IEnumerable<Lexeme> GetLexemes()
-    {
-        yield return new Lexeme(LexType.Keyword, "when");
-        foreach (var lexeme in When.GetLexemes())
-        {
-            yield return lexeme;
-        }
-        yield return new Lexeme(LexType.Keyword, "then");
-        foreach (var lexeme in Then.GetLexemes())
-        {
-            yield return lexeme;
-        }
-    }
-}

@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using System.Text;
+
+namespace Carbunqlex.ValueExpressions;
 
 public class ParenthesizedExpression : IValueExpression
 {
@@ -23,6 +25,10 @@ public class ParenthesizedExpression : IValueExpression
 
     public string ToSql()
     {
-        return $"({InnerExpression.ToSql()})";
+        var sb = new StringBuilder();
+        sb.Append("(");
+        sb.Append(InnerExpression.ToSql());
+        sb.Append(")");
+        return sb.ToString();
     }
 }

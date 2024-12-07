@@ -1,11 +1,13 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Clauses;
+using System.Text;
+
+namespace Carbunqlex.ValueExpressions;
 
 public class FunctionExpression : IValueExpression
 {
-    // Note: Aggregate functions (e.g., SUM, COUNT, AVG) can be represented using FunctionExpression.
-
     public List<IValueExpression> Arguments { get; set; }
     public string FunctionName { get; set; }
+    public OverClause? OverClause { get; set; }
 
     public FunctionExpression(string functionName, params IValueExpression[] arguments)
     {
@@ -15,8 +17,17 @@ public class FunctionExpression : IValueExpression
 
     public string ToSql()
     {
-        var args = string.Join(", ", Arguments.Select(arg => arg.ToSql()));
-        return $"{FunctionName}({args})";
+        var sb = new StringBuilder();
+        sb.Append(FunctionName);
+        sb.Append("(");
+        sb.Append(string.Join(", ", Arguments.Select(arg => arg.ToSql())));
+        sb.Append(")");
+        if (OverClause != null)
+        {
+            sb.Append(" ");
+            sb.Append(OverClause.ToSql());
+        }
+        return sb.ToString();
     }
 
     public string DefaultName => string.Empty;
@@ -37,5 +48,12 @@ public class FunctionExpression : IValueExpression
             }
         }
         yield return new Lexeme(LexType.CloseParen, ")");
+        if (OverClause != null)
+        {
+            foreach (var lexeme in OverClause.GetLexemes())
+            {
+                yield return lexeme;
+            }
+        }
     }
 }
