@@ -2,25 +2,11 @@ using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests;
+namespace Carbunqlex.Tests.ClauseTests;
 
-public class WindowFunctionTests(ITestOutputHelper output)
+public class WindowClauseTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
-
-    [Fact]
-    public void ToSql_NoComponents_ReturnsEmptyString()
-    {
-        // Arrange
-        var windowFunction = new WindowFunction();
-
-        // Act
-        var result = windowFunction.ToSql();
-        output.WriteLine(result);
-
-        // Assert
-        Assert.Equal(string.Empty, result);
-    }
 
     [Fact]
     public void ToSql_WithAllComponents_ReturnsCorrectSql()
@@ -39,11 +25,13 @@ public class WindowFunctionTests(ITestOutputHelper output)
 
         var windowFunction = new WindowFunction(partitionBy, orderBy, windowFrame);
 
+        var windowClause = new WindowClause("w", windowFunction);
+
         // Act
-        var result = windowFunction.ToSql();
+        var result = windowClause.ToSql();
         output.WriteLine(result);
 
         // Assert
-        Assert.Equal("partition by a.value order by a.id rows between unbounded preceding and current row", result);
+        Assert.Equal("window w as (partition by a.value order by a.id rows between unbounded preceding and current row)", result);
     }
 }

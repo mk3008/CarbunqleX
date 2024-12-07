@@ -1,7 +1,7 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
 
-namespace Carbunqlex.Tests;
+namespace Carbunqlex.Tests.ClauseTests;
 
 public class PagingClauseTests
 {

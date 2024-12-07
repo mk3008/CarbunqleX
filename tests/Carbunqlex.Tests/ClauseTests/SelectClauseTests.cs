@@ -4,7 +4,7 @@ using Xunit;
 using System.Collections.Generic;
 using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests.Clauses;
+namespace Carbunqlex.Tests.ClauseTests;
 
 public class SelectClauseTests
 {

@@ -2,7 +2,7 @@ using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests;
+namespace Carbunqlex.Tests.ClauseTests;
 
 public class OrderByClauseTests(ITestOutputHelper output)
 {

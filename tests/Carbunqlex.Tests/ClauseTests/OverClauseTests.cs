@@ -2,14 +2,14 @@ using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests;
+namespace Carbunqlex.Tests.ClauseTests;
 
-public class WindowClauseTests(ITestOutputHelper output)
+public class OverClauseTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
 
     [Fact]
-    public void ToSql_WithAllComponents_ReturnsCorrectSql()
+    public void ToSql_WithWindowFunction_ReturnsCorrectSql()
     {
         // Arrange
         var partitionBy = new PartitionByClause();
@@ -25,13 +25,13 @@ public class WindowClauseTests(ITestOutputHelper output)
 
         var windowFunction = new WindowFunction(partitionBy, orderBy, windowFrame);
 
-        var windowClause = new WindowClause("w", windowFunction);
+        var overClause = new OverClause(windowFunction);
 
         // Act
-        var result = windowClause.ToSql();
+        var result = overClause.ToSql();
         output.WriteLine(result);
 
         // Assert
-        Assert.Equal("window w as (partition by a.value order by a.id rows between unbounded preceding and current row)", result);
+        Assert.Equal("over (partition by a.value order by a.id rows between unbounded preceding and current row)", result);
     }
 }
