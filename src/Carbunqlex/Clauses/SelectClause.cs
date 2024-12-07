@@ -21,11 +21,6 @@ public class SelectClause : ISqlComponent
 
     public string ToSql()
     {
-        if (Expressions.Count == 0)
-        {
-            throw new InvalidOperationException("SelectClause must contain at least one expression.");
-        }
-
         var sb = new StringBuilder();
         sb.Append("select ");
 
@@ -35,15 +30,22 @@ public class SelectClause : ISqlComponent
             sb.Append(distinctSql).Append(" ");
         }
 
-        foreach (var column in Expressions)
+        if (Expressions.Count == 0)
         {
-            sb.Append(column.ToSql()).Append(", ");
+            sb.Append("*");
         }
-
-        // Remove the trailing comma and space if there are any expressions
-        if (Expressions.Count > 0)
+        else
         {
-            sb.Length -= 2;
+            foreach (var column in Expressions)
+            {
+                sb.Append(column.ToSql()).Append(", ");
+            }
+
+            // Remove the trailing comma and space if there are any expressions
+            if (Expressions.Count > 0)
+            {
+                sb.Length -= 2;
+            }
         }
 
         return sb.ToString();
@@ -51,25 +53,27 @@ public class SelectClause : ISqlComponent
 
     public IEnumerable<Lexeme> GetLexemes()
     {
-        if (Expressions.Count == 0)
-        {
-            throw new InvalidOperationException("SelectClause must contain at least one expression.");
-        }
-
         // Estimate the initial capacity for the lexemes list.
         // Each SelectExpression can return up to 3 lexemes (column name, AS, alias).
         // Adding 2 for the "select" keyword and potential "distinct" clause.
         int initialCapacity = Expressions.Count * 3 + 2;
         var lexemes = new List<Lexeme>(initialCapacity)
-            {
-                new Lexeme(LexType.Keyword, "select")
-            };
+        {
+            new Lexeme(LexType.Keyword, "select")
+        };
 
         lexemes.AddRange(DistinctClause.GetLexemes());
 
-        foreach (var column in Expressions)
+        if (Expressions.Count == 0)
         {
-            lexemes.AddRange(column.GetLexemes());
+            lexemes.Add(new Lexeme(LexType.Identifier, "*"));
+        }
+        else
+        {
+            foreach (var column in Expressions)
+            {
+                lexemes.AddRange(column.GetLexemes());
+            }
         }
 
         return lexemes;

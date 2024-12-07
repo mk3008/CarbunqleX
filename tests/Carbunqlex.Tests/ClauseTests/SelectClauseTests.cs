@@ -6,14 +6,9 @@ using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ClauseTests;
 
-public class SelectClauseTests
+public class SelectClauseTests(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper output;
-
-    public SelectClauseTests(ITestOutputHelper output)
-    {
-        this.output = output;
-    }
+    private readonly ITestOutputHelper output = output;
 
     private ColumnExpression CreateColumnExpression(string columnName)
     {
@@ -97,22 +92,35 @@ public class SelectClauseTests
     }
 
     [Fact]
-    public void ToSql_ShouldThrowException_WhenExpressionsAreEmpty()
+    public void ToSql_ShouldReturnWildcard_WhenExpressionsAreEmpty()
     {
         // Arrange
         var selectClause = new SelectClause();
 
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => selectClause.ToSql());
+        // Act
+        var sql = selectClause.ToSql();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("select *", sql);
     }
 
     [Fact]
-    public void GetLexemes_ShouldThrowException_WhenExpressionsAreEmpty()
+    public void GetLexemes_ShouldReturnWildcard_WhenExpressionsAreEmpty()
     {
         // Arrange
         var selectClause = new SelectClause();
 
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => selectClause.GetLexemes().ToList());
+        // Act
+        var lexemes = selectClause.GetLexemes();
+        output.WriteLine(string.Join(", ", lexemes.Select(l => l.Value)));
+
+        // Assert
+        var expectedLexemes = new List<Lexeme>
+        {
+            new Lexeme(LexType.Keyword, "select"),
+            new Lexeme(LexType.Identifier, "*")
+        };
+        Assert.Equal(expectedLexemes, lexemes);
     }
 }
