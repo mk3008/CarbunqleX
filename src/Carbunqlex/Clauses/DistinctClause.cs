@@ -1,6 +1,4 @@
-﻿using Carbunqlex.ValueExpressions;
-
-namespace Carbunqlex.Clauses;
+﻿namespace Carbunqlex.Clauses;
 
 public class DistinctClause : IDistinctClause
 {

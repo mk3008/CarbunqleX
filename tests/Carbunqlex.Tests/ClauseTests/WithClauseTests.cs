@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Carbunqlex.Clauses;
-using Xunit;
+﻿using Carbunqlex.Clauses;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests;

@@ -1,7 +1,5 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
-using Xunit;
-using System.Collections.Generic;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ClauseTests;
