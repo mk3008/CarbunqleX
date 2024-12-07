@@ -42,7 +42,7 @@ public class SelectClauseTests
     {
         // Arrange
         var selectClause = new SelectClause(
-            new DistinctClause(false),
+            new EmptyDistinctClause(),
             new SelectExpression(CreateColumnExpression("ColumnName")),
             new SelectExpression(CreateColumnExpression("ColumnName"), "name")
         );
@@ -60,7 +60,7 @@ public class SelectClauseTests
     {
         // Arrange
         var selectClause = new SelectClause(
-            new DistinctClause(true),
+            new DistinctClause(),
             new SelectExpression(CreateColumnExpression("ColumnName")),
             new SelectExpression(CreateColumnExpression("ColumnName"), "name")
         );
@@ -77,13 +77,13 @@ public class SelectClauseTests
     public void ToSql_ShouldReturnCorrectSql_WhenDistinctOnIsUsed()
     {
         // Arrange
-        var distinctClause = new DistinctClause(
+        var distinctOnClause = new DistinctOnClause(
             CreateColumnExpression("Value1"),
             CreateColumnExpression("Value2")
         );
 
         var selectClause = new SelectClause(
-            distinctClause,
+            distinctOnClause,
             new SelectExpression(CreateColumnExpression("Value1")),
             new SelectExpression(CreateColumnExpression("Value2"), "v2")
         );
@@ -94,5 +94,25 @@ public class SelectClauseTests
 
         // Assert
         Assert.Equal("select distinct on (Value1, Value2) Value1, Value2 as v2", sql);
+    }
+
+    [Fact]
+    public void ToSql_ShouldThrowException_WhenExpressionsAreEmpty()
+    {
+        // Arrange
+        var selectClause = new SelectClause();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => selectClause.ToSql());
+    }
+
+    [Fact]
+    public void GetLexemes_ShouldThrowException_WhenExpressionsAreEmpty()
+    {
+        // Arrange
+        var selectClause = new SelectClause();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => selectClause.GetLexemes().ToList());
     }
 }

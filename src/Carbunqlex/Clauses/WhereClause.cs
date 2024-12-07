@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Carbunqlex.Clauses;
 
-public class WhereClause : ISqlComponent
+public class WhereClause : IWhereClause
 {
     public IValueExpression Condition { get; set; }
 

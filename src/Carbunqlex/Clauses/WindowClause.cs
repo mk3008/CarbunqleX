@@ -4,46 +4,54 @@ namespace Carbunqlex.Clauses;
 
 public class WindowClause : ISqlComponent
 {
-    public string Alias { get; set; }
-    public WindowFunction WindowFunction { get; }
+    public List<WindowExpression> WindowExpressions { get; }
 
-    public WindowClause(string alias, WindowFunction windowFunction)
+    public WindowClause(params WindowExpression[] windowExpressions)
     {
-        Alias = alias;
-        WindowFunction = windowFunction;
+        WindowExpressions = windowExpressions.ToList();
     }
 
     public string ToSql()
     {
-        if (string.IsNullOrWhiteSpace(Alias))
+        if (WindowExpressions.Count == 0)
         {
-            throw new ArgumentException("Alias is required for a window clause.", nameof(Alias));
+            return string.Empty;
         }
 
-        var sb = new StringBuilder();
-        sb.Append("window ");
-        sb.Append(Alias);
-        sb.Append(" as (");
-        sb.Append(WindowFunction.ToSql());
-        sb.Append(")");
+        var sb = new StringBuilder("window ");
+        sb.Append(string.Join(", ", WindowExpressions.Select(we => we.ToSql())));
         return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GetLexemes()
     {
-        var lexemes = new List<Lexeme>
+        if (WindowExpressions.Count == 0)
         {
-            new Lexeme(LexType.StartClause, "window", "window"),
-            new Lexeme(LexType.Identifier, Alias),
-            new Lexeme(LexType.Keyword, "as"),
-            new Lexeme(LexType.OpenParen, "(", "window")
-        };
+            return Enumerable.Empty<Lexeme>();
+        }
 
-        lexemes.AddRange(WindowFunction.GetLexemes());
+        // Estimate the initial capacity for the lexemes list.
+        // Each window expression can return multiple lexemes, so we add a buffer.
+        // Additionally, we add space for commas and the "window" keyword.
+        int initialCapacity = WindowExpressions.Count * 6 + 1;
+        var lexemes = new List<Lexeme>(initialCapacity)
+            {
+                new Lexeme(LexType.StartClause, "window", "window")
+            };
 
-        lexemes.Add(new Lexeme(LexType.CloseParen, ")", "window"));
+        foreach (var windowExpression in WindowExpressions)
+        {
+            lexemes.AddRange(windowExpression.GetLexemes());
+            lexemes.Add(new Lexeme(LexType.Comma, ",", "window"));
+        }
+
+        if (lexemes.Count > 1)
+        {
+            // Remove the last comma
+            lexemes.RemoveAt(lexemes.Count - 1);
+        }
+
         lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "window"));
-
         return lexemes;
     }
 }

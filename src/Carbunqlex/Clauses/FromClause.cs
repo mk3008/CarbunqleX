@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Carbunqlex.Clauses;
 
-public class FromClause : ISqlComponent
+public class FromClause : IFromClause
 {
     public IDatasource RootDatasource { get; set; }
 

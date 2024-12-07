@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Carbunqlex.Clauses;
 
-public class PagingClause : ISqlComponent
+public class PagingClause : IPagingClause
 {
     public IValueExpression Offset { get; }
     public IValueExpression Fetch { get; }
@@ -28,9 +28,9 @@ public class PagingClause : ISqlComponent
     public IEnumerable<Lexeme> GetLexemes()
     {
         var lexemes = new List<Lexeme>
-        {
-            new Lexeme(LexType.Keyword, "offset")
-        };
+            {
+                new Lexeme(LexType.Keyword, "offset")
+            };
 
         lexemes.AddRange(Offset.GetLexemes());
         lexemes.Add(new Lexeme(LexType.Keyword, "rows"));

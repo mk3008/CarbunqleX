@@ -29,9 +29,9 @@ internal static class LockTypeExtensions
     }
 }
 
-public class ForClause : ISqlComponent
+public class ForClause : IForClause
 {
-    public LockType LockType { get; set; }
+    public LockType LockType { get; }
 
     public ForClause(LockType lockType)
     {
@@ -46,10 +46,10 @@ public class ForClause : ISqlComponent
     public IEnumerable<Lexeme> GetLexemes()
     {
         return new List<Lexeme>
-        {
-            new Lexeme(LexType.StartClause, "for", "for"),
-            new Lexeme(LexType.Keyword, LockType.ToSqlString(), "for"),
-            new Lexeme(LexType.EndClause, string.Empty, "for")
-        };
+            {
+                new Lexeme(LexType.StartClause, "for", "for"),
+                new Lexeme(LexType.Keyword, LockType.ToSqlString(), "for"),
+                new Lexeme(LexType.EndClause, string.Empty, "for")
+            };
     }
 }

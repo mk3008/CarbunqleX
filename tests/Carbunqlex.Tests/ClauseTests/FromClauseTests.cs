@@ -1,4 +1,4 @@
-using Carbunqlex.Clauses;
+﻿using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
