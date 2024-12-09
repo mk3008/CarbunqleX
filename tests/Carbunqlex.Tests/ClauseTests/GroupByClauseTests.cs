@@ -15,7 +15,7 @@ public class GroupByClauseTests(ITestOutputHelper output)
         var groupByClause = new GroupByClause();
 
         // Act
-        var result = groupByClause.ToSql();
+        var result = groupByClause.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert
@@ -31,7 +31,7 @@ public class GroupByClauseTests(ITestOutputHelper output)
         groupByClause.GroupByColumns.Add(new ColumnExpression("a", "id"));
 
         // Act
-        var result = groupByClause.ToSql();
+        var result = groupByClause.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert

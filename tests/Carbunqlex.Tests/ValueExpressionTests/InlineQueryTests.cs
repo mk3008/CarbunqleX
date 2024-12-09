@@ -25,7 +25,7 @@ public class InlineQueryTests(ITestOutputHelper output)
         var inlineQuery = new InlineQuery(selectQuery);
 
         // Act
-        var sql = inlineQuery.ToSql();
+        var sql = inlineQuery.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -55,7 +55,7 @@ public class InlineQueryTests(ITestOutputHelper output)
         var inlineQuery = new InlineQuery(selectQuery);
 
         // Act
-        var sql = inlineQuery.ToSql();
+        var sql = inlineQuery.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

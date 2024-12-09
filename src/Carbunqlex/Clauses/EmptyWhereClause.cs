@@ -8,14 +8,20 @@ public class EmptyWhereClause : IWhereClause
     // Private constructor to prevent instantiation
     private EmptyWhereClause() { }
 
-    public string ToSql()
+    // ISqlComponent implementation
+    public string ToSqlWithoutCte()
     {
         return string.Empty;
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         return Enumerable.Empty<Lexeme>();
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return Enumerable.Empty<CommonTableClause>();
     }
 }
 

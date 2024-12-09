@@ -8,13 +8,19 @@ public class EmptyFromClause : IFromClause
     // Private constructor to prevent instantiation
     private EmptyFromClause() { }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         return string.Empty;
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         return Enumerable.Empty<Lexeme>();
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        // EmptyFromClause does not directly use CTEs, so return an empty list
+        return Enumerable.Empty<CommonTableClause>();
     }
 }

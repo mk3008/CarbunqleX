@@ -4,6 +4,16 @@ using System.Text;
 
 namespace Carbunqlex.Clauses;
 
+public enum JoinType
+{
+    Inner,
+    Left,
+    Right,
+    Full,
+    Cross,
+    Natural
+}
+
 public class JoinClause : ISqlComponent
 {
     public IDatasource Datasource { get; set; }
@@ -38,20 +48,20 @@ public class JoinClause : ISqlComponent
         return sb.ToString();
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var joinTypeString = GetClauseText();
 
         if (Condition == null)
         {
-            return $"{joinTypeString} {Datasource.ToSql()}";
+            return $"{joinTypeString} {Datasource.ToSqlWithoutCte()}";
         }
 
-        var conditionString = Condition?.ToSql() ?? string.Empty;
-        return $"{joinTypeString} {Datasource.ToSql()} on {conditionString}";
+        var conditionString = Condition?.ToSqlWithoutCte() ?? string.Empty;
+        return $"{joinTypeString} {Datasource.ToSqlWithoutCte()} on {conditionString}";
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var clause = GetClauseText();
 
@@ -60,26 +70,29 @@ public class JoinClause : ISqlComponent
             new Lexeme(LexType.StartClause, clause, "join")
         };
 
-        lexemes.AddRange(Datasource.GetLexemes());
+        lexemes.AddRange(Datasource.GenerateLexemesWithoutCte());
 
         if (Condition != null)
         {
             lexemes.Add(new Lexeme(LexType.Keyword, "on"));
-            lexemes.AddRange(Condition.GetLexemes());
+            lexemes.AddRange(Condition.GenerateLexemesWithoutCte());
         }
 
-        new Lexeme(LexType.EndClause, string.Empty, "join");
+        lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "join"));
 
         return lexemes;
     }
-}
 
-public enum JoinType
-{
-    Inner,
-    Left,
-    Right,
-    Full,
-    Cross,
-    Natural
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        var commonTableClauses = new List<CommonTableClause>();
+        commonTableClauses.AddRange(Datasource.GetCommonTableClauses());
+
+        if (Condition != null)
+        {
+            commonTableClauses.AddRange(Condition.GetCommonTableClauses());
+        }
+
+        return commonTableClauses;
+    }
 }

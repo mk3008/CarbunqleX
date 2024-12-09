@@ -11,7 +11,7 @@ public class WindowClause : ISqlComponent
         WindowExpressions = windowExpressions.ToList();
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         if (WindowExpressions.Count == 0)
         {
@@ -19,11 +19,11 @@ public class WindowClause : ISqlComponent
         }
 
         var sb = new StringBuilder("window ");
-        sb.Append(string.Join(", ", WindowExpressions.Select(we => we.ToSql())));
+        sb.Append(string.Join(", ", WindowExpressions.Select(we => we.ToSqlWithoutCte())));
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         if (WindowExpressions.Count == 0)
         {
@@ -41,7 +41,7 @@ public class WindowClause : ISqlComponent
 
         foreach (var windowExpression in WindowExpressions)
         {
-            lexemes.AddRange(windowExpression.GetLexemes());
+            lexemes.AddRange(windowExpression.GenerateLexemesWithoutCte());
             lexemes.Add(new Lexeme(LexType.Comma, ",", "window"));
         }
 
@@ -53,5 +53,10 @@ public class WindowClause : ISqlComponent
 
         lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "window"));
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return WindowExpressions.SelectMany(we => we.GetCommonTableClauses());
     }
 }

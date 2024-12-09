@@ -13,7 +13,7 @@ public class WindowExpression : ISqlComponent
         WindowFunction = windowFunction;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         if (string.IsNullOrWhiteSpace(Alias))
         {
@@ -23,12 +23,12 @@ public class WindowExpression : ISqlComponent
         var sb = new StringBuilder();
         sb.Append(Alias);
         sb.Append(" as (");
-        sb.Append(WindowFunction.ToSql());
+        sb.Append(WindowFunction.ToSqlWithoutCte());
         sb.Append(")");
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme>
             {
@@ -37,10 +37,15 @@ public class WindowExpression : ISqlComponent
                 new Lexeme(LexType.OpenParen, "(", "window")
             };
 
-        lexemes.AddRange(WindowFunction.GetLexemes());
+        lexemes.AddRange(WindowFunction.GenerateLexemesWithoutCte());
 
         lexemes.Add(new Lexeme(LexType.CloseParen, ")", "window"));
 
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return WindowFunction.GetCommonTableClauses();
     }
 }

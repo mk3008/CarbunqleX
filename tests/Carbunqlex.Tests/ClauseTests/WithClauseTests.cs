@@ -14,7 +14,7 @@ public class WithClauseTests(ITestOutputHelper output)
         var withClause = new WithClause();
 
         // Act
-        var sql = withClause.ToSql();
+        var sql = withClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -30,7 +30,7 @@ public class WithClauseTests(ITestOutputHelper output)
         var withClause = new WithClause(false, commonTableClause1, commonTableClause2);
 
         // Act
-        var sql = withClause.ToSql();
+        var sql = withClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -46,7 +46,7 @@ public class WithClauseTests(ITestOutputHelper output)
         var withClause = new WithClause(true, commonTableClause);
 
         // Act
-        var sql = withClause.ToSql();
+        var sql = withClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Carbunqlex.Clauses;
+using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
@@ -27,12 +28,14 @@ public class ColumnExpression : IValueExpression
 
     public string DefaultName => ColumnName;
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public bool MightHaveCommonTableClauses => false;
+
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        yield return new Lexeme(LexType.Identifier, ToSql());
+        yield return new Lexeme(LexType.Identifier, ToSqlWithoutCte(false));
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         if (string.IsNullOrWhiteSpace(ColumnName))
         {
@@ -49,5 +52,11 @@ public class ColumnExpression : IValueExpression
         sb.Append(".");
         sb.Append(ColumnName);
         return sb.ToString();
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        // ColumnExpression does not directly use CTEs, so return an empty list
+        return Enumerable.Empty<CommonTableClause>();
     }
 }

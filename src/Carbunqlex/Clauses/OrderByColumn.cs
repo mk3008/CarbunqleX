@@ -14,10 +14,10 @@ public class OrderByColumn : ISqlComponent
         Ascending = ascending;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
-        sb.Append(Column.ToSql());
+        sb.Append(Column.ToSqlWithoutCte());
         if (!Ascending)
         {
             sb.Append(" desc");
@@ -25,14 +25,23 @@ public class OrderByColumn : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme>();
-        lexemes.AddRange(Column.GetLexemes());
+        lexemes.AddRange(Column.GenerateLexemesWithoutCte());
         if (!Ascending)
         {
             lexemes.Add(new Lexeme(LexType.Keyword, "desc"));
         }
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        if (Column.MightHaveCommonTableClauses)
+        {
+            return Column.GetCommonTableClauses();
+        }
+        return Enumerable.Empty<CommonTableClause>();
     }
 }

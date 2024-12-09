@@ -19,12 +19,12 @@ public class SelectClause : ISqlComponent
         Expressions = selectExpressions.ToList();
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         sb.Append("select ");
 
-        var distinctSql = DistinctClause.ToSql();
+        var distinctSql = DistinctClause.ToSqlWithoutCte();
         if (!string.IsNullOrEmpty(distinctSql))
         {
             sb.Append(distinctSql).Append(" ");
@@ -38,7 +38,7 @@ public class SelectClause : ISqlComponent
         {
             foreach (var column in Expressions)
             {
-                sb.Append(column.ToSql()).Append(", ");
+                sb.Append(column.ToSqlWithoutCte()).Append(", ");
             }
 
             // Remove the trailing comma and space if there are any expressions
@@ -51,7 +51,7 @@ public class SelectClause : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         // Estimate the initial capacity for the lexemes list.
         // Each SelectExpression can return up to 3 lexemes (column name, AS, alias).
@@ -62,7 +62,7 @@ public class SelectClause : ISqlComponent
             new Lexeme(LexType.Keyword, "select")
         };
 
-        lexemes.AddRange(DistinctClause.GetLexemes());
+        lexemes.AddRange(DistinctClause.GenerateLexemesWithoutCte());
 
         if (Expressions.Count == 0)
         {
@@ -72,10 +72,15 @@ public class SelectClause : ISqlComponent
         {
             foreach (var column in Expressions)
             {
-                lexemes.AddRange(column.GetLexemes());
+                lexemes.AddRange(column.GenerateLexemesWithoutCte());
             }
         }
 
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return Expressions.SelectMany(item => item.Expression.GetCommonTableClauses());
     }
 }

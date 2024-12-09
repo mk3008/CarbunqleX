@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Carbunqlex.Clauses;
+using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
 
@@ -27,7 +28,7 @@ public class TableSource : IDatasource
         Alias = tableName;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         if (Namespaces.Any())
@@ -44,7 +45,7 @@ public class TableSource : IDatasource
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme>();
 
@@ -66,5 +67,11 @@ public class TableSource : IDatasource
         }
 
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        // TableSource does not directly use CTEs, so return an empty list
+        return Enumerable.Empty<CommonTableClause>();
     }
 }

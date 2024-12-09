@@ -12,22 +12,42 @@ public class DistinctOnClause : IDistinctClause
         DistinctOnColumns = distinctOnColumns.ToList();
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
-        return $"distinct on ({string.Join(", ", DistinctOnColumns.Select(c => c.ToSql()))})";
+        return $"distinct on ({string.Join(", ", DistinctOnColumns.Select(c => c.ToSqlWithoutCte()))})";
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         yield return new Lexeme(LexType.Keyword, "distinct");
         yield return new Lexeme(LexType.Keyword, "on");
         yield return new Lexeme(LexType.OpenParen, "(");
 
-        foreach (var lexeme in DistinctOnColumns.SelectMany(c => c.GetLexemes()))
+        foreach (var lexeme in DistinctOnColumns.SelectMany(c => c.GenerateLexemesWithoutCte()))
         {
             yield return lexeme;
         }
 
         yield return new Lexeme(LexType.CloseParen, ")");
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        if (!DistinctOnColumns.Any(c => c.MightHaveCommonTableClauses))
+        {
+            return Enumerable.Empty<CommonTableClause>();
+        }
+
+        var commonTableClauses = new List<CommonTableClause>();
+
+        foreach (var column in DistinctOnColumns)
+        {
+            if (column.MightHaveCommonTableClauses)
+            {
+                commonTableClauses.AddRange(column.GetCommonTableClauses());
+            }
+        }
+
+        return commonTableClauses;
     }
 }

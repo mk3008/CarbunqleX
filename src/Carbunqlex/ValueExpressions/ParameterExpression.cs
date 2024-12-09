@@ -1,9 +1,12 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Clauses;
+
+namespace Carbunqlex.ValueExpressions;
 
 public class ParameterExpression : IValueExpression
 {
     public string Name { get; }
     public object? Value { get; }
+    public bool MightHaveCommonTableClauses => false;
 
     public ParameterExpression(string name, object? value = null)
     {
@@ -11,12 +14,12 @@ public class ParameterExpression : IValueExpression
         Value = value;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         return Name;
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         return new List<Lexeme>
         {
@@ -24,5 +27,11 @@ public class ParameterExpression : IValueExpression
         };
     }
 
-    public string DefaultName => Name;
+    public string DefaultName => string.Empty;
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        // ParameterExpression does not directly use CTEs, so return an empty list
+        return Enumerable.Empty<CommonTableClause>();
+    }
 }

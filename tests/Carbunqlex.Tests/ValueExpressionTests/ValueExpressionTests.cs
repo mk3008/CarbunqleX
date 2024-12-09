@@ -12,7 +12,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void ConstantValue_ToSql_ReturnsValueAsString()
     {
         var constant = new ConstantExpression(42);
-        var sql = constant.ToSql();
+        var sql = constant.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("42", sql);
     }
@@ -22,7 +22,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     {
         var operand = new ConstantExpression(42);
         var unary = new UnaryExpression("-", operand);
-        var sql = unary.ToSql();
+        var sql = unary.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("- 42", sql);
     }
@@ -32,7 +32,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     {
         var operand = new ConstantExpression(true);
         var unary = new UnaryExpression("not", operand);
-        var sql = unary.ToSql();
+        var sql = unary.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("not True", sql);
     }
@@ -43,7 +43,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var left = new ConstantExpression(42);
         var right = new ConstantExpression(24);
         var binary = new BinaryExpression("+", left, right);
-        var sql = binary.ToSql();
+        var sql = binary.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("42 + 24", sql);
     }
@@ -53,7 +53,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     {
         var argument = new ConstantExpression(42);
         var function = new FunctionExpression("ABS", new[] { argument });
-        var sql = function.ToSql();
+        var sql = function.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("ABS(42)", sql);
     }
@@ -62,7 +62,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void ColumnExpression_ToSql_ReturnsCorrectSql()
     {
         var column = new ColumnExpression("TableName", "ColumnName");
-        var sql = column.ToSql();
+        var sql = column.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("TableName.ColumnName", sql);
     }
@@ -74,7 +74,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var start = new ConstantExpression(5);
         var end = new ConstantExpression(15);
         var between = new BetweenExpression(left, false, start, end);
-        var sql = between.ToSql();
+        var sql = between.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("10 between 5 and 15", sql);
     }
@@ -86,7 +86,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var start = new ConstantExpression(5);
         var end = new ConstantExpression(15);
         var between = new BetweenExpression(left, true, start, end);
-        var sql = between.ToSql();
+        var sql = between.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("10 not between 5 and 15", sql);
     }
@@ -98,7 +98,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var right1 = new ConstantExpression(1);
         var right2 = new ConstantExpression(2);
         var inExpression = new InExpression(left, false, right1, right2);
-        var sql = inExpression.ToSql();
+        var sql = inExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("TableName.ColumnName in (1, 2)", sql);
     }
@@ -110,7 +110,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var right1 = new ConstantExpression(1);
         var right2 = new ConstantExpression(2);
         var inExpression = new InExpression(left, true, right1, right2);
-        var sql = inExpression.ToSql();
+        var sql = inExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("TableName.ColumnName not in (1, 2)", sql);
     }
@@ -124,7 +124,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var parenthesizedAddition = new ParenthesizedExpression(addition);
         var three = new ConstantExpression(3);
         var multiplication = new BinaryExpression("*", parenthesizedAddition, three);
-        var sql = multiplication.ToSql();
+        var sql = multiplication.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("(1 + 2) * 3", sql);
     }
@@ -135,7 +135,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var left = new ColumnExpression("TableName", "ColumnName");
         var right = ConstantExpression.CreateEscapeString("%value%");
         var likeExpression = new LikeExpression(left, false, right);
-        var sql = likeExpression.ToSql();
+        var sql = likeExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("TableName.ColumnName like '%value%'", sql);
     }
@@ -146,7 +146,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var left = new ColumnExpression("TableName", "ColumnName");
         var right = ConstantExpression.CreateEscapeString("%value%");
         var likeExpression = new LikeExpression(left, true, right);
-        var sql = likeExpression.ToSql();
+        var sql = likeExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("TableName.ColumnName not like '%value%'", sql);
     }
@@ -157,7 +157,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var input = "O'Reilly";
         var expected = "'O''Reilly'";
         var constantExpression = ConstantExpression.CreateEscapeString(input);
-        var actual = constantExpression.ToSql();
+        var actual = constantExpression.ToSqlWithoutCte();
         output.WriteLine(actual);
         Assert.Equal(expected, actual);
     }
@@ -180,7 +180,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
             elseExpr
         );
 
-        var sql = caseExpression.ToSql();
+        var sql = caseExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("case when 1 then 'One' when 2 then 'Two' else 'Other' end", sql);
     }
@@ -205,7 +205,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
             elseExpr
         );
 
-        var sql = caseExpression.ToSql();
+        var sql = caseExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("case TableName.ColumnName when 1 then 'One' when 2 then 'Two' else 'Other' end", sql);
     }
@@ -235,7 +235,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         };
 
         // Act
-        var sql = functionExpression.ToSql();
+        var sql = functionExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -254,7 +254,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         };
 
         // Act
-        var sql = functionExpression.ToSql();
+        var sql = functionExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

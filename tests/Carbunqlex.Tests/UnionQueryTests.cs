@@ -30,7 +30,7 @@ public class UnionQueryTests(ITestOutputHelper output)
         var unionQuery = new UnionQuery(selectQuery1, selectQuery2, UnionType.Union);
 
         // Act
-        var sql = unionQuery.ToSql();
+        var sql = unionQuery.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -54,7 +54,7 @@ public class UnionQueryTests(ITestOutputHelper output)
         var unionQuery = new UnionQuery(selectQuery1, selectQuery2, UnionType.UnionAll);
 
         // Act
-        var sql = unionQuery.ToSql();
+        var sql = unionQuery.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -78,7 +78,7 @@ public class UnionQueryTests(ITestOutputHelper output)
         var unionQuery = new UnionQuery(selectQuery1, selectQuery2, UnionType.Intersect);
 
         // Act
-        var sql = unionQuery.ToSql();
+        var sql = unionQuery.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -102,7 +102,7 @@ public class UnionQueryTests(ITestOutputHelper output)
         var unionQuery = new UnionQuery(selectQuery1, selectQuery2, UnionType.Except);
 
         // Act
-        var sql = unionQuery.ToSql();
+        var sql = unionQuery.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -132,7 +132,7 @@ public class UnionQueryTests(ITestOutputHelper output)
         var unionQuery2 = new UnionQuery(unionQuery1, selectQuery3, UnionType.UnionAll);
 
         // Act
-        var sql = unionQuery2.ToSql();
+        var sql = unionQuery2.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

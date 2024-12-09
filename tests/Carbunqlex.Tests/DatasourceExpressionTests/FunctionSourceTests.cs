@@ -19,7 +19,7 @@ public class FunctionSourceTests(ITestOutputHelper output)
         var functionSource = new FunctionSource(functionName, arguments, alias, columnAliases);
 
         // Act
-        var sql = functionSource.ToSql();
+        var sql = functionSource.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

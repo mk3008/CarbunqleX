@@ -20,13 +20,18 @@ public class WindowFrameBoundary : ISqlComponent
     public static WindowFrameBoundary Preceding(int rows) => new WindowFrameBoundary(WindowFrameBoundaryExpression.Preceding(new ConstantExpression(rows)));
     public static WindowFrameBoundary Following(int rows) => new WindowFrameBoundary(WindowFrameBoundaryExpression.Following(new ConstantExpression(rows)));
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
-        return Boundary.ToSql();
+        return Boundary.ToSqlWithoutCte();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        return Boundary.GetLexemes();
+        return Boundary.GenerateLexemesWithoutCte();
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return Boundary.GetCommonTableClauses();
     }
 }

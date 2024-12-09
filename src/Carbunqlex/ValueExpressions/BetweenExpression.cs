@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Carbunqlex.Clauses;
+using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
@@ -19,32 +20,59 @@ public class BetweenExpression : IValueExpression
 
     public string DefaultName => Left.DefaultName;
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public bool MightHaveCommonTableClauses => Left.MightHaveCommonTableClauses || Start.MightHaveCommonTableClauses || End.MightHaveCommonTableClauses;
+
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        foreach (var lexeme in Left.GetLexemes())
+        foreach (var lexeme in Left.GenerateLexemesWithoutCte())
         {
             yield return lexeme;
         }
         yield return new Lexeme(LexType.Operator, IsNotBetween ? "not between" : "between");
-        foreach (var lexeme in Start.GetLexemes())
+        foreach (var lexeme in Start.GenerateLexemesWithoutCte())
         {
             yield return lexeme;
         }
         yield return new Lexeme(LexType.Operator, "and");
-        foreach (var lexeme in End.GetLexemes())
+        foreach (var lexeme in End.GenerateLexemesWithoutCte())
         {
             yield return lexeme;
         }
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
-        sb.Append(Left.ToSql());
+        sb.Append(Left.ToSqlWithoutCte());
         sb.Append(IsNotBetween ? " not between " : " between ");
-        sb.Append(Start.ToSql());
+        sb.Append(Start.ToSqlWithoutCte());
         sb.Append(" and ");
-        sb.Append(End.ToSql());
+        sb.Append(End.ToSqlWithoutCte());
         return sb.ToString();
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        if (!MightHaveCommonTableClauses)
+        {
+            return Enumerable.Empty<CommonTableClause>();
+        }
+
+        var commonTableClauses = new List<CommonTableClause>();
+
+        if (Left.MightHaveCommonTableClauses)
+        {
+            commonTableClauses.AddRange(Left.GetCommonTableClauses());
+        }
+        if (Start.MightHaveCommonTableClauses)
+        {
+            commonTableClauses.AddRange(Start.GetCommonTableClauses());
+        }
+        if (End.MightHaveCommonTableClauses)
+        {
+            commonTableClauses.AddRange(End.GetCommonTableClauses());
+        }
+
+        return commonTableClauses;
     }
 }

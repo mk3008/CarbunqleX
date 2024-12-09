@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Clauses;
+
+namespace Carbunqlex.ValueExpressions;
 
 public class ConstantExpression : IValueExpression
 {
@@ -16,13 +18,21 @@ public class ConstantExpression : IValueExpression
 
     public string DefaultName => string.Empty;
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public bool MightHaveCommonTableClauses => false;
+
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         yield return new Lexeme(LexType.Constant, Value.ToString()!);
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         return Value.ToString()!;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        // ConstantExpression does not directly use CTEs, so return an empty list
+        return Enumerable.Empty<CommonTableClause>();
     }
 }

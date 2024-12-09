@@ -12,21 +12,30 @@ public class WhereClause : IWhereClause
         Condition = condition;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         sb.Append("where ");
-        sb.Append(Condition.ToSql());
+        sb.Append(Condition.ToSqlWithoutCte());
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme> {
             new Lexeme(LexType.StartClause, "where", "where")
         };
-        lexemes.AddRange(Condition.GetLexemes());
+        lexemes.AddRange(Condition.GenerateLexemesWithoutCte());
         lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "where"));
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        if (!Condition.MightHaveCommonTableClauses)
+        {
+            return Enumerable.Empty<CommonTableClause>();
+        }
+        return Condition.GetCommonTableClauses();
     }
 }

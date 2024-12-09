@@ -38,18 +38,23 @@ public class ForClause : IForClause
         LockType = lockType;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         return $"for {LockType.ToSqlString()}";
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         return new List<Lexeme>
             {
                 new Lexeme(LexType.StartClause, "for", "for"),
-                new Lexeme(LexType.Keyword, LockType.ToSqlString(), "for"),
+                new Lexeme(LexType.Keyword, LockType.ToSqlString()),
                 new Lexeme(LexType.EndClause, string.Empty, "for")
             };
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return Enumerable.Empty<CommonTableClause>();
     }
 }

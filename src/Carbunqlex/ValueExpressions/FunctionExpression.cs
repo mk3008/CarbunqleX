@@ -15,30 +15,32 @@ public class FunctionExpression : IValueExpression
         Arguments = arguments.ToList();
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         sb.Append(FunctionName);
         sb.Append("(");
-        sb.Append(string.Join(", ", Arguments.Select(arg => arg.ToSql())));
+        sb.Append(string.Join(", ", Arguments.Select(arg => arg.ToSqlWithoutCte())));
         sb.Append(")");
         if (OverClause != null)
         {
             sb.Append(" ");
-            sb.Append(OverClause.ToSql());
+            sb.Append(OverClause.ToSqlWithoutCte(false));
         }
         return sb.ToString();
     }
 
     public string DefaultName => string.Empty;
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public bool MightHaveCommonTableClauses => Arguments.Any(arg => arg.MightHaveCommonTableClauses) || (OverClause?.MightHaveCommonTableClauses ?? false);
+
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         yield return new Lexeme(LexType.Keyword, FunctionName);
         yield return new Lexeme(LexType.OpenParen, "(");
         for (int i = 0; i < Arguments.Count; i++)
         {
-            foreach (var lexeme in Arguments[i].GetLexemes())
+            foreach (var lexeme in Arguments[i].GenerateLexemesWithoutCte())
             {
                 yield return lexeme;
             }
@@ -50,10 +52,35 @@ public class FunctionExpression : IValueExpression
         yield return new Lexeme(LexType.CloseParen, ")");
         if (OverClause != null)
         {
-            foreach (var lexeme in OverClause.GetLexemes())
+            foreach (var lexeme in OverClause.GenerateLexemesWithoutCte())
             {
                 yield return lexeme;
             }
         }
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        if (!MightHaveCommonTableClauses)
+        {
+            return Enumerable.Empty<CommonTableClause>();
+        }
+
+        var commonTableClauses = new List<CommonTableClause>();
+
+        foreach (var argument in Arguments)
+        {
+            if (argument.MightHaveCommonTableClauses)
+            {
+                commonTableClauses.AddRange(argument.GetCommonTableClauses());
+            }
+        }
+
+        if (OverClause?.MightHaveCommonTableClauses ?? false)
+        {
+            commonTableClauses.AddRange(OverClause.GetCommonTableClauses());
+        }
+
+        return commonTableClauses;
     }
 }

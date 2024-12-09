@@ -19,9 +19,9 @@ public class SelectExpression : ISqlComponent
         Alias = alias;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
-        var sql = Expression.ToSql();
+        var sql = Expression.ToSqlWithoutCte();
         if (string.IsNullOrEmpty(Alias) || sql == Alias)
         {
             return sql;
@@ -29,14 +29,23 @@ public class SelectExpression : ISqlComponent
         return $"{sql} as {Alias}";
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        var lexemes = new List<Lexeme>(Expression.GetLexemes());
+        var lexemes = new List<Lexeme>(Expression.GenerateLexemesWithoutCte());
         if (!string.IsNullOrEmpty(Alias) && Alias != Expression.DefaultName)
         {
             lexemes.Add(new Lexeme(LexType.Keyword, "as"));
             lexemes.Add(new Lexeme(LexType.Identifier, Alias));
         }
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        if (Expression.MightHaveCommonTableClauses)
+        {
+            return Expression.GetCommonTableClauses();
+        }
+        return Enumerable.Empty<CommonTableClause>();
     }
 }

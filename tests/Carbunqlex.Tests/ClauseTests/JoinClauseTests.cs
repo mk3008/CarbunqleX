@@ -41,7 +41,7 @@ public class JoinClauseTests(ITestOutputHelper output)
         var joinClause = GetInnerJoinClause();
 
         // Act
-        var sql = joinClause.ToSql();
+        var sql = joinClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -55,7 +55,7 @@ public class JoinClauseTests(ITestOutputHelper output)
         var joinClause = GetCrossJoinClause();
 
         // Act
-        var sql = joinClause.ToSql();
+        var sql = joinClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

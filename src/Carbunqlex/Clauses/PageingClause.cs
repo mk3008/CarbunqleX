@@ -14,30 +14,50 @@ public class PagingClause : IPagingClause
         Fetch = fetch;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         sb.Append("offset ")
-          .Append(Offset.ToSql())
+          .Append(Offset.ToSqlWithoutCte())
           .Append(" rows fetch next ")
-          .Append(Fetch.ToSql())
+          .Append(Fetch.ToSqlWithoutCte())
           .Append(" rows only");
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        var lexemes = new List<Lexeme>
-            {
-                new Lexeme(LexType.Keyword, "offset")
-            };
+        // Initial capacity is set to 6 to accommodate the following lexemes:
+        // 1 for "offset", 1 for "rows", 1 for "fetch next", 1 for "rows only",
+        // and 2 lexemes for the Offset and Fetch expressions.
+        // e.g. "offset 5 rows fetch next 10 rows only"
+        var lexemes = new List<Lexeme>(6)
+        {
+            new Lexeme(LexType.Keyword, "offset")
+        };
 
-        lexemes.AddRange(Offset.GetLexemes());
+        lexemes.AddRange(Offset.GenerateLexemesWithoutCte());
         lexemes.Add(new Lexeme(LexType.Keyword, "rows"));
         lexemes.Add(new Lexeme(LexType.Keyword, "fetch next"));
-        lexemes.AddRange(Fetch.GetLexemes());
+        lexemes.AddRange(Fetch.GenerateLexemesWithoutCte());
         lexemes.Add(new Lexeme(LexType.Keyword, "rows only"));
 
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        var commonTableClauses = new List<CommonTableClause>();
+
+        if (Offset.MightHaveCommonTableClauses)
+        {
+            commonTableClauses.AddRange(Offset.GetCommonTableClauses());
+        }
+        if (Fetch.MightHaveCommonTableClauses)
+        {
+            commonTableClauses.AddRange(Fetch.GetCommonTableClauses());
+        }
+
+        return commonTableClauses;
     }
 }

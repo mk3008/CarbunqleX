@@ -26,7 +26,7 @@ public class WindowFrameBoundaryExpression : ISqlComponent
     public static WindowFrameBoundaryExpression Preceding(IValueExpression rows) => new WindowFrameBoundaryExpression(rows, "preceding");
     public static WindowFrameBoundaryExpression Following(IValueExpression rows) => new WindowFrameBoundaryExpression(rows, "following");
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         if (Value == null)
         {
@@ -34,20 +34,32 @@ public class WindowFrameBoundaryExpression : ISqlComponent
         }
 
         var sb = new StringBuilder();
-        sb.Append(Value.ToSql())
+        sb.Append(Value.ToSqlWithoutCte())
           .Append(' ')
           .Append(BoundaryKeyword);
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        var lexemes = new List<Lexeme>(Value != null ? Value.GetLexemes().Count() + 1 : 1);
+        var lexemes = new List<Lexeme>(Value != null ? Value.GenerateLexemesWithoutCte().Count() + 1 : 1);
         if (Value != null)
         {
-            lexemes.AddRange(Value.GetLexemes());
+            lexemes.AddRange(Value.GenerateLexemesWithoutCte());
         }
         lexemes.Add(new Lexeme(LexType.Keyword, BoundaryKeyword));
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        if (Value == null || !Value.MightHaveCommonTableClauses)
+        {
+            return Enumerable.Empty<CommonTableClause>();
+        }
+        else
+        {
+            return Value.GetCommonTableClauses();
+        }
     }
 }

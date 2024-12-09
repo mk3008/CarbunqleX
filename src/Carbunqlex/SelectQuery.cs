@@ -31,58 +31,64 @@ public class SelectQuery : IQuery
     public string ToSql()
     {
         var sb = new StringBuilder();
-
         var withSql = WithClause.ToSql();
         if (!string.IsNullOrEmpty(withSql))
         {
-            sb.Append(withSql)
-                .Append(" ");
+            sb.Append(withSql).Append(" ");
         }
-        sb.Append(SelectClause.ToSql());
+        sb.Append(ToSqlWithoutCte());
+        return sb.ToString();
+    }
 
-        var fromSql = FromClause.ToSql();
+    public string ToSqlWithoutCte()
+    {
+        var sb = new StringBuilder();
+
+        sb.Append(SelectClause.ToSqlWithoutCte());
+
+        var fromSql = FromClause.ToSqlWithoutCte();
         if (!string.IsNullOrEmpty(fromSql))
         {
             sb.Append(" ").Append(fromSql);
         }
 
-        var whereSql = WhereClause.ToSql();
+        var whereSql = WhereClause.ToSqlWithoutCte();
         if (!string.IsNullOrEmpty(whereSql))
         {
             sb.Append(" ").Append(whereSql);
         }
 
-        var groupBySql = GroupByClause.ToSql();
+        var groupBySql = GroupByClause.ToSqlWithoutCte();
         if (!string.IsNullOrEmpty(groupBySql))
         {
             sb.Append(" ").Append(groupBySql);
         }
 
-        var havingSql = HavingClause.ToSql();
+        var havingSql = HavingClause.ToSqlWithoutCte();
         if (!string.IsNullOrEmpty(havingSql))
         {
             sb.Append(" ").Append(havingSql);
         }
 
-        var orderBySql = OrderByClause.ToSql();
+        var orderBySql = OrderByClause.ToSqlWithoutCte();
         if (!string.IsNullOrEmpty(orderBySql))
         {
             sb.Append(" ").Append(orderBySql);
         }
 
-        var windowSql = WindowClause.ToSql();
+        var windowSql = WindowClause.ToSqlWithoutCte();
         if (!string.IsNullOrEmpty(windowSql))
         {
             sb.Append(" ").Append(windowSql);
         }
 
-        var forSql = ForClause.ToSql();
+        var forSql = ForClause.ToSqlWithoutCte();
         if (!string.IsNullOrEmpty(forSql))
         {
             sb.Append(" ").Append(forSql);
         }
 
-        var pagingSql = PagingClause.ToSql();
+        var pagingSql = PagingClause.ToSqlWithoutCte();
         if (!string.IsNullOrEmpty(pagingSql))
         {
             sb.Append(" ").Append(pagingSql);
@@ -91,21 +97,46 @@ public class SelectQuery : IQuery
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemes()
     {
         var lexemes = new List<Lexeme>();
 
-        lexemes.AddRange(WithClause.GetLexemes());
-        lexemes.AddRange(SelectClause.GetLexemes());
-        lexemes.AddRange(FromClause.GetLexemes());
-        lexemes.AddRange(WhereClause.GetLexemes());
-        lexemes.AddRange(GroupByClause.GetLexemes());
-        lexemes.AddRange(HavingClause.GetLexemes());
-        lexemes.AddRange(OrderByClause.GetLexemes());
-        lexemes.AddRange(WindowClause.GetLexemes());
-        lexemes.AddRange(ForClause.GetLexemes());
-        lexemes.AddRange(PagingClause.GetLexemes());
+        lexemes.AddRange(WithClause.GenerateLexemes());
+        lexemes.AddRange(GenerateLexemesWithoutCte());
 
         return lexemes;
+    }
+
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    {
+        var lexemes = new List<Lexeme>();
+
+        lexemes.AddRange(SelectClause.GenerateLexemesWithoutCte());
+        lexemes.AddRange(FromClause.GenerateLexemesWithoutCte());
+        lexemes.AddRange(WhereClause.GenerateLexemesWithoutCte());
+        lexemes.AddRange(GroupByClause.GenerateLexemesWithoutCte());
+        lexemes.AddRange(HavingClause.GenerateLexemesWithoutCte());
+        lexemes.AddRange(OrderByClause.GenerateLexemesWithoutCte());
+        lexemes.AddRange(WindowClause.GenerateLexemesWithoutCte());
+        lexemes.AddRange(ForClause.GenerateLexemesWithoutCte());
+        lexemes.AddRange(PagingClause.GenerateLexemesWithoutCte());
+
+        return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        var commonTableClauses = new List<CommonTableClause>();
+        commonTableClauses.AddRange(WithClause.GetCommonTableClauses());
+        commonTableClauses.AddRange(SelectClause.GetCommonTableClauses());
+        commonTableClauses.AddRange(FromClause.GetCommonTableClauses());
+        commonTableClauses.AddRange(WhereClause.GetCommonTableClauses());
+        commonTableClauses.AddRange(GroupByClause.GetCommonTableClauses());
+        commonTableClauses.AddRange(HavingClause.GetCommonTableClauses());
+        commonTableClauses.AddRange(OrderByClause.GetCommonTableClauses());
+        commonTableClauses.AddRange(WindowClause.GetCommonTableClauses());
+        commonTableClauses.AddRange(ForClause.GetCommonTableClauses());
+        commonTableClauses.AddRange(PagingClause.GetCommonTableClauses());
+        return commonTableClauses;
     }
 }

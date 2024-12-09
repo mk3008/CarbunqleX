@@ -15,47 +15,65 @@ public class WindowFunction : ISqlComponent
         WindowFrame = windowFrame;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
 
         if (PartitionBy != null)
         {
-            sb.Append(PartitionBy.ToSql());
+            sb.Append(PartitionBy.ToSqlWithoutCte());
         }
         if (OrderBy != null)
         {
             if (sb.Length > 0) sb.Append(" ");
-            sb.Append(OrderBy.ToSql());
+            sb.Append(OrderBy.ToSqlWithoutCte());
         }
         if (WindowFrame != null)
         {
             if (sb.Length > 0) sb.Append(" ");
-            sb.Append(WindowFrame.ToSql());
+            sb.Append(WindowFrame.ToSqlWithoutCte());
         }
 
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme>();
 
         if (PartitionBy != null)
         {
-            lexemes.AddRange(PartitionBy.GetLexemes());
+            lexemes.AddRange(PartitionBy.GenerateLexemesWithoutCte());
         }
 
         if (OrderBy != null)
         {
-            lexemes.AddRange(OrderBy.GetLexemes());
+            lexemes.AddRange(OrderBy.GenerateLexemesWithoutCte());
         }
 
         if (WindowFrame != null)
         {
-            lexemes.AddRange(WindowFrame.GetLexemes());
+            lexemes.AddRange(WindowFrame.GenerateLexemesWithoutCte());
         }
 
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        var commonTableClauses = new List<CommonTableClause>();
+        if (PartitionBy != null)
+        {
+            commonTableClauses.AddRange(PartitionBy.GetCommonTableClauses());
+        }
+        if (OrderBy != null)
+        {
+            commonTableClauses.AddRange(OrderBy.GetCommonTableClauses());
+        }
+        if (WindowFrame != null)
+        {
+            commonTableClauses.AddRange(WindowFrame.GetCommonTableClauses());
+        }
+        return commonTableClauses;
     }
 }

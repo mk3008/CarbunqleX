@@ -16,7 +16,7 @@ public class WindowFrameTests(ITestOutputHelper output)
         var windowFrame = new WindowFrame(startExpression, endExpression, FrameType.Rows);
 
         // Act
-        var result = windowFrame.ToSql();
+        var result = windowFrame.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert
@@ -32,7 +32,7 @@ public class WindowFrameTests(ITestOutputHelper output)
         var windowFrame = new WindowFrame(startExpression, endExpression, FrameType.Range);
 
         // Act
-        var result = windowFrame.ToSql();
+        var result = windowFrame.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert

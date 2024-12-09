@@ -12,7 +12,7 @@ public class PartitionByClause : ISqlComponent
         PartitionByColumns = partitionByColumns.ToList();
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         if (PartitionByColumns.Count == 0)
         {
@@ -21,11 +21,11 @@ public class PartitionByClause : ISqlComponent
 
         var sb = new StringBuilder();
         sb.Append("partition by ");
-        sb.Append(string.Join(", ", PartitionByColumns.Select(c => c.ToSql())));
+        sb.Append(string.Join(", ", PartitionByColumns.Select(c => c.ToSqlWithoutCte())));
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         if (PartitionByColumns.Count == 0)
         {
@@ -45,7 +45,7 @@ public class PartitionByClause : ISqlComponent
 
         foreach (var column in PartitionByColumns)
         {
-            lexemes.AddRange(column.GetLexemes());
+            lexemes.AddRange(column.GenerateLexemesWithoutCte());
             lexemes.Add(new Lexeme(LexType.Comma, ",", "partition by"));
         }
 
@@ -57,5 +57,12 @@ public class PartitionByClause : ISqlComponent
 
         lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "partition by"));
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return PartitionByColumns
+            .Where(c => c.MightHaveCommonTableClauses)
+            .SelectMany(c => c.GetCommonTableClauses());
     }
 }

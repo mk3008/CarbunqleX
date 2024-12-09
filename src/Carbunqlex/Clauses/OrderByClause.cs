@@ -11,7 +11,7 @@ public class OrderByClause : ISqlComponent
         OrderByColumns = orderByColumns.ToList();
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         if (OrderByColumns.Count == 0)
         {
@@ -20,11 +20,11 @@ public class OrderByClause : ISqlComponent
 
         var sb = new StringBuilder();
         sb.Append("order by ");
-        sb.Append(string.Join(", ", OrderByColumns.Select(c => c.ToSql())));
+        sb.Append(string.Join(", ", OrderByColumns.Select(c => c.ToSqlWithoutCte())));
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         if (OrderByColumns.Count == 0)
         {
@@ -44,7 +44,7 @@ public class OrderByClause : ISqlComponent
 
         foreach (var orderByColumn in OrderByColumns)
         {
-            lexemes.AddRange(orderByColumn.GetLexemes());
+            lexemes.AddRange(orderByColumn.GenerateLexemesWithoutCte());
             lexemes.Add(new Lexeme(LexType.Comma, ",", "order by"));
         }
 
@@ -56,5 +56,11 @@ public class OrderByClause : ISqlComponent
 
         lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "order by"));
         return lexemes;
+    }
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return OrderByColumns
+            .Where(orderByColumn => orderByColumn.Column.MightHaveCommonTableClauses)
+            .SelectMany(orderByColumn => orderByColumn.Column.GetCommonTableClauses());
     }
 }

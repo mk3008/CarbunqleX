@@ -39,7 +39,7 @@ public class ValuesQuerySourceTests(ITestOutputHelper output)
         var valuesQuerySource = new ValuesQuerySource(query, alias, columnAliases);
 
         // Act
-        var sql = valuesQuerySource.ToSql();
+        var sql = valuesQuerySource.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

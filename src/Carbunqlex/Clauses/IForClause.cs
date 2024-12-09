@@ -3,6 +3,3 @@
 public interface IForClause : ISqlComponent
 {
 }
-
-
-

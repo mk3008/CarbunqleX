@@ -76,7 +76,7 @@ public class SelectQueryTests(ITestOutputHelper output)
         };
 
         // Act
-        var sql = selectQuery.ToSql();
+        var sql = selectQuery.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -94,7 +94,7 @@ public class SelectQueryTests(ITestOutputHelper output)
         var selectQuery = new SelectQuery(selectClause);
 
         // Act
-        var sql = selectQuery.ToSql();
+        var sql = selectQuery.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -117,7 +117,7 @@ public class SelectQueryTests(ITestOutputHelper output)
         selectQuery.WithClause.CommonTableClauses.Add(commonTableClause);
 
         // Act
-        var sql = selectQuery.ToSql();
+        var sql = selectQuery.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

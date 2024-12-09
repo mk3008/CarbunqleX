@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Carbunqlex.Clauses;
+using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
@@ -17,25 +18,48 @@ public class LikeExpression : IValueExpression
 
     public string DefaultName => Left.DefaultName;
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public bool MightHaveCommonTableClauses => Left.MightHaveCommonTableClauses || Right.MightHaveCommonTableClauses;
+
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        foreach (var lexeme in Left.GetLexemes())
+        foreach (var lexeme in Left.GenerateLexemesWithoutCte())
         {
             yield return lexeme;
         }
         yield return new Lexeme(LexType.Operator, IsNotLike ? "not like" : "like");
-        foreach (var lexeme in Right.GetLexemes())
+        foreach (var lexeme in Right.GenerateLexemesWithoutCte())
         {
             yield return lexeme;
         }
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
-        sb.Append(Left.ToSql());
+        sb.Append(Left.ToSqlWithoutCte());
         sb.Append(IsNotLike ? " not like " : " like ");
-        sb.Append(Right.ToSql());
+        sb.Append(Right.ToSqlWithoutCte());
         return sb.ToString();
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        if (!MightHaveCommonTableClauses)
+        {
+            return Enumerable.Empty<CommonTableClause>();
+        }
+
+        var commonTableClauses = new List<CommonTableClause>();
+
+        if (Left.MightHaveCommonTableClauses)
+        {
+            commonTableClauses.AddRange(Left.GetCommonTableClauses());
+        }
+        if (Right.MightHaveCommonTableClauses)
+        {
+            commonTableClauses.AddRange(Right.GetCommonTableClauses());
+        }
+
+        return commonTableClauses;
     }
 }

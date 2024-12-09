@@ -11,19 +11,19 @@ public class OverClause : ISqlComponent
         WindowFunction = windowFunction;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         sb.Append("over (");
         if (WindowFunction != null)
         {
-            sb.Append(WindowFunction.ToSql());
+            sb.Append(WindowFunction.ToSqlWithoutCte());
         }
         sb.Append(")");
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme>
         {
@@ -33,11 +33,20 @@ public class OverClause : ISqlComponent
 
         if (WindowFunction != null)
         {
-            lexemes.AddRange(WindowFunction.GetLexemes());
+            lexemes.AddRange(WindowFunction.GenerateLexemesWithoutCte());
         }
 
         lexemes.Add(new Lexeme(LexType.CloseParen, ")", "over"));
         lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "over"));
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        if (WindowFunction == null)
+        {
+            return Enumerable.Empty<CommonTableClause>();
+        }
+        return WindowFunction.GetCommonTableClauses();
     }
 }

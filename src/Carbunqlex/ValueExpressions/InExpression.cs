@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Carbunqlex.Clauses;
+using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
@@ -17,9 +18,11 @@ public class InExpression : IValueExpression
 
     public string DefaultName => Left.DefaultName;
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public bool MightHaveCommonTableClauses => Left.MightHaveCommonTableClauses || Right.Any(r => r.MightHaveCommonTableClauses);
+
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        foreach (var lexeme in Left.GetLexemes())
+        foreach (var lexeme in Left.GenerateLexemesWithoutCte())
         {
             yield return lexeme;
         }
@@ -27,7 +30,7 @@ public class InExpression : IValueExpression
         yield return new Lexeme(LexType.OpenParen, "(");
         for (int i = 0; i < Right.Count; i++)
         {
-            foreach (var lexeme in Right[i].GetLexemes())
+            foreach (var lexeme in Right[i].GenerateLexemesWithoutCte())
             {
                 yield return lexeme;
             }
@@ -39,13 +42,37 @@ public class InExpression : IValueExpression
         yield return new Lexeme(LexType.CloseParen, ")");
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
-        sb.Append(Left.ToSql());
+        sb.Append(Left.ToSqlWithoutCte());
         sb.Append(IsNotIn ? " not in (" : " in (");
-        sb.Append(string.Join(", ", Right.Select(arg => arg.ToSql())));
+        sb.Append(string.Join(", ", Right.Select(arg => arg.ToSqlWithoutCte())));
         sb.Append(")");
         return sb.ToString();
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        if (!MightHaveCommonTableClauses)
+        {
+            return Enumerable.Empty<CommonTableClause>();
+        }
+
+        var commonTableClauses = new List<CommonTableClause>();
+
+        if (Left.MightHaveCommonTableClauses)
+        {
+            commonTableClauses.AddRange(Left.GetCommonTableClauses());
+        }
+        foreach (var right in Right)
+        {
+            if (right.MightHaveCommonTableClauses)
+            {
+                commonTableClauses.AddRange(right.GetCommonTableClauses());
+            }
+        }
+
+        return commonTableClauses;
     }
 }

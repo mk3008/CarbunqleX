@@ -1,9 +1,10 @@
-﻿using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Clauses;
+using Carbunqlex.ValueExpressions;
 using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
 
-public class FunctionSource : IDatasource, ISqlComponent
+public class FunctionSource : IDatasource
 {
     public string FunctionName { get; set; }
     public List<IValueExpression> Arguments { get; set; }
@@ -34,7 +35,7 @@ public class FunctionSource : IDatasource, ISqlComponent
         ColumnAliases = new ColumnAliases(Enumerable.Empty<string>());
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         if (string.IsNullOrWhiteSpace(FunctionName))
         {
@@ -47,22 +48,37 @@ public class FunctionSource : IDatasource, ISqlComponent
         var sb = new StringBuilder();
         sb.Append(FunctionName);
         sb.Append("(");
-        sb.Append(string.Join(", ", Arguments.Select(arg => arg.ToSql())));
+        sb.Append(string.Join(", ", Arguments.Select(arg => arg.ToSqlWithoutCte())));
         sb.Append(") as ");
         sb.Append(Alias);
-        sb.Append(ColumnAliases.ToSql());
+        sb.Append(ColumnAliases.ToSqlWithoutCte());
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme>
         {
             new Lexeme(LexType.Keyword, FunctionName),
             new Lexeme(LexType.Identifier, Alias)
         };
-        lexemes.AddRange(Arguments.SelectMany(arg => arg.GetLexemes()));
-        lexemes.AddRange(ColumnAliases.GetLexemes());
+        lexemes.AddRange(Arguments.SelectMany(arg => arg.GenerateLexemesWithoutCte()));
+        lexemes.AddRange(ColumnAliases.GenerateLexemesWithoutCte());
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        var commonTableClauses = new List<CommonTableClause>();
+
+        foreach (var argument in Arguments)
+        {
+            if (argument.MightHaveCommonTableClauses)
+            {
+                commonTableClauses.AddRange(argument.GetCommonTableClauses());
+            }
+        }
+
+        return commonTableClauses;
     }
 }

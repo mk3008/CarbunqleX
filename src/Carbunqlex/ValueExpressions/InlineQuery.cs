@@ -1,31 +1,39 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Clauses;
+
+namespace Carbunqlex.ValueExpressions;
 
 public class InlineQuery : IValueExpression
 {
     public IQuery Query { get; }
     public string DefaultName => string.Empty;
+    public bool MightHaveCommonTableClauses => true;
 
     public InlineQuery(IQuery query)
     {
         Query = query;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
-        return $"({Query.ToSql()})";
+        return $"({Query.ToSqlWithoutCte()})";
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme>
         {
             new Lexeme(LexType.OpenParen, "(", "inline_query")
         };
 
-        lexemes.AddRange(Query.GetLexemes());
+        lexemes.AddRange(Query.GenerateLexemesWithoutCte());
 
         lexemes.Add(new Lexeme(LexType.CloseParen, ")", "inline_query"));
 
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return Query.GetCommonTableClauses();
     }
 }

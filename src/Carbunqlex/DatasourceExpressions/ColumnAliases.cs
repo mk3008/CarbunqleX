@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Carbunqlex.Clauses;
+using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
 
@@ -11,7 +12,7 @@ public class ColumnAliases : ISqlComponent
         Aliases = aliases.ToList();
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         if (!Aliases.Any())
         {
@@ -25,7 +26,7 @@ public class ColumnAliases : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         if (!Aliases.Any())
         {
@@ -48,5 +49,11 @@ public class ColumnAliases : ISqlComponent
 
         lexemes.Add(new Lexeme(LexType.CloseParen, ")"));
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        // ColumnAliases does not directly use CTEs, so return an empty list
+        return Enumerable.Empty<CommonTableClause>();
     }
 }

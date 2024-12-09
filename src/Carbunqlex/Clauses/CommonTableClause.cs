@@ -45,14 +45,14 @@ public class CommonTableClause : ISqlComponent
         Materialization = materialization;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         sb.Append(Alias);
 
         if (ColumnAliases != null && ColumnAliases.Aliases.Any())
         {
-            sb.Append(ColumnAliases.ToSql());
+            sb.Append(ColumnAliases.ToSqlWithoutCte());
         }
 
         sb.Append(" as ");
@@ -64,12 +64,12 @@ public class CommonTableClause : ISqlComponent
         }
 
         sb.Append("(");
-        sb.Append(Query.ToSql());
+        sb.Append(Query.ToSqlWithoutCte());
         sb.Append(")");
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme>
         {
@@ -78,7 +78,7 @@ public class CommonTableClause : ISqlComponent
 
         if (ColumnAliases != null && ColumnAliases.Aliases.Any())
         {
-            lexemes.AddRange(ColumnAliases.GetLexemes());
+            lexemes.AddRange(ColumnAliases.GenerateLexemesWithoutCte());
         }
 
         lexemes.Add(Lexeme.AsKeyword);
@@ -91,10 +91,15 @@ public class CommonTableClause : ISqlComponent
 
         lexemes.Add(new Lexeme(LexType.OpenParen, "("));
 
-        lexemes.AddRange(Query.GetLexemes());
+        lexemes.AddRange(Query.GenerateLexemesWithoutCte());
 
         lexemes.Add(new Lexeme(LexType.CloseParen, ")"));
 
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return Query.GetCommonTableClauses();
     }
 }

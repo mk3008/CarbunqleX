@@ -21,26 +21,34 @@ public class WindowFrame : ISqlComponent
         FrameType = frameType;
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme>
         {
             new Lexeme(LexType.Keyword, FrameType == FrameType.Rows ? "rows between" : "range between"),
         };
-        lexemes.AddRange(Start.GetLexemes());
+        lexemes.AddRange(Start.GenerateLexemesWithoutCte());
         lexemes.Add(new Lexeme(LexType.Keyword, "and"));
-        lexemes.AddRange(End.GetLexemes());
+        lexemes.AddRange(End.GenerateLexemesWithoutCte());
         return lexemes;
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         sb.Append(FrameType == FrameType.Rows ? "rows" : "range");
         sb.Append(" between ");
-        sb.Append(Start.ToSql());
+        sb.Append(Start.ToSqlWithoutCte());
         sb.Append(" and ");
-        sb.Append(End.ToSql());
+        sb.Append(End.ToSqlWithoutCte());
         return sb.ToString();
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        var commonTableClauses = new List<CommonTableClause>();
+        commonTableClauses.AddRange(Start.GetCommonTableClauses());
+        commonTableClauses.AddRange(End.GetCommonTableClauses());
+        return commonTableClauses;
     }
 }

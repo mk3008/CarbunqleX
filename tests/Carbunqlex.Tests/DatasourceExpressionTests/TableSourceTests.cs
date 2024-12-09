@@ -17,7 +17,7 @@ public class TableSourceTests(ITestOutputHelper output)
         var tableSource = new TableSource(namespaces, tableName, alias);
 
         // Act
-        var sql = tableSource.ToSql();
+        var sql = tableSource.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -33,7 +33,7 @@ public class TableSourceTests(ITestOutputHelper output)
         var tableSource = new TableSource(namespaces, tableName, tableName);
 
         // Act
-        var sql = tableSource.ToSql();
+        var sql = tableSource.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -49,7 +49,7 @@ public class TableSourceTests(ITestOutputHelper output)
         var tableSource = new TableSource(tableName, alias);
 
         // Act
-        var sql = tableSource.ToSql();
+        var sql = tableSource.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -64,7 +64,7 @@ public class TableSourceTests(ITestOutputHelper output)
         var tableSource = new TableSource(tableName);
 
         // Act
-        var sql = tableSource.ToSql();
+        var sql = tableSource.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

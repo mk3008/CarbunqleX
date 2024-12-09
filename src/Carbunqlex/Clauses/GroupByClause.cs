@@ -12,7 +12,7 @@ public class GroupByClause : ISqlComponent
         GroupByColumns = groupByColumns.ToList();
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         if (GroupByColumns.Count == 0)
         {
@@ -21,11 +21,11 @@ public class GroupByClause : ISqlComponent
 
         var sb = new StringBuilder();
         sb.Append("group by ");
-        sb.Append(string.Join(", ", GroupByColumns.Select(c => c.ToSql())));
+        sb.Append(string.Join(", ", GroupByColumns.Select(c => c.ToSqlWithoutCte())));
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         if (GroupByColumns.Count == 0)
         {
@@ -39,13 +39,13 @@ public class GroupByClause : ISqlComponent
         // Additionally, we add space for commas and the "group by" keyword.
         int initialCapacity = GroupByColumns.Count * 5 + 1;
         var lexemes = new List<Lexeme>(initialCapacity)
-            {
-                new Lexeme(LexType.StartClause, "group by", "group by")
-            };
+        {
+            new Lexeme(LexType.StartClause, "group by", "group by")
+        };
 
         foreach (var column in GroupByColumns)
         {
-            lexemes.AddRange(column.GetLexemes());
+            lexemes.AddRange(column.GenerateLexemesWithoutCte());
             lexemes.Add(new Lexeme(LexType.Comma, ",", "group by"));
         }
 
@@ -57,5 +57,12 @@ public class GroupByClause : ISqlComponent
 
         lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "group by"));
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return GroupByColumns
+            .Where(column => column.MightHaveCommonTableClauses)
+            .SelectMany(column => column.GetCommonTableClauses());
     }
 }

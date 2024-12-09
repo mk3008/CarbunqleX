@@ -31,11 +31,16 @@ public class WithClause : ISqlComponent
         {
             sb.Append("recursive ");
         }
-        sb.Append(string.Join(", ", CommonTableClauses.Select(cte => cte.ToSql())));
+        sb.Append(string.Join(", ", CommonTableClauses.Select(cte => cte.ToSqlWithoutCte())));
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public string ToSqlWithoutCte()
+    {
+        return string.Empty;
+    }
+
+    public IEnumerable<Lexeme> GenerateLexemes()
     {
         if (CommonTableClauses.Count == 0)
         {
@@ -55,7 +60,7 @@ public class WithClause : ISqlComponent
 
         foreach (var cte in CommonTableClauses)
         {
-            lexemes.AddRange(cte.GetLexemes());
+            lexemes.AddRange(cte.GenerateLexemesWithoutCte());
             lexemes.Add(Lexeme.Comma);
         }
 
@@ -68,5 +73,15 @@ public class WithClause : ISqlComponent
         lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "with"));
 
         return lexemes;
+
+    }
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    {
+        return Enumerable.Empty<Lexeme>();
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return CommonTableClauses;
     }
 }

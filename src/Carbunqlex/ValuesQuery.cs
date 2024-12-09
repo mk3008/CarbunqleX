@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Carbunqlex.Clauses;
+using System.Globalization;
 using System.Text;
 
 namespace Carbunqlex;
@@ -28,7 +29,7 @@ public class ValuesQuery : IQuery
         var sb = new StringBuilder("values ");
         for (int i = 0; i < Rows.Count; i++)
         {
-            sb.Append(Rows[i].ToSql());
+            sb.Append(Rows[i].ToSqlWithoutCte());
             if (i < Rows.Count - 1)
             {
                 sb.Append(", ");
@@ -37,18 +38,20 @@ public class ValuesQuery : IQuery
         return sb.ToString();
     }
 
-    /// <summary>
-    /// The number of lexemes required to represent this query.
-    /// </summary>
-    internal int Capacity => Rows.Sum(row => row.Capacity) + (Rows.Count - 1) + 1;
-
-    public IEnumerable<Lexeme> GetLexemes()
+    public string ToSqlWithoutCte()
     {
-        var lexemes = new List<Lexeme>(Capacity) { new Lexeme(LexType.Keyword, "VALUES") };
+        return ToSql();
+    }
+
+    public IEnumerable<Lexeme> GenerateLexemes()
+    {
+        int capacity = Rows.Sum(row => row.Capacity) + (Rows.Count - 1) + 1;
+
+        var lexemes = new List<Lexeme>(capacity) { new Lexeme(LexType.Keyword, "VALUES") };
 
         for (int i = 0; i < Rows.Count; i++)
         {
-            lexemes.AddRange(Rows[i].GetLexemes());
+            lexemes.AddRange(Rows[i].GenerateLexemesWithoutCte());
             if (i < Rows.Count - 1)
             {
                 lexemes.Add(new Lexeme(LexType.Comma, ","));
@@ -56,9 +59,19 @@ public class ValuesQuery : IQuery
         }
         return lexemes;
     }
+
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    {
+        return GenerateLexemes();
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return Enumerable.Empty<CommonTableClause>();
+    }
 }
 
-public class ValuesRow
+public class ValuesRow : ISqlComponent
 {
     public List<ValuesColumn> Columns { get; } = new();
 
@@ -70,7 +83,7 @@ public class ValuesRow
         Columns.AddRange(columns);
     }
 
-    public string ToSql()
+    public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder("(");
         for (int i = 0; i < Columns.Count; i++)
@@ -90,7 +103,7 @@ public class ValuesRow
     /// </summary>
     internal int Capacity => Columns.Count * 2 - 1 + 2;
 
-    public IEnumerable<Lexeme> GetLexemes()
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme>(Capacity) { new Lexeme(LexType.OpenParen, "(") };
 
@@ -106,6 +119,11 @@ public class ValuesRow
 
         lexemes.Add(new Lexeme(LexType.CloseParen, ")"));
         return lexemes;
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return Enumerable.Empty<CommonTableClause>();
     }
 }
 
