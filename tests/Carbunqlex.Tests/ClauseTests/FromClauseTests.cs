@@ -56,7 +56,7 @@ public class FromClauseTests(ITestOutputHelper output)
         var fromClause = new FromClause(datasource);
 
         // Act
-        var sql = fromClause.ToSql();
+        var sql = fromClause.ToSqlWithoutCte();
 
         // Assert
         Assert.Equal("from table_a as a", sql);
@@ -72,7 +72,7 @@ public class FromClauseTests(ITestOutputHelper output)
         fromClause.joinClauses.Add(joinClause);
 
         // Act
-        var sql = fromClause.ToSql();
+        var sql = fromClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

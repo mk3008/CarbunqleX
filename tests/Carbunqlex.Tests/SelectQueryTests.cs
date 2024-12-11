@@ -105,7 +105,7 @@ public class SelectQueryTests(ITestOutputHelper output)
     public void ToSql_WithWithClause_ReturnsCorrectSql()
     {
         // Arrange
-        var commonTableClause = new CommonTableClause(new SimpleQuery("SELECT * FROM table"), "cte");
+        var commonTableClause = new CommonTableClause(new MockQuery("SELECT * FROM table"), "cte");
 
         var selectClause = new SelectClause(
             new SelectExpression(CreateColumnExpression("ColumnName1"))
@@ -117,7 +117,7 @@ public class SelectQueryTests(ITestOutputHelper output)
         selectQuery.WithClause.CommonTableClauses.Add(commonTableClause);
 
         // Act
-        var sql = selectQuery.ToSqlWithoutCte();
+        var sql = selectQuery.ToSql();
         output.WriteLine(sql);
 
         // Assert
@@ -125,11 +125,11 @@ public class SelectQueryTests(ITestOutputHelper output)
     }
 
     // Simple implementation of IQuery for testing purposes
-    private class SimpleQuery : IQuery
+    private class MockQuery : IQuery
     {
         private readonly string _sql;
 
-        public SimpleQuery(string sql)
+        public MockQuery(string sql)
         {
             _sql = sql;
         }
@@ -142,6 +142,26 @@ public class SelectQueryTests(ITestOutputHelper output)
         public IEnumerable<Lexeme> GetLexemes()
         {
             return Enumerable.Empty<Lexeme>();
+        }
+
+        public IEnumerable<Lexeme> GenerateLexemes()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ToSqlWithoutCte()
+        {
+            return _sql;
+        }
+
+        public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<CommonTableClause> GetCommonTableClauses()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,4 +1,4 @@
-using Carbunqlex.Clauses;
+﻿using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
@@ -15,7 +15,7 @@ public class WindowFunctionTests(ITestOutputHelper output)
         var windowFunction = new WindowFunction();
 
         // Act
-        var result = windowFunction.ToSql();
+        var result = windowFunction.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert
@@ -40,7 +40,7 @@ public class WindowFunctionTests(ITestOutputHelper output)
         var windowFunction = new WindowFunction(partitionBy, orderBy, windowFrame);
 
         // Act
-        var result = windowFunction.ToSql();
+        var result = windowFunction.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert

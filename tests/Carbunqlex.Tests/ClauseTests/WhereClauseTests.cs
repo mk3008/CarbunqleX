@@ -1,4 +1,4 @@
-using Carbunqlex.Clauses;
+﻿using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
@@ -16,7 +16,7 @@ public class WhereClauseTests(ITestOutputHelper output)
         var whereClause = new WhereClause(condition);
 
         // Act
-        var result = whereClause.ToSql();
+        var result = whereClause.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert

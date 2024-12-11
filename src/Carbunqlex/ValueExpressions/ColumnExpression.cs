@@ -32,7 +32,9 @@ public class ColumnExpression : IValueExpression
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        yield return new Lexeme(LexType.Identifier, ToSqlWithoutCte(false));
+        // ColumnExpression does not directly use CTEs, so return a single lexeme
+        // e.g. "table.column"
+        yield return new Lexeme(LexType.Identifier, ToSqlWithoutCte());
     }
 
     public string ToSqlWithoutCte()

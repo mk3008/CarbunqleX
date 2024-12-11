@@ -6,6 +6,8 @@ public class OverClause : ISqlComponent
 {
     public WindowFunction? WindowFunction { get; set; }
 
+    public bool MightHaveCommonTableClauses => WindowFunction?.MightHaveCommonTableClauses ?? false;
+
     public OverClause(WindowFunction? windowFunction = null)
     {
         WindowFunction = windowFunction;

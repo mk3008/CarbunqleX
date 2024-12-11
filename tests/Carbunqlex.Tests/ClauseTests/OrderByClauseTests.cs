@@ -1,4 +1,4 @@
-using Carbunqlex.Clauses;
+﻿using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
@@ -15,7 +15,7 @@ public class OrderByClauseTests(ITestOutputHelper output)
         var orderByClause = new OrderByClause();
 
         // Act
-        var result = orderByClause.ToSql();
+        var result = orderByClause.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert
@@ -31,7 +31,7 @@ public class OrderByClauseTests(ITestOutputHelper output)
         orderByClause.OrderByColumns.Add(new OrderByColumn(new ColumnExpression("a", "id"), false));
 
         // Act
-        var result = orderByClause.ToSql();
+        var result = orderByClause.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert

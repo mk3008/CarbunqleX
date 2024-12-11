@@ -25,7 +25,7 @@ public class FunctionExpression : IValueExpression
         if (OverClause != null)
         {
             sb.Append(" ");
-            sb.Append(OverClause.ToSqlWithoutCte(false));
+            sb.Append(OverClause.ToSqlWithoutCte());
         }
         return sb.ToString();
     }

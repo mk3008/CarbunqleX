@@ -20,6 +20,8 @@ public class WindowFrameBoundaryExpression : ISqlComponent
         Value = value;
     }
 
+    public bool MightHaveCommonTableClauses => Value?.MightHaveCommonTableClauses ?? false;
+
     public static WindowFrameBoundaryExpression UnboundedPreceding => new WindowFrameBoundaryExpression("unbounded preceding");
     public static WindowFrameBoundaryExpression CurrentRow => new WindowFrameBoundaryExpression("current row");
     public static WindowFrameBoundaryExpression UnboundedFollowing => new WindowFrameBoundaryExpression("unbounded following");

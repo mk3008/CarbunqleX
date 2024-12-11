@@ -15,7 +15,7 @@ public class PartitionByClauseTests(ITestOutputHelper output)
         var partitionByClause = new PartitionByClause();
 
         // Act
-        var result = partitionByClause.ToSql();
+        var result = partitionByClause.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert
@@ -31,7 +31,7 @@ public class PartitionByClauseTests(ITestOutputHelper output)
         partition.PartitionByColumns.Add(new ColumnExpression("a", "id"));
 
         // Act
-        var result = partition.ToSql();
+        var result = partition.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert

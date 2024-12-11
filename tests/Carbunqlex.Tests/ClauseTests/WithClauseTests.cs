@@ -25,12 +25,12 @@ public class WithClauseTests(ITestOutputHelper output)
     public void ToSql_ShouldReturnCorrectSql_WhenCommonTableClausesProvided()
     {
         // Arrange
-        var commonTableClause1 = new CommonTableClause(new SimpleQuery("SELECT * FROM table1"), "cte1");
-        var commonTableClause2 = new CommonTableClause(new SimpleQuery("SELECT * FROM table2"), "cte2");
+        var commonTableClause1 = new CommonTableClause(new MockQuery("SELECT * FROM table1"), "cte1");
+        var commonTableClause2 = new CommonTableClause(new MockQuery("SELECT * FROM table2"), "cte2");
         var withClause = new WithClause(false, commonTableClause1, commonTableClause2);
 
         // Act
-        var sql = withClause.ToSqlWithoutCte();
+        var sql = withClause.ToSql();
         output.WriteLine(sql);
 
         // Assert
@@ -42,11 +42,11 @@ public class WithClauseTests(ITestOutputHelper output)
     public void ToSql_ShouldReturnCorrectSql_WhenIsRecursiveIsTrue()
     {
         // Arrange
-        var commonTableClause = new CommonTableClause(new SimpleQuery("SELECT * FROM table"), "cte");
+        var commonTableClause = new CommonTableClause(new MockQuery("SELECT * FROM table"), "cte");
         var withClause = new WithClause(true, commonTableClause);
 
         // Act
-        var sql = withClause.ToSqlWithoutCte();
+        var sql = withClause.ToSql();
         output.WriteLine(sql);
 
         // Assert
@@ -55,11 +55,11 @@ public class WithClauseTests(ITestOutputHelper output)
     }
 
     // Simple implementation of IQuery for testing purposes
-    private class SimpleQuery : IQuery
+    private class MockQuery : IQuery
     {
         private readonly string _sql;
 
-        public SimpleQuery(string sql)
+        public MockQuery(string sql)
         {
             _sql = sql;
         }
@@ -72,6 +72,26 @@ public class WithClauseTests(ITestOutputHelper output)
         public IEnumerable<Lexeme> GetLexemes()
         {
             return Enumerable.Empty<Lexeme>();
+        }
+
+        public IEnumerable<Lexeme> GenerateLexemes()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ToSqlWithoutCte()
+        {
+            return _sql;
+        }
+
+        public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<CommonTableClause> GetCommonTableClauses()
+        {
+            throw new NotImplementedException();
         }
     }
 }

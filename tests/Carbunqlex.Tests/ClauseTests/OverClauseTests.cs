@@ -1,4 +1,4 @@
-using Carbunqlex.Clauses;
+﻿using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
@@ -28,7 +28,7 @@ public class OverClauseTests(ITestOutputHelper output)
         var overClause = new OverClause(windowFunction);
 
         // Act
-        var result = overClause.ToSql();
+        var result = overClause.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert

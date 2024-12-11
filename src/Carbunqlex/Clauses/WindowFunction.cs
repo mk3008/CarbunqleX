@@ -8,6 +8,8 @@ public class WindowFunction : ISqlComponent
     public OrderByClause? OrderBy { get; }
     public WindowFrame? WindowFrame { get; }
 
+    public bool MightHaveCommonTableClauses => (PartitionBy?.MightHaveCommonTableClauses ?? false) || (OrderBy?.MightHaveCommonTableClauses ?? false) || (WindowFrame?.MightHaveCommonTableClauses ?? false);
+
     public WindowFunction(PartitionByClause? partitionBy = null, OrderByClause? orderBy = null, WindowFrame? windowFrame = null)
     {
         PartitionBy = partitionBy;

@@ -23,7 +23,7 @@ public class SelectClauseTests(ITestOutputHelper output)
         );
 
         // Act
-        var sql = selectClause.ToSql();
+        var sql = selectClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -41,7 +41,7 @@ public class SelectClauseTests(ITestOutputHelper output)
         );
 
         // Act
-        var sql = selectClause.ToSql();
+        var sql = selectClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -59,7 +59,7 @@ public class SelectClauseTests(ITestOutputHelper output)
         );
 
         // Act
-        var sql = selectClause.ToSql();
+        var sql = selectClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -82,7 +82,7 @@ public class SelectClauseTests(ITestOutputHelper output)
         );
 
         // Act
-        var sql = selectClause.ToSql();
+        var sql = selectClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -96,7 +96,7 @@ public class SelectClauseTests(ITestOutputHelper output)
         var selectClause = new SelectClause();
 
         // Act
-        var sql = selectClause.ToSql();
+        var sql = selectClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -110,7 +110,7 @@ public class SelectClauseTests(ITestOutputHelper output)
         var selectClause = new SelectClause();
 
         // Act
-        var lexemes = selectClause.GetLexemes();
+        var lexemes = selectClause.GenerateLexemesWithoutCte();
         output.WriteLine(string.Join(", ", lexemes.Select(l => l.Value)));
 
         // Assert

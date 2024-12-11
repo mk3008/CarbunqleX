@@ -11,6 +11,8 @@ public class WindowFrameBoundary : ISqlComponent
         Boundary = boundary;
     }
 
+    public bool MightHaveCommonTableClauses => Boundary.MightHaveCommonTableClauses;
+
     public static WindowFrameBoundary UnboundedPreceding => new WindowFrameBoundary(WindowFrameBoundaryExpression.UnboundedPreceding);
     public static WindowFrameBoundary CurrentRow => new WindowFrameBoundary(WindowFrameBoundaryExpression.CurrentRow);
     public static WindowFrameBoundary UnboundedFollowing => new WindowFrameBoundary(WindowFrameBoundaryExpression.UnboundedFollowing);

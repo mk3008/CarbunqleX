@@ -30,7 +30,7 @@ public class WindowClauseTests(ITestOutputHelper output)
         var windowClause = new WindowClause(windowExpression);
 
         // Act
-        var result = windowClause.ToSql();
+        var result = windowClause.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert
@@ -72,7 +72,7 @@ public class WindowClauseTests(ITestOutputHelper output)
         var windowClause = new WindowClause(windowExpression1, windowExpression2);
 
         // Act
-        var result = windowClause.ToSql();
+        var result = windowClause.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert

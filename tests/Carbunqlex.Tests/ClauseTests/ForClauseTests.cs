@@ -18,7 +18,7 @@ public class ForClauseTests(ITestOutputHelper output)
         var forClause = new ForClause(lockType);
 
         // Act
-        var sql = forClause.ToSql();
+        var sql = forClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

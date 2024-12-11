@@ -14,6 +14,8 @@ public class WindowFrame : ISqlComponent
     public WindowFrameBoundary End { get; set; }
     public FrameType FrameType { get; set; }
 
+    public bool MightHaveCommonTableClauses => Start.MightHaveCommonTableClauses || End.MightHaveCommonTableClauses;
+
     public WindowFrame(WindowFrameBoundary start, WindowFrameBoundary end, FrameType frameType)
     {
         Start = start;

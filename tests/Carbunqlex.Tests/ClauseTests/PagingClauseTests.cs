@@ -17,7 +17,7 @@ public class PagingClauseTests(ITestOutputHelper output)
         var pagingClause = new PagingClause(offset, fetch);
 
         // Act
-        var sql = pagingClause.ToSql();
+        var sql = pagingClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
@@ -33,7 +33,7 @@ public class PagingClauseTests(ITestOutputHelper output)
         var pagingClause = new PagingClause(offset, fetch);
 
         // Act
-        var sql = pagingClause.ToSql();
+        var sql = pagingClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert

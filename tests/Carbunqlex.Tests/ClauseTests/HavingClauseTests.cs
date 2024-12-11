@@ -1,4 +1,4 @@
-using Carbunqlex.Clauses;
+﻿using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
@@ -16,7 +16,7 @@ public class HavingClauseTests(ITestOutputHelper output)
         var havingClause = new HavingClause(condition);
 
         // Act
-        var result = havingClause.ToSql();
+        var result = havingClause.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert

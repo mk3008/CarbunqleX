@@ -7,6 +7,7 @@ public class PartitionByClause : ISqlComponent
 {
     public List<IValueExpression> PartitionByColumns { get; }
 
+    public bool MightHaveCommonTableClauses => PartitionByColumns.Any(c => c.MightHaveCommonTableClauses);
     public PartitionByClause(params IValueExpression[] partitionByColumns)
     {
         PartitionByColumns = partitionByColumns.ToList();

@@ -1,8 +1,6 @@
-﻿using System.Text;
+﻿namespace Carbunqlex.Clauses;
 
-namespace Carbunqlex.Clauses;
-
-public enum UnionType
+public enum UnionType : byte
 {
     Union,
     UnionAll,
@@ -38,71 +36,39 @@ public class UnionQuery : IQuery
         UnionType = unionType;
     }
 
+    public string ToSql()
+    {
+        return $"{Left.ToSql()} {UnionType.ToSqlString()} {Right.ToSql()}";
+    }
+
+    public IEnumerable<Lexeme> GenerateLexemes()
+    {
+        var leftLexemes = Left.GenerateLexemes().ToList();
+        var rightLexemes = Right.GenerateLexemes().ToList();
+
+        // Initial capacity is set to accommodate the lexemes from Left, Right, and the UnionType keyword.
+        var lexemes = new List<Lexeme>(leftLexemes.Count + rightLexemes.Count + 1);
+        lexemes.AddRange(leftLexemes);
+        lexemes.Add(new Lexeme(LexType.Keyword, UnionType.ToSqlString()));
+        lexemes.AddRange(rightLexemes);
+        return lexemes;
+    }
+
     public string ToSqlWithoutCte()
     {
-        var sb = new StringBuilder();
-
-        if (includeWithClause)
-        {
-            // In case of name conflicts, the first occurrence takes precedence
-            var uniqueCommonTableClauses = new List<CommonTableClause>();
-            var seenAliases = new HashSet<string>();
-
-            foreach (var cte in GetCommonTableClauses())
-            {
-                if (seenAliases.Add(cte.Alias))
-                {
-                    uniqueCommonTableClauses.Add(cte);
-                }
-            }
-
-            // Append the combined WithClause if any
-            if (uniqueCommonTableClauses.Any())
-            {
-                var combinedWithClause = new WithClause(uniqueCommonTableClauses.ToArray());
-                sb.Append(combinedWithClause.ToSqlWithoutCte()).Append(" ");
-            }
-        }
-
-        sb.Append(Left.ToSqlWithoutCte());
-        sb.Append(" ");
-        sb.Append(UnionType.ToSqlString());
-        sb.Append(" ");
-        sb.Append(Right.ToSqlWithoutCte());
-
-        return sb.ToString();
+        return $"{Left.ToSqlWithoutCte()} {UnionType.ToSqlString()} {Right.ToSqlWithoutCte()}";
     }
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        var lexemes = new List<Lexeme>();
+        var leftLexemes = Left.GenerateLexemesWithoutCte().ToList();
+        var rightLexemes = Right.GenerateLexemesWithoutCte().ToList();
 
-        if (includeWithClause)
-        {
-            // In case of name conflicts, the first occurrence takes precedence
-            var uniqueCommonTableClauses = new List<CommonTableClause>();
-            var seenAliases = new HashSet<string>();
-
-            foreach (var cte in GetCommonTableClauses())
-            {
-                if (seenAliases.Add(cte.Alias))
-                {
-                    uniqueCommonTableClauses.Add(cte);
-                }
-            }
-
-            // Append the combined WithClause lexemes if any
-            if (uniqueCommonTableClauses.Any())
-            {
-                var combinedWithClause = new WithClause(uniqueCommonTableClauses.ToArray());
-                lexemes.AddRange(combinedWithClause.GetLexemes());
-            }
-        }
-
-        lexemes.AddRange(Left.GenerateLexemesWithoutCte());
+        // Initial capacity is set to accommodate the lexemes from Left, Right, and the UnionType keyword.
+        var lexemes = new List<Lexeme>(leftLexemes.Count + rightLexemes.Count + 1);
+        lexemes.AddRange(leftLexemes);
         lexemes.Add(new Lexeme(LexType.Keyword, UnionType.ToSqlString()));
-        lexemes.AddRange(Right.GenerateLexemesWithoutCte());
-
+        lexemes.AddRange(rightLexemes);
         return lexemes;
     }
 

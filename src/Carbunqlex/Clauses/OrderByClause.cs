@@ -6,6 +6,8 @@ public class OrderByClause : ISqlComponent
 {
     public List<OrderByColumn> OrderByColumns { get; }
 
+    public bool MightHaveCommonTableClauses => OrderByColumns.Any(column => column.Column.MightHaveCommonTableClauses);
+
     public OrderByClause(params OrderByColumn[] orderByColumns)
     {
         OrderByColumns = orderByColumns.ToList();
