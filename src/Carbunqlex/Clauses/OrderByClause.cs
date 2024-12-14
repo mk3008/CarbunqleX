@@ -2,7 +2,7 @@
 
 namespace Carbunqlex.Clauses;
 
-public class OrderByClause : ISqlComponent
+public class OrderByClause : IOrderByClause
 {
     public List<OrderByColumn> OrderByColumns { get; }
 

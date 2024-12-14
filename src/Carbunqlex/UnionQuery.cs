@@ -1,6 +1,7 @@
-﻿using System.Text;
+﻿using Carbunqlex.Clauses;
+using System.Text;
 
-namespace Carbunqlex.Clauses;
+namespace Carbunqlex;
 
 public enum UnionType : byte
 {

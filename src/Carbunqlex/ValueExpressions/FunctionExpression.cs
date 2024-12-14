@@ -7,12 +7,13 @@ public class FunctionExpression : IValueExpression
 {
     public List<IValueExpression> Arguments { get; set; }
     public string FunctionName { get; set; }
-    public OverClause? OverClause { get; set; }
+    public IOverClause OverClause { get; set; }
 
     public FunctionExpression(string functionName, params IValueExpression[] arguments)
     {
         FunctionName = functionName;
         Arguments = arguments.ToList();
+        OverClause = EmptyOverClause.Instance;
     }
 
     public string ToSqlWithoutCte()
@@ -22,17 +23,18 @@ public class FunctionExpression : IValueExpression
         sb.Append("(");
         sb.Append(string.Join(", ", Arguments.Select(arg => arg.ToSqlWithoutCte())));
         sb.Append(")");
-        if (OverClause != null)
+
+        var overClause = OverClause.ToSqlWithoutCte();
+        if (!string.IsNullOrEmpty(overClause))
         {
-            sb.Append(" ");
-            sb.Append(OverClause.ToSqlWithoutCte());
+            sb.Append(" ").Append(overClause);
         }
         return sb.ToString();
     }
 
     public string DefaultName => string.Empty;
 
-    public bool MightHaveCommonTableClauses => Arguments.Any(arg => arg.MightHaveCommonTableClauses) || (OverClause?.MightHaveCommonTableClauses ?? false);
+    public bool MightHaveCommonTableClauses => Arguments.Any(arg => arg.MightHaveCommonTableClauses) || OverClause.MightHaveCommonTableClauses;
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
@@ -46,16 +48,13 @@ public class FunctionExpression : IValueExpression
             }
             if (i < Arguments.Count - 1)
             {
-                yield return new Lexeme(LexType.Comma, ",");
+                yield return Lexeme.Comma;
             }
         }
         yield return new Lexeme(LexType.CloseParen, ")");
-        if (OverClause != null)
+        foreach (var lexeme in OverClause.GenerateLexemesWithoutCte())
         {
-            foreach (var lexeme in OverClause.GenerateLexemesWithoutCte())
-            {
-                yield return lexeme;
-            }
+            yield return lexeme;
         }
     }
 
@@ -76,7 +75,7 @@ public class FunctionExpression : IValueExpression
             }
         }
 
-        if (OverClause?.MightHaveCommonTableClauses ?? false)
+        if (OverClause.MightHaveCommonTableClauses)
         {
             commonTableClauses.AddRange(OverClause.GetCommonTableClauses());
         }

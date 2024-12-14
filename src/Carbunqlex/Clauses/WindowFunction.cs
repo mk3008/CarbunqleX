@@ -2,38 +2,66 @@
 
 namespace Carbunqlex.Clauses;
 
-public class WindowFunction : ISqlComponent
+public class WindowFunction : IWindowFunction
 {
-    public PartitionByClause? PartitionBy { get; }
-    public OrderByClause? OrderBy { get; }
-    public WindowFrame? WindowFrame { get; }
+    public IPartitionByClause PartitionBy { get; }
+    public IOrderByClause OrderBy { get; }
+    public IWindowFrame WindowFrame { get; }
 
-    public bool MightHaveCommonTableClauses => (PartitionBy?.MightHaveCommonTableClauses ?? false) || (OrderBy?.MightHaveCommonTableClauses ?? false) || (WindowFrame?.MightHaveCommonTableClauses ?? false);
+    public bool MightHaveCommonTableClauses =>
+        PartitionBy.MightHaveCommonTableClauses ||
+        OrderBy.MightHaveCommonTableClauses ||
+        WindowFrame.MightHaveCommonTableClauses;
 
-    public WindowFunction(PartitionByClause? partitionBy = null, OrderByClause? orderBy = null, WindowFrame? windowFrame = null)
+    public WindowFunction(IPartitionByClause partitionBy, IOrderByClause orderBy, IWindowFrame windowFrame)
     {
         PartitionBy = partitionBy;
         OrderBy = orderBy;
         WindowFrame = windowFrame;
     }
 
+    public WindowFunction(IPartitionByClause partitionBy, IOrderByClause orderBy)
+        : this(partitionBy, orderBy, EmptyWindowFrame.Instance)
+    {
+    }
+
+    public WindowFunction(IPartitionByClause partitionBy, IWindowFrame windowFrame)
+        : this(partitionBy, EmptyOrderByClause.Instance, windowFrame)
+    {
+    }
+
+    public WindowFunction(IOrderByClause orderBy, IWindowFrame windowFrame)
+        : this(EmptyPartitionByClause.Instance, orderBy, windowFrame)
+    {
+    }
+
+    public WindowFunction(IPartitionByClause partitionBy)
+        : this(partitionBy, EmptyOrderByClause.Instance, EmptyWindowFrame.Instance)
+    {
+    }
+
+    public WindowFunction(IOrderByClause orderBy)
+        : this(EmptyPartitionByClause.Instance, orderBy, EmptyWindowFrame.Instance)
+    {
+    }
+
+    public WindowFunction(IWindowFrame windowFrame)
+        : this(EmptyPartitionByClause.Instance, EmptyOrderByClause.Instance, windowFrame)
+    {
+    }
+
     public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
 
-        if (PartitionBy != null)
+        sb.Append(PartitionBy.ToSqlWithoutCte());
+        if (!string.IsNullOrEmpty(OrderBy.ToSqlWithoutCte()))
         {
-            sb.Append(PartitionBy.ToSqlWithoutCte());
+            sb.Append(" ").Append(OrderBy.ToSqlWithoutCte());
         }
-        if (OrderBy != null)
+        if (!string.IsNullOrEmpty(WindowFrame.ToSqlWithoutCte()))
         {
-            if (sb.Length > 0) sb.Append(" ");
-            sb.Append(OrderBy.ToSqlWithoutCte());
-        }
-        if (WindowFrame != null)
-        {
-            if (sb.Length > 0) sb.Append(" ");
-            sb.Append(WindowFrame.ToSqlWithoutCte());
+            sb.Append(" ").Append(WindowFrame.ToSqlWithoutCte());
         }
 
         return sb.ToString();
@@ -43,20 +71,9 @@ public class WindowFunction : ISqlComponent
     {
         var lexemes = new List<Lexeme>();
 
-        if (PartitionBy != null)
-        {
-            lexemes.AddRange(PartitionBy.GenerateLexemesWithoutCte());
-        }
-
-        if (OrderBy != null)
-        {
-            lexemes.AddRange(OrderBy.GenerateLexemesWithoutCte());
-        }
-
-        if (WindowFrame != null)
-        {
-            lexemes.AddRange(WindowFrame.GenerateLexemesWithoutCte());
-        }
+        lexemes.AddRange(PartitionBy.GenerateLexemesWithoutCte());
+        lexemes.AddRange(OrderBy.GenerateLexemesWithoutCte());
+        lexemes.AddRange(WindowFrame.GenerateLexemesWithoutCte());
 
         return lexemes;
     }
@@ -64,18 +81,11 @@ public class WindowFunction : ISqlComponent
     public IEnumerable<CommonTableClause> GetCommonTableClauses()
     {
         var commonTableClauses = new List<CommonTableClause>();
-        if (PartitionBy != null)
-        {
-            commonTableClauses.AddRange(PartitionBy.GetCommonTableClauses());
-        }
-        if (OrderBy != null)
-        {
-            commonTableClauses.AddRange(OrderBy.GetCommonTableClauses());
-        }
-        if (WindowFrame != null)
-        {
-            commonTableClauses.AddRange(WindowFrame.GetCommonTableClauses());
-        }
+
+        commonTableClauses.AddRange(PartitionBy.GetCommonTableClauses());
+        commonTableClauses.AddRange(OrderBy.GetCommonTableClauses());
+        commonTableClauses.AddRange(WindowFrame.GetCommonTableClauses());
+
         return commonTableClauses;
     }
 }

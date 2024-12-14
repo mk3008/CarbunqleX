@@ -4,23 +4,23 @@ namespace Carbunqlex.Clauses;
 
 public class WindowFrameBoundary : ISqlComponent
 {
-    public WindowFrameBoundaryExpression Boundary { get; }
+    public IWindowFrameBoundaryExpression Boundary { get; }
 
-    private WindowFrameBoundary(WindowFrameBoundaryExpression boundary)
+    private WindowFrameBoundary(IWindowFrameBoundaryExpression boundary)
     {
         Boundary = boundary;
     }
 
     public bool MightHaveCommonTableClauses => Boundary.MightHaveCommonTableClauses;
 
-    public static WindowFrameBoundary UnboundedPreceding => new WindowFrameBoundary(WindowFrameBoundaryExpression.UnboundedPreceding);
-    public static WindowFrameBoundary CurrentRow => new WindowFrameBoundary(WindowFrameBoundaryExpression.CurrentRow);
-    public static WindowFrameBoundary UnboundedFollowing => new WindowFrameBoundary(WindowFrameBoundaryExpression.UnboundedFollowing);
+    public static readonly WindowFrameBoundary UnboundedPreceding = new WindowFrameBoundary(FrameBoundaryKeyword.UnboundedPreceding);
+    public static readonly WindowFrameBoundary CurrentRow = new WindowFrameBoundary(FrameBoundaryKeyword.CurrentRow);
+    public static readonly WindowFrameBoundary UnboundedFollowing = new WindowFrameBoundary(FrameBoundaryKeyword.UnboundedFollowing);
 
-    public static WindowFrameBoundary Preceding(IValueExpression rows) => new WindowFrameBoundary(WindowFrameBoundaryExpression.Preceding(rows));
-    public static WindowFrameBoundary Following(IValueExpression rows) => new WindowFrameBoundary(WindowFrameBoundaryExpression.Following(rows));
-    public static WindowFrameBoundary Preceding(int rows) => new WindowFrameBoundary(WindowFrameBoundaryExpression.Preceding(new ConstantExpression(rows)));
-    public static WindowFrameBoundary Following(int rows) => new WindowFrameBoundary(WindowFrameBoundaryExpression.Following(new ConstantExpression(rows)));
+    public static WindowFrameBoundary Preceding(IValueExpression rows) => new WindowFrameBoundary(FrameBoundaryExpression.Preceding(rows));
+    public static WindowFrameBoundary Following(IValueExpression rows) => new WindowFrameBoundary(FrameBoundaryExpression.Following(rows));
+    public static WindowFrameBoundary Preceding(int rows) => new WindowFrameBoundary(FrameBoundaryExpression.Preceding(new ConstantExpression(rows)));
+    public static WindowFrameBoundary Following(int rows) => new WindowFrameBoundary(FrameBoundaryExpression.Following(new ConstantExpression(rows)));
 
     public string ToSqlWithoutCte()
     {

@@ -8,7 +8,7 @@ public enum FrameType : byte
     Range
 }
 
-public class WindowFrame : ISqlComponent
+public class WindowFrame : IWindowFrame
 {
     public WindowFrameBoundary Start { get; set; }
     public WindowFrameBoundary End { get; set; }

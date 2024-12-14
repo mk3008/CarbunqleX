@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Carbunqlex.Clauses;
 
-public class PartitionByClause : ISqlComponent
+public class PartitionByClause : IPartitionByClause
 {
     public List<IValueExpression> PartitionByColumns { get; }
 

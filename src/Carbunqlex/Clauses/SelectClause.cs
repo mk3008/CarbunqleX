@@ -9,7 +9,7 @@ public class SelectClause : ISqlComponent
 
     public SelectClause(params SelectExpression[] selectExpressions)
     {
-        DistinctClause = new EmptyDistinctClause();
+        DistinctClause = EmptyDistinctClause.Instance;
         Expressions = selectExpressions.ToList();
     }
 

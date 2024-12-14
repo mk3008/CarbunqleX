@@ -2,25 +2,26 @@
 
 namespace Carbunqlex.Clauses;
 
-public class OverClause : ISqlComponent
+public class OverClause : IOverClause
 {
-    public WindowFunction? WindowFunction { get; set; }
+    public IWindowFunction WindowFunction { get; set; }
 
-    public bool MightHaveCommonTableClauses => WindowFunction?.MightHaveCommonTableClauses ?? false;
+    public bool MightHaveCommonTableClauses => WindowFunction.MightHaveCommonTableClauses;
 
-    public OverClause(WindowFunction? windowFunction = null)
+    public OverClause(IWindowFunction windowFunction)
     {
         WindowFunction = windowFunction;
+    }
+
+    public OverClause() : this(EmptyWindowFunction.Instance)
+    {
     }
 
     public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         sb.Append("over (");
-        if (WindowFunction != null)
-        {
-            sb.Append(WindowFunction.ToSqlWithoutCte());
-        }
+        sb.Append(WindowFunction.ToSqlWithoutCte());
         sb.Append(")");
         return sb.ToString();
     }
@@ -33,10 +34,7 @@ public class OverClause : ISqlComponent
             new Lexeme(LexType.OpenParen, "(", "over")
         };
 
-        if (WindowFunction != null)
-        {
-            lexemes.AddRange(WindowFunction.GenerateLexemesWithoutCte());
-        }
+        lexemes.AddRange(WindowFunction.GenerateLexemesWithoutCte());
 
         lexemes.Add(new Lexeme(LexType.CloseParen, ")", "over"));
         lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "over"));
@@ -45,10 +43,6 @@ public class OverClause : ISqlComponent
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()
     {
-        if (WindowFunction == null)
-        {
-            return Enumerable.Empty<CommonTableClause>();
-        }
         return WindowFunction.GetCommonTableClauses();
     }
 }

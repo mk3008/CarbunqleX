@@ -12,7 +12,7 @@ public class WindowFunctionTests(ITestOutputHelper output)
     public void ToSql_NoComponents_ReturnsEmptyString()
     {
         // Arrange
-        var windowFunction = new WindowFunction();
+        var windowFunction = EmptyWindowFrame.Instance;
 
         // Act
         var result = windowFunction.ToSqlWithoutCte();

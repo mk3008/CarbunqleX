@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using Xunit.Abstractions;
+﻿using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests;
 

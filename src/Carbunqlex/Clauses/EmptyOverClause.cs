@@ -1,12 +1,14 @@
 ﻿namespace Carbunqlex.Clauses;
 
-public class EmptyDistinctClause : IDistinctClause
+public class EmptyOverClause : IOverClause
 {
     // Singleton instance
-    public static readonly EmptyDistinctClause Instance = new EmptyDistinctClause();
+    public static readonly EmptyOverClause Instance = new EmptyOverClause();
 
     // Private constructor to prevent instantiation
-    private EmptyDistinctClause() { }
+    private EmptyOverClause() { }
+
+    public bool MightHaveCommonTableClauses => false;
 
     public string ToSqlWithoutCte()
     {
@@ -20,7 +22,6 @@ public class EmptyDistinctClause : IDistinctClause
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()
     {
-        // EmptyDistinctClause does not directly use CTEs, so return an empty list
         return Enumerable.Empty<CommonTableClause>();
     }
 }
