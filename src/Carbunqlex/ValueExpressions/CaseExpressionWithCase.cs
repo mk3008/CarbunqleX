@@ -3,20 +3,13 @@ using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
-public class CaseExpression : IValueExpression
+public class CaseExpressionWithCase : IValueExpression
 {
-    public IValueExpression? Case { get; }
+    public IValueExpression Case { get; }
     public List<WhenThenPair> WhenThenPairs { get; }
     public IValueExpression Else { get; }
 
-    public CaseExpression(List<WhenThenPair> whenThenPairs, IValueExpression elseExpression)
-    {
-        Case = null;
-        WhenThenPairs = whenThenPairs;
-        Else = elseExpression;
-    }
-
-    public CaseExpression(IValueExpression caseExpression, List<WhenThenPair> whenThenPairs, IValueExpression elseExpression)
+    public CaseExpressionWithCase(IValueExpression caseExpression, List<WhenThenPair> whenThenPairs, IValueExpression elseExpression)
     {
         Case = caseExpression;
         WhenThenPairs = whenThenPairs;
@@ -25,7 +18,7 @@ public class CaseExpression : IValueExpression
 
     public string DefaultName => string.Empty;
 
-    public bool MightHaveCommonTableClauses => (Case?.MightHaveCommonTableClauses ?? false) ||
+    public bool MightHaveCommonTableClauses => Case.MightHaveCommonTableClauses ||
                                                WhenThenPairs.Any(pair => pair.MightHaveCommonTableClauses) ||
                                                Else.MightHaveCommonTableClauses;
 
@@ -33,12 +26,9 @@ public class CaseExpression : IValueExpression
     {
         yield return new Lexeme(LexType.Keyword, "case");
 
-        if (Case != null)
+        foreach (var lexeme in Case.GenerateLexemesWithoutCte())
         {
-            foreach (var lexeme in Case.GenerateLexemesWithoutCte())
-            {
-                yield return lexeme;
-            }
+            yield return lexeme;
         }
 
         foreach (var pair in WhenThenPairs)
@@ -49,13 +39,10 @@ public class CaseExpression : IValueExpression
             }
         }
 
-        if (Else != null)
+        yield return new Lexeme(LexType.Keyword, "else");
+        foreach (var lexeme in Else.GenerateLexemesWithoutCte())
         {
-            yield return new Lexeme(LexType.Keyword, "else");
-            foreach (var lexeme in Else.GenerateLexemesWithoutCte())
-            {
-                yield return lexeme;
-            }
+            yield return lexeme;
         }
 
         yield return new Lexeme(LexType.Keyword, "end");
@@ -64,22 +51,14 @@ public class CaseExpression : IValueExpression
     public string ToSqlWithoutCte()
     {
         var sql = new StringBuilder("case");
-
-        if (Case != null)
-        {
-            sql.Append($" {Case.ToSqlWithoutCte()}");
-        }
+        sql.Append($" {Case.ToSqlWithoutCte()}");
 
         foreach (var pair in WhenThenPairs)
         {
             sql.Append($" {pair.ToSqlWithoutCte()}");
         }
 
-        if (Else != null)
-        {
-            sql.Append($" else {Else.ToSqlWithoutCte()}");
-        }
-
+        sql.Append($" else {Else.ToSqlWithoutCte()}");
         sql.Append(" end");
         return sql.ToString();
     }
@@ -93,7 +72,7 @@ public class CaseExpression : IValueExpression
 
         var commonTableClauses = new List<CommonTableClause>();
 
-        if (Case?.MightHaveCommonTableClauses == true)
+        if (Case.MightHaveCommonTableClauses)
         {
             commonTableClauses.AddRange(Case.GetCommonTableClauses());
         }

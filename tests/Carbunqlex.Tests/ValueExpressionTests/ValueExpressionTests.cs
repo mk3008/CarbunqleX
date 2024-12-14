@@ -163,7 +163,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     }
 
     [Fact]
-    public void CaseExpression_CaseToSql_ReturnsCorrectSql()
+    public void CaseExpressionWithoutCase_ToSql_ReturnsCorrectSql()
     {
         var when1 = new ConstantExpression(1);
         var then1 = ConstantExpression.CreateEscapeString("One");
@@ -171,7 +171,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var then2 = ConstantExpression.CreateEscapeString("Two");
         var elseExpr = ConstantExpression.CreateEscapeString("Other");
 
-        var caseExpression = new CaseExpression(
+        var caseExpression = new CaseExpressionWithoutCase(
             new List<WhenThenPair>
             {
                 new WhenThenPair(when1, then1),
@@ -186,7 +186,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     }
 
     [Fact]
-    public void CaseExpression_CaseWhenToSql_ReturnsCorrectSql()
+    public void CaseExpressionWithCase_ToSql_ReturnsCorrectSql()
     {
         var caseExpr = new ColumnExpression("TableName", "ColumnName");
         var when1 = new ConstantExpression(1);
@@ -195,7 +195,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var then2 = ConstantExpression.CreateEscapeString("Two");
         var elseExpr = ConstantExpression.CreateEscapeString("Other");
 
-        var caseExpression = new CaseExpression(
+        var caseExpression = new CaseExpressionWithCase(
             caseExpr,
             new List<WhenThenPair>
             {
