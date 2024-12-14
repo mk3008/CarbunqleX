@@ -96,6 +96,7 @@ public class SelectQueryTests(ITestOutputHelper output)
         // Assert
         Assert.Equal("with cte_sub as (SELECT * FROM table) select ColumnName1 from (select ColumnName1 from cte_sub) as subquery", sql);
     }
+
     [Fact]
     public void ToSql_WithInlineQueryWithClause_ReturnsCorrectSql()
     {
@@ -115,5 +116,4 @@ public class SelectQueryTests(ITestOutputHelper output)
         // Assert
         Assert.Equal("with cte_inline as (SELECT * FROM table) select (select ColumnName1 from cte_inline) as value", sql);
     }
-
 }
