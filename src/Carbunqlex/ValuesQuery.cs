@@ -1,5 +1,5 @@
 ﻿using Carbunqlex.Clauses;
-using System.Globalization;
+using Carbunqlex.ValueExpressions;
 using System.Text;
 
 namespace Carbunqlex;
@@ -9,7 +9,7 @@ public class ValuesQuery : IQuery
     public readonly List<ValuesRow> Rows = new();
     private int? columnCount;
 
-    public void AddRow(IEnumerable<ValuesColumn> columns)
+    public void AddRow(IEnumerable<IValueExpression> columns)
     {
         var row = columns.ToList();
         if (columnCount == null)
@@ -83,96 +83,5 @@ public class ValuesQuery : IQuery
     public IEnumerable<IQuery> GetQueries()
     {
         return [this];
-    }
-}
-
-public class ValuesRow : ISqlComponent
-{
-    public List<ValuesColumn> Columns { get; } = new();
-
-    public ValuesRow()
-    {
-    }
-    public ValuesRow(IEnumerable<ValuesColumn> columns)
-    {
-        Columns.AddRange(columns);
-    }
-
-    public string ToSqlWithoutCte()
-    {
-        var sb = new StringBuilder("(");
-        for (int i = 0; i < Columns.Count; i++)
-        {
-            sb.Append(Columns[i].Value);
-            if (i < Columns.Count - 1)
-            {
-                sb.Append(", ");
-            }
-        }
-        sb.Append(")");
-        return sb.ToString();
-    }
-
-    /// <summary>
-    /// The number of lexemes required to represent this row.
-    /// </summary>
-    internal int Capacity => Columns.Count * 2 - 1 + 2;
-
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
-    {
-        var lexemes = new List<Lexeme>(Capacity) { new Lexeme(LexType.OpenParen, "(") };
-
-        for (int i = 0; i < Columns.Count; i++)
-        {
-            lexemes.Add(new Lexeme(LexType.Value, Columns[i].Value));
-
-            if (i < Columns.Count - 1)
-            {
-                lexemes.Add(new Lexeme(LexType.Comma, ","));
-            }
-        }
-
-        lexemes.Add(new Lexeme(LexType.CloseParen, ")"));
-        return lexemes;
-    }
-
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
-    {
-        return Enumerable.Empty<CommonTableClause>();
-    }
-
-    public IEnumerable<IQuery> GetQueries()
-    {
-        return Enumerable.Empty<IQuery>();
-    }
-}
-
-public readonly struct ValuesColumn
-{
-    public string Value { get; }
-    public ValuesColumn(string value)
-    {
-        Value = value;
-    }
-    public static ValuesColumn Create(object? value)
-    {
-        string columnValue;
-        if (value is DateTime dateTimeValue)
-        {
-            columnValue = "'" + dateTimeValue.ToString("yyyy-MM-dd HH:mm:ss") + "'";
-        }
-        else if (value is double doubleValue)
-        {
-            columnValue = doubleValue.ToString("G", CultureInfo.InvariantCulture);
-        }
-        else if (value is string stringValue)
-        {
-            columnValue = "'" + stringValue.Replace("'", "''") + "'";
-        }
-        else
-        {
-            columnValue = value?.ToString() ?? "null";
-        }
-        return new ValuesColumn(columnValue);
     }
 }

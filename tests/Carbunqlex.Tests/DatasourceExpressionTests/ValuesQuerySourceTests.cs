@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.DatasourceExpressionTests;
@@ -12,23 +13,23 @@ public class ValuesQuerySourceTests(ITestOutputHelper output)
     {
         // Arrange
         var query = new ValuesQuery();
-        var columns1 = new List<ValuesColumn>
+        var columns1 = new List<IValueExpression>
         {
-            ValuesColumn.Create(1),
-            ValuesColumn.Create("test"),
-            ValuesColumn.Create(null)
+            ConstantExpression.Create(1),
+            ConstantExpression.Create("test"),
+            ConstantExpression.Create(null)
         };
-        var columns2 = new List<ValuesColumn>
+        var columns2 = new List<IValueExpression>
         {
-            ValuesColumn.Create(2),
-            ValuesColumn.Create("example"),
-            ValuesColumn.Create(new DateTime(2001,2,3))
+            ConstantExpression.Create(2),
+            ConstantExpression.Create("example"),
+            ConstantExpression.Create(new DateTime(2001,2,3))
         };
-        var columns3 = new List<ValuesColumn>
+        var columns3 = new List<IValueExpression>
         {
-            ValuesColumn.Create(3),
-            ValuesColumn.Create("O'Reilly"),
-            ValuesColumn.Create(null)
+            ConstantExpression.Create(3),
+            ConstantExpression.Create("O'Reilly"),
+            ConstantExpression.Create(null)
         };
         query.AddRow(columns1);
         query.AddRow(columns2);
