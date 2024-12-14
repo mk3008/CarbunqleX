@@ -2,7 +2,7 @@
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests.ValueExpressionsTests;
+namespace Carbunqlex.Tests.ValueExpressionTests;
 
 public class ValueExpressionTests(ITestOutputHelper output)
 {

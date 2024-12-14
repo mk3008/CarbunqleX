@@ -18,62 +18,7 @@ public class SelectQueryTests(ITestOutputHelper output)
     public void ToSql_WithAllComponents_ReturnsCorrectSql()
     {
         // Arrange
-        var selectClause = new SelectClause(
-            new SelectExpression(CreateColumnExpression("ColumnName1")),
-            new SelectExpression(CreateColumnExpression("ColumnName2"), "alias2")
-        );
-
-        var fromClause = new FromClause(new TableSource("TableName"));
-
-        var whereClause = new WhereClause(
-            new BinaryExpression(
-                "=",
-                new ColumnExpression("ColumnName1"),
-                new ConstantExpression(1)
-            )
-        );
-
-        var groupByClause = new GroupByClause(
-            CreateColumnExpression("ColumnName1"),
-            CreateColumnExpression("ColumnName2")
-        );
-
-        var havingClause = new HavingClause(
-            new BinaryExpression(
-                ">",
-                new ColumnExpression("ColumnName1"),
-                new ConstantExpression(10)
-            )
-        );
-
-        var orderByClause = new OrderByClause(
-            new OrderByColumn(CreateColumnExpression("ColumnName1")),
-            new OrderByColumn(CreateColumnExpression("ColumnName2"), ascending: false)
-        );
-
-        var windowFunction = new WindowFunction(
-            new PartitionByClause(CreateColumnExpression("ColumnName1")),
-            new OrderByClause(new OrderByColumn(CreateColumnExpression("ColumnName2"))),
-            new WindowFrame(WindowFrameBoundary.UnboundedPreceding, WindowFrameBoundary.CurrentRow, FrameType.Rows)
-        );
-
-        var windowClause = new WindowClause(new WindowExpression("w", windowFunction));
-
-        var forClause = new ForClause(LockType.Update);
-
-        var pagingClause = new PagingClause(new ConstantExpression(10), new ConstantExpression(20));
-
-        var selectQuery = new SelectQuery(selectClause)
-        {
-            FromClause = fromClause,
-            WhereClause = whereClause,
-            GroupByClause = groupByClause,
-            HavingClause = havingClause,
-            OrderByClause = orderByClause,
-            WindowClause = windowClause,
-            ForClause = forClause,
-            PagingClause = pagingClause
-        };
+        var selectQuery = SelectQueryFactory.CreateSelectQueryWithAllComponents();
 
         // Act
         var sql = selectQuery.ToSqlWithoutCte();
@@ -105,16 +50,7 @@ public class SelectQueryTests(ITestOutputHelper output)
     public void ToSql_WithWithClause_ReturnsCorrectSql()
     {
         // Arrange
-        var commonTableClause = new CommonTableClause(new MockQuery("SELECT * FROM table"), "cte");
-
-        var selectClause = new SelectClause(
-            new SelectExpression(CreateColumnExpression("ColumnName1"))
-        );
-
-        var fromClause = new FromClause(new TableSource("cte"));
-
-        var selectQuery = new SelectQuery(selectClause, fromClause);
-        selectQuery.WithClause.CommonTableClauses.Add(commonTableClause);
+        var selectQuery = SelectQueryFactory.CreateSelectQueryWithWithClause("cte");
 
         // Act
         var sql = selectQuery.ToSql();
@@ -124,44 +60,60 @@ public class SelectQueryTests(ITestOutputHelper output)
         Assert.Equal("with cte as (SELECT * FROM table) select ColumnName1 from cte", sql);
     }
 
-    // Simple implementation of IQuery for testing purposes
-    private class MockQuery : IQuery
+    [Fact]
+    public void ToSqlWithoutCte_WithWithClause_ReturnsCorrectSql()
     {
-        private readonly string _sql;
+        // Arrange
+        var selectQuery = SelectQueryFactory.CreateSelectQueryWithWithClause("cte");
 
-        public MockQuery(string sql)
-        {
-            _sql = sql;
-        }
+        // Act
+        var sql = selectQuery.ToSqlWithoutCte();
+        output.WriteLine(sql);
 
-        public string ToSql()
-        {
-            return _sql;
-        }
-
-        public IEnumerable<Lexeme> GetLexemes()
-        {
-            return Enumerable.Empty<Lexeme>();
-        }
-
-        public IEnumerable<Lexeme> GenerateLexemes()
-        {
-            throw new NotImplementedException();
-        }
-
-        public string ToSqlWithoutCte()
-        {
-            return _sql;
-        }
-
-        public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<CommonTableClause> GetCommonTableClauses()
-        {
-            throw new NotImplementedException();
-        }
+        // Assert
+        Assert.Equal("select ColumnName1 from cte", sql);
     }
+
+    [Fact]
+    public void ToSql_WithSubqueryWithClause_ReturnsCorrectSql()
+    {
+        // Arrange
+        var subquery = SelectQueryFactory.CreateSelectQueryWithWithClause("cte_sub");
+        output.WriteLine(subquery.ToSql());
+
+        var selectClause = new SelectClause(
+            new SelectExpression(new ColumnExpression("ColumnName1"))
+        );
+        var fromClause = new FromClause(
+            new SubQuerySource(subquery, "subquery")
+        );
+        var selectQuery = new SelectQuery(selectClause, fromClause);
+
+        // Act
+        var sql = selectQuery.ToSql();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("with cte_sub as (SELECT * FROM table) select ColumnName1 from (select ColumnName1 from cte_sub) as subquery", sql);
+    }
+    [Fact]
+    public void ToSql_WithInlineQueryWithClause_ReturnsCorrectSql()
+    {
+        // Arrange
+        var inlineQuery = SelectQueryFactory.CreateSelectQueryWithWithClause("cte_inline");
+        output.WriteLine(inlineQuery.ToSql());
+
+        var selectClause = new SelectClause(
+            new SelectExpression(new InlineQuery(inlineQuery), "value")
+        );
+        var selectQuery = new SelectQuery(selectClause);
+
+        // Act
+        var sql = selectQuery.ToSql();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("with cte_inline as (SELECT * FROM table) select (select ColumnName1 from cte_inline) as value", sql);
+    }
+
 }

@@ -1,7 +1,7 @@
 using Carbunqlex.DatasourceExpressions;
 using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests.DatasourceTests;
+namespace Carbunqlex.Tests.DatasourceExpressionTests;
 
 public class ValuesQuerySourceTests(ITestOutputHelper output)
 {

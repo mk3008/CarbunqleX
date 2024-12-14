@@ -32,17 +32,19 @@ internal static class MaterializationExtensions
 
 public class CommonTableClause : ISqlComponent
 {
+    public bool IsRecursive { get; set; }
     public string Alias { get; set; }
     public IQuery Query { get; }
     public ColumnAliases? ColumnAliases { get; }
     public Materialization Materialization { get; }
 
-    public CommonTableClause(IQuery query, string alias, ColumnAliases? columnAliases = null, Materialization materialization = Materialization.None)
+    public CommonTableClause(IQuery query, string alias, ColumnAliases? columnAliases = null, Materialization materialization = Materialization.None, bool isRecursive = false)
     {
         Query = query;
         Alias = alias;
         ColumnAliases = columnAliases;
         Materialization = materialization;
+        IsRecursive = isRecursive;
     }
 
     public string ToSqlWithoutCte()

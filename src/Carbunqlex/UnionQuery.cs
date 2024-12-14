@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.Clauses;
+﻿using System.Text;
+
+namespace Carbunqlex.Clauses;
 
 public enum UnionType : byte
 {
@@ -36,9 +38,31 @@ public class UnionQuery : IQuery
         UnionType = unionType;
     }
 
+    /// <summary>
+    /// Generates the SQL string for the union query, including the WITH clause if necessary.
+    /// If there are duplicate CTEs, the one defined in the Left query takes precedence.
+    /// </summary>
+    /// <returns>The SQL string representation of the union query.</returns>
     public string ToSql()
     {
-        return $"{Left.ToSql()} {UnionType.ToSqlString()} {Right.ToSql()}";
+        var sb = new StringBuilder();
+
+        // Generate merged WITH clause
+        var withClause = new WithClause(Left.GetCommonTableClauses().Union(Right.GetCommonTableClauses())).ToSql();
+        if (!string.IsNullOrEmpty(withClause))
+        {
+            sb.Append(withClause);
+            sb.Append(" ");
+        }
+
+        // Combine Left and Right queries, excluding the WITH clause
+        sb.Append(Left.ToSqlWithoutCte());
+        sb.Append(" ");
+        sb.Append(UnionType.ToSqlString());
+        sb.Append(" ");
+        sb.Append(Right.ToSqlWithoutCte());
+
+        return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GenerateLexemes()

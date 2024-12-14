@@ -2,7 +2,7 @@ using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests.DatasourceTests;
+namespace Carbunqlex.Tests.DatasourceExpressionTests;
 
 public class FunctionSourceTests(ITestOutputHelper output)
 {
