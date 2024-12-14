@@ -3,5 +3,5 @@
 public interface IWindowFrameBoundaryExpression : ISqlComponent
 {
     string BoundaryKeyword { get; }
-    bool MightHaveCommonTableClauses { get; }
+    bool MightHaveQueries { get; }
 }

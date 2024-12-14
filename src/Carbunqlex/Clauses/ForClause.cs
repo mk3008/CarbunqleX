@@ -53,8 +53,9 @@ public class ForClause : IForClause
             };
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        return Enumerable.Empty<CommonTableClause>();
+        // ForClause does not directly use queries, so return an empty list
+        return Enumerable.Empty<IQuery>();
     }
 }

@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.ValueExpressions;
 using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
@@ -67,18 +66,18 @@ public class FunctionSource : IDatasource
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        var commonTableClauses = new List<CommonTableClause>();
+        var queries = new List<IQuery>();
 
         foreach (var argument in Arguments)
         {
-            if (argument.MightHaveCommonTableClauses)
+            if (argument.MightHaveQueries)
             {
-                commonTableClauses.AddRange(argument.GetCommonTableClauses());
+                queries.AddRange(argument.GetQueries());
             }
         }
 
-        return commonTableClauses;
+        return queries;
     }
 }

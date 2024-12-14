@@ -14,9 +14,9 @@ public class DistinctClause : IDistinctClause
         yield return new Lexeme(LexType.Keyword, "distinct");
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        // DistinctClause does not directly use CTEs, so return an empty list
-        return Enumerable.Empty<CommonTableClause>();
+        // DistinctClause does not directly use queries, so return an empty list
+        return Enumerable.Empty<IQuery>();
     }
 }

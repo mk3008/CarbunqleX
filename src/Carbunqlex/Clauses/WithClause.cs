@@ -84,9 +84,9 @@ public class WithClause : ISqlComponent
         return Enumerable.Empty<Lexeme>();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        return CommonTableClauses;
+        return CommonTableClauses.Select(cte => cte.Query);
     }
 
     /// <summary>

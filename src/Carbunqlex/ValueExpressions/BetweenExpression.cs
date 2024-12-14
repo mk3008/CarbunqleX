@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
@@ -20,7 +19,7 @@ public class BetweenExpression : IValueExpression
 
     public string DefaultName => Left.DefaultName;
 
-    public bool MightHaveCommonTableClauses => Left.MightHaveCommonTableClauses || Start.MightHaveCommonTableClauses || End.MightHaveCommonTableClauses;
+    public bool MightHaveQueries => Left.MightHaveQueries || Start.MightHaveQueries || End.MightHaveQueries;
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
@@ -51,28 +50,28 @@ public class BetweenExpression : IValueExpression
         return sb.ToString();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (!MightHaveCommonTableClauses)
+        if (!MightHaveQueries)
         {
-            return Enumerable.Empty<CommonTableClause>();
+            return Enumerable.Empty<IQuery>();
         }
 
-        var commonTableClauses = new List<CommonTableClause>();
+        var queries = new List<IQuery>();
 
-        if (Left.MightHaveCommonTableClauses)
+        if (Left.MightHaveQueries)
         {
-            commonTableClauses.AddRange(Left.GetCommonTableClauses());
+            queries.AddRange(Left.GetQueries());
         }
-        if (Start.MightHaveCommonTableClauses)
+        if (Start.MightHaveQueries)
         {
-            commonTableClauses.AddRange(Start.GetCommonTableClauses());
+            queries.AddRange(Start.GetQueries());
         }
-        if (End.MightHaveCommonTableClauses)
+        if (End.MightHaveQueries)
         {
-            commonTableClauses.AddRange(End.GetCommonTableClauses());
+            queries.AddRange(End.GetQueries());
         }
 
-        return commonTableClauses;
+        return queries;
     }
 }

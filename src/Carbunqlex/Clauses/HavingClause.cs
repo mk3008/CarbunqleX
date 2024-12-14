@@ -52,10 +52,10 @@ public class HavingClause : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
         return Conditions
-            .Where(condition => condition.MightHaveCommonTableClauses)
-            .SelectMany(condition => condition.GetCommonTableClauses());
+            .Where(condition => condition.MightHaveQueries)
+            .SelectMany(condition => condition.GetQueries());
     }
 }

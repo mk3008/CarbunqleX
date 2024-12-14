@@ -18,9 +18,8 @@ public class EmptyPagingClause : IPagingClause
         return Enumerable.Empty<Lexeme>();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        // EmptyPagingClause does not directly use CTEs, so return an empty list
-        return Enumerable.Empty<CommonTableClause>();
+        return Enumerable.Empty<IQuery>();
     }
 }

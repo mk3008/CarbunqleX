@@ -18,9 +18,9 @@ public class EmptyFromClause : IFromClause
         return Enumerable.Empty<Lexeme>();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        // EmptyFromClause does not directly use CTEs, so return an empty list
-        return Enumerable.Empty<CommonTableClause>();
+        // EmptyFromClause does not directly use queries, so return an empty list
+        return Enumerable.Empty<IQuery>();
     }
 }

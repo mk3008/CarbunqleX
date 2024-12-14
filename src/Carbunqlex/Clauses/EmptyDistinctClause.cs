@@ -18,9 +18,9 @@ public class EmptyDistinctClause : IDistinctClause
         return Enumerable.Empty<Lexeme>();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        // EmptyDistinctClause does not directly use CTEs, so return an empty list
-        return Enumerable.Empty<CommonTableClause>();
+        // EmptyDistinctClause does not directly use queries, so return an empty list
+        return Enumerable.Empty<IQuery>();
     }
 }

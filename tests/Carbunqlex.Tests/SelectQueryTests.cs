@@ -116,4 +116,29 @@ public class SelectQueryTests(ITestOutputHelper output)
         // Assert
         Assert.Equal("with cte_inline as (SELECT * FROM table) select (select ColumnName1 from cte_inline) as value", sql);
     }
+
+    [Fact]
+    public void ToSql_WithNestedWithClauses_ReturnsCorrectSql()
+    {
+        // Arrange
+        var selectQueryWithCte = SelectQueryFactory.CreateSelectQueryWithWithClause("inner_cte");
+        output.WriteLine(selectQueryWithCte.ToSql());
+
+        var commonTableIncludeCte = new CommonTableClause(selectQueryWithCte, "outer_cte");
+        var withClause = new WithClause(commonTableIncludeCte);
+
+        var selectClause = new SelectClause(
+            new SelectExpression(new ColumnExpression("ColumnName1"))
+        );
+        var fromClause = new FromClause(new TableSource("outer_cte"));
+        var selectQuery = new SelectQuery(selectClause, fromClause);
+        selectQuery.WithClause.CommonTableClauses.AddRange(withClause.CommonTableClauses);
+
+        // Act
+        var sql = selectQuery.ToSql();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("with inner_cte as (SELECT * FROM table), outer_cte as (select ColumnName1 from inner_cte) select ColumnName1 from outer_cte", sql);
+    }
 }

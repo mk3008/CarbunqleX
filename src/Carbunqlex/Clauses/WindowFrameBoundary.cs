@@ -11,7 +11,7 @@ public class WindowFrameBoundary : ISqlComponent
         Boundary = boundary;
     }
 
-    public bool MightHaveCommonTableClauses => Boundary.MightHaveCommonTableClauses;
+    public bool MightHaveQueries => Boundary.MightHaveQueries;
 
     public static readonly WindowFrameBoundary UnboundedPreceding = new WindowFrameBoundary(FrameBoundaryKeyword.UnboundedPreceding);
     public static readonly WindowFrameBoundary CurrentRow = new WindowFrameBoundary(FrameBoundaryKeyword.CurrentRow);
@@ -32,8 +32,8 @@ public class WindowFrameBoundary : ISqlComponent
         return Boundary.GenerateLexemesWithoutCte();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        return Boundary.GetCommonTableClauses();
+        return Boundary.GetQueries();
     }
 }

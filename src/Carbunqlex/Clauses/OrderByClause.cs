@@ -6,7 +6,7 @@ public class OrderByClause : IOrderByClause
 {
     public List<OrderByColumn> OrderByColumns { get; }
 
-    public bool MightHaveCommonTableClauses => OrderByColumns.Any(column => column.Column.MightHaveCommonTableClauses);
+    public bool MightHaveQueries => OrderByColumns.Any(column => column.Column.MightHaveQueries);
 
     public OrderByClause(params OrderByColumn[] orderByColumns)
     {
@@ -40,9 +40,9 @@ public class OrderByClause : IOrderByClause
         // Additionally, we add space for commas and the "order by" keyword.
         int initialCapacity = OrderByColumns.Count * 4 + 1;
         var lexemes = new List<Lexeme>(initialCapacity)
-            {
-                new Lexeme(LexType.StartClause, "order by", "order by")
-            };
+        {
+            new Lexeme(LexType.StartClause, "order by", "order by")
+        };
 
         foreach (var orderByColumn in OrderByColumns)
         {
@@ -59,10 +59,11 @@ public class OrderByClause : IOrderByClause
         lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "order by"));
         return lexemes;
     }
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+
+    public IEnumerable<IQuery> GetQueries()
     {
         return OrderByColumns
-            .Where(orderByColumn => orderByColumn.Column.MightHaveCommonTableClauses)
-            .SelectMany(orderByColumn => orderByColumn.Column.GetCommonTableClauses());
+            .Where(orderByColumn => orderByColumn.Column.MightHaveQueries)
+            .SelectMany(orderByColumn => orderByColumn.Column.GetQueries());
     }
 }

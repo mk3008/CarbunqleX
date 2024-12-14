@@ -9,10 +9,10 @@ public class SelectQuery : IQuery
     public SelectClause SelectClause { get; }
     public IFromClause FromClause { get; set; }
     public IWhereClause WhereClause { get; set; } = EmptyWhereClause.Instance;
-    public GroupByClause GroupByClause { get; set; } = new GroupByClause();
-    public HavingClause HavingClause { get; set; } = new HavingClause();
-    public OrderByClause OrderByClause { get; set; } = new OrderByClause();
-    public WindowClause WindowClause { get; set; } = new WindowClause();
+    public GroupByClause GroupByClause { get; } = new GroupByClause();
+    public HavingClause HavingClause { get; } = new HavingClause();
+    public OrderByClause OrderByClause { get; } = new OrderByClause();
+    public WindowClause WindowClause { get; } = new WindowClause();
     public IForClause ForClause { get; set; } = EmptyForClause.Instance;
     public IPagingClause PagingClause { get; set; } = EmptyPagingClause.Instance;
 
@@ -128,32 +128,37 @@ public class SelectQuery : IQuery
         return lexemes;
     }
 
-    /// <summary>
-    /// Retrieves the common table clauses (CTEs) associated with the query.
-    /// Duplicate CTEs are removed, with precedence given to those defined earlier.
-    /// Recursive CTEs are prioritized, while maintaining the original order for non-recursive CTEs.
-    /// </summary>
-    /// <returns>The common table clauses associated with the query.</returns>
     public IEnumerable<CommonTableClause> GetCommonTableClauses()
     {
-        var commonTableClauses = new List<(CommonTableClause Cte, int Index)>();
+        var commonTables = new List<CommonTableClause>();
 
-        commonTableClauses.AddRange(WithClause.GetCommonTableClauses().Select((cte, index) => (cte, index)));
-        commonTableClauses.AddRange(SelectClause.GetCommonTableClauses().Select((cte, index) => (cte, index + commonTableClauses.Count)));
-        commonTableClauses.AddRange(FromClause.GetCommonTableClauses().Select((cte, index) => (cte, index + commonTableClauses.Count)));
-        commonTableClauses.AddRange(WhereClause.GetCommonTableClauses().Select((cte, index) => (cte, index + commonTableClauses.Count)));
-        commonTableClauses.AddRange(GroupByClause.GetCommonTableClauses().Select((cte, index) => (cte, index + commonTableClauses.Count)));
-        commonTableClauses.AddRange(HavingClause.GetCommonTableClauses().Select((cte, index) => (cte, index + commonTableClauses.Count)));
-        commonTableClauses.AddRange(OrderByClause.GetCommonTableClauses().Select((cte, index) => (cte, index + commonTableClauses.Count)));
-        commonTableClauses.AddRange(WindowClause.GetCommonTableClauses().Select((cte, index) => (cte, index + commonTableClauses.Count)));
-        commonTableClauses.AddRange(ForClause.GetCommonTableClauses().Select((cte, index) => (cte, index + commonTableClauses.Count)));
-        commonTableClauses.AddRange(PagingClause.GetCommonTableClauses().Select((cte, index) => (cte, index + commonTableClauses.Count)));
+        // Prioritize internal CTEs
+        var queries = GetQueries().Where(q => q != this).ToList();
+        foreach (var q in queries)
+        {
+            commonTables.AddRange(q.GetCommonTableClauses());
+        }
+        commonTables.AddRange(WithClause.CommonTableClauses);
 
-        return commonTableClauses
-            .GroupBy(cte => cte.Cte.Alias)
-            .Select(group => group.First())
-            .OrderByDescending(cte => cte.Cte.IsRecursive)
-            .ThenBy(cte => cte.Index)
-            .Select(cte => cte.Cte);
+        return commonTables;
+    }
+
+    public IEnumerable<IQuery> GetQueries()
+    {
+        var queries = new List<IQuery>();
+
+        queries.Add(this);
+        queries.AddRange(WithClause.GetQueries());
+        queries.AddRange(SelectClause.GetQueries());
+        queries.AddRange(FromClause.GetQueries());
+        queries.AddRange(WhereClause.GetQueries());
+        queries.AddRange(GroupByClause.GetQueries());
+        queries.AddRange(HavingClause.GetQueries());
+        queries.AddRange(OrderByClause.GetQueries());
+        queries.AddRange(WindowClause.GetQueries());
+        queries.AddRange(ForClause.GetQueries());
+        queries.AddRange(PagingClause.GetQueries());
+
+        return queries;
     }
 }

@@ -12,5 +12,5 @@ public class EmptyWindowFunction : IWindowFunction
 
     public string ToSqlWithoutCte() => string.Empty;
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte() => Enumerable.Empty<Lexeme>();
-    public IEnumerable<CommonTableClause> GetCommonTableClauses() => Enumerable.Empty<CommonTableClause>();
+    public IEnumerable<IQuery> GetQueries() => new List<IQuery>();
 }

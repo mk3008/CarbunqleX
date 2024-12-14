@@ -1,11 +1,9 @@
-﻿using Carbunqlex.Clauses;
-
-namespace Carbunqlex.ValueExpressions;
+﻿namespace Carbunqlex.ValueExpressions;
 
 public class NullExpression : IValueExpression
 {
     public bool IsNotNull { get; set; }
-    public bool MightHaveCommonTableClauses => false;
+    public bool MightHaveQueries => false;
 
     public NullExpression(bool isNotNull = false)
     {
@@ -24,9 +22,9 @@ public class NullExpression : IValueExpression
         return IsNotNull ? "not null" : "null";
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        // NullExpression does not directly use CTEs, so return an empty list
-        return Enumerable.Empty<CommonTableClause>();
+        // NullExpression does not directly use queries, so return an empty list
+        return Enumerable.Empty<IQuery>();
     }
 }

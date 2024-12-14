@@ -1,9 +1,8 @@
-﻿using Carbunqlex.Clauses;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
-public class WhenThenPair : ISqlComponent
+public class WhenThenPair : IValueExpression
 {
     public IValueExpression When { get; }
     public IValueExpression Then { get; }
@@ -14,7 +13,9 @@ public class WhenThenPair : ISqlComponent
         Then = then;
     }
 
-    public bool MightHaveCommonTableClauses => When.MightHaveCommonTableClauses || Then.MightHaveCommonTableClauses;
+    public string DefaultName => string.Empty;
+
+    public bool MightHaveQueries => When.MightHaveQueries || Then.MightHaveQueries;
 
     public string ToSqlWithoutCte()
     {
@@ -40,24 +41,19 @@ public class WhenThenPair : ISqlComponent
         }
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (!MightHaveCommonTableClauses)
+        var queries = new List<IQuery>();
+
+        if (When.MightHaveQueries)
         {
-            return Enumerable.Empty<CommonTableClause>();
+            queries.AddRange(When.GetQueries());
+        }
+        if (Then.MightHaveQueries)
+        {
+            queries.AddRange(Then.GetQueries());
         }
 
-        var commonTableClauses = new List<CommonTableClause>();
-
-        if (When.MightHaveCommonTableClauses)
-        {
-            commonTableClauses.AddRange(When.GetCommonTableClauses());
-        }
-        if (Then.MightHaveCommonTableClauses)
-        {
-            commonTableClauses.AddRange(Then.GetCommonTableClauses());
-        }
-
-        return commonTableClauses;
+        return queries;
     }
 }

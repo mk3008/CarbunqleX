@@ -59,10 +59,10 @@ public class GroupByClause : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
         return GroupByColumns
-            .Where(column => column.MightHaveCommonTableClauses)
-            .SelectMany(column => column.GetCommonTableClauses());
+            .Where(column => column.MightHaveQueries)
+            .SelectMany(column => column.GetQueries());
     }
 }

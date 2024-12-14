@@ -133,14 +133,9 @@ public class WithClauseTests(ITestOutputHelper output)
             return _sql;
         }
 
-        public IEnumerable<Lexeme> GetLexemes()
-        {
-            return Enumerable.Empty<Lexeme>();
-        }
-
         public IEnumerable<Lexeme> GenerateLexemes()
         {
-            throw new NotImplementedException();
+            return Enumerable.Empty<Lexeme>();
         }
 
         public string ToSqlWithoutCte()
@@ -150,12 +145,17 @@ public class WithClauseTests(ITestOutputHelper output)
 
         public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
         {
-            throw new NotImplementedException();
+            return Enumerable.Empty<Lexeme>();
         }
 
         public IEnumerable<CommonTableClause> GetCommonTableClauses()
         {
-            throw new NotImplementedException();
+            return Enumerable.Empty<CommonTableClause>();
+        }
+
+        public IEnumerable<IQuery> GetQueries()
+        {
+            return Enumerable.Empty<IQuery>();
         }
     }
 }

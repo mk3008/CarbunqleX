@@ -100,8 +100,11 @@ public class CommonTableClause : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        return Query.GetCommonTableClauses();
+        var queries = new List<IQuery>();
+        queries.AddRange(Query.GetQueries());
+        queries.Add(Query);
+        return queries;
     }
 }

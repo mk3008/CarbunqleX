@@ -44,8 +44,8 @@ public class WindowExpression : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        return WindowFunction.GetCommonTableClauses();
+        return WindowFunction.GetQueries();
     }
 }

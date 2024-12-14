@@ -19,9 +19,9 @@ public class EmptyWhereClause : IWhereClause
         return Enumerable.Empty<Lexeme>();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        return Enumerable.Empty<CommonTableClause>();
+        return Enumerable.Empty<IQuery>();
     }
 }
 

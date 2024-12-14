@@ -79,8 +79,10 @@ public class SelectClause : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        return Expressions.SelectMany(item => item.Expression.GetCommonTableClauses());
+        return Expressions
+            .Where(item => item.Expression.MightHaveQueries)
+            .SelectMany(item => item.Expression.GetQueries());
     }
 }

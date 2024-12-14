@@ -17,7 +17,7 @@ public class FrameBoundaryExpression : IWindowFrameBoundaryExpression
         Value = value;
     }
 
-    public bool MightHaveCommonTableClauses => Value.MightHaveCommonTableClauses;
+    public bool MightHaveQueries => Value.MightHaveQueries;
 
     public string ToSqlWithoutCte()
     {
@@ -36,8 +36,8 @@ public class FrameBoundaryExpression : IWindowFrameBoundaryExpression
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        return Value.GetCommonTableClauses();
+        return Value.GetQueries();
     }
 }

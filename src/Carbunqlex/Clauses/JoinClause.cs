@@ -83,16 +83,16 @@ public class JoinClause : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        var commonTableClauses = new List<CommonTableClause>();
-        commonTableClauses.AddRange(Datasource.GetCommonTableClauses());
+        var queries = new List<IQuery>();
+        queries.AddRange(Datasource.GetQueries());
 
         if (Condition != null)
         {
-            commonTableClauses.AddRange(Condition.GetCommonTableClauses());
+            queries.AddRange(Condition.GetQueries());
         }
 
-        return commonTableClauses;
+        return queries;
     }
 }

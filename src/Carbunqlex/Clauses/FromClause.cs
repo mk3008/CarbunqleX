@@ -43,16 +43,16 @@ public class FromClause : IFromClause
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        var commonTableClauses = new List<CommonTableClause>();
-        commonTableClauses.AddRange(RootDatasource.GetCommonTableClauses());
+        var queries = new List<IQuery>();
+        queries.AddRange(RootDatasource.GetQueries());
 
         foreach (var joinClause in joinClauses)
         {
-            commonTableClauses.AddRange(joinClause.GetCommonTableClauses());
+            queries.AddRange(joinClause.GetQueries());
         }
 
-        return commonTableClauses;
+        return queries;
     }
 }

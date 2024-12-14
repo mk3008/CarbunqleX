@@ -35,9 +35,9 @@ public class WindowClause : ISqlComponent
         // Additionally, we add space for commas and the "window" keyword.
         int initialCapacity = WindowExpressions.Count * 6 + 1;
         var lexemes = new List<Lexeme>(initialCapacity)
-            {
-                new Lexeme(LexType.StartClause, "window", "window")
-            };
+        {
+            new Lexeme(LexType.StartClause, "window", "window")
+        };
 
         foreach (var windowExpression in WindowExpressions)
         {
@@ -55,8 +55,8 @@ public class WindowClause : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        return WindowExpressions.SelectMany(we => we.GetCommonTableClauses());
+        return WindowExpressions.SelectMany(we => we.GetQueries());
     }
 }

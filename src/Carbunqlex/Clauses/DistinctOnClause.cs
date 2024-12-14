@@ -31,23 +31,18 @@ public class DistinctOnClause : IDistinctClause
         yield return new Lexeme(LexType.CloseParen, ")");
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (!DistinctOnColumns.Any(c => c.MightHaveCommonTableClauses))
-        {
-            return Enumerable.Empty<CommonTableClause>();
-        }
-
-        var commonTableClauses = new List<CommonTableClause>();
+        var queries = new List<IQuery>();
 
         foreach (var column in DistinctOnColumns)
         {
-            if (column.MightHaveCommonTableClauses)
+            if (column.MightHaveQueries)
             {
-                commonTableClauses.AddRange(column.GetCommonTableClauses());
+                queries.AddRange(column.GetQueries());
             }
         }
 
-        return commonTableClauses;
+        return queries;
     }
 }

@@ -7,7 +7,7 @@ public class PartitionByClause : IPartitionByClause
 {
     public List<IValueExpression> PartitionByColumns { get; }
 
-    public bool MightHaveCommonTableClauses => PartitionByColumns.Any(c => c.MightHaveCommonTableClauses);
+    public bool MightHaveQueries => PartitionByColumns.Any(c => c.MightHaveQueries);
     public PartitionByClause(params IValueExpression[] partitionByColumns)
     {
         PartitionByColumns = partitionByColumns.ToList();
@@ -60,10 +60,10 @@ public class PartitionByClause : IPartitionByClause
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
         return PartitionByColumns
-            .Where(c => c.MightHaveCommonTableClauses)
-            .SelectMany(c => c.GetCommonTableClauses());
+            .Where(c => c.MightHaveQueries)
+            .SelectMany(c => c.GetQueries());
     }
 }

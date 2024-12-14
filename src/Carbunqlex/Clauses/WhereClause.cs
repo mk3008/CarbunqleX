@@ -30,12 +30,12 @@ public class WhereClause : IWhereClause
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (!Condition.MightHaveCommonTableClauses)
+        if (Condition.MightHaveQueries)
         {
-            return Enumerable.Empty<CommonTableClause>();
+            return Condition.GetQueries();
         }
-        return Condition.GetCommonTableClauses();
+        return Enumerable.Empty<IQuery>();
     }
 }

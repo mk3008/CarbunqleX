@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
@@ -18,7 +17,7 @@ public class LikeExpression : IValueExpression
 
     public string DefaultName => Left.DefaultName;
 
-    public bool MightHaveCommonTableClauses => Left.MightHaveCommonTableClauses || Right.MightHaveCommonTableClauses;
+    public bool MightHaveQueries => Left.MightHaveQueries || Right.MightHaveQueries;
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
@@ -42,24 +41,19 @@ public class LikeExpression : IValueExpression
         return sb.ToString();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (!MightHaveCommonTableClauses)
+        var queries = new List<IQuery>();
+
+        if (Left.MightHaveQueries)
         {
-            return Enumerable.Empty<CommonTableClause>();
+            queries.AddRange(Left.GetQueries());
+        }
+        if (Right.MightHaveQueries)
+        {
+            queries.AddRange(Right.GetQueries());
         }
 
-        var commonTableClauses = new List<CommonTableClause>();
-
-        if (Left.MightHaveCommonTableClauses)
-        {
-            commonTableClauses.AddRange(Left.GetCommonTableClauses());
-        }
-        if (Right.MightHaveCommonTableClauses)
-        {
-            commonTableClauses.AddRange(Right.GetCommonTableClauses());
-        }
-
-        return commonTableClauses;
+        return queries;
     }
 }

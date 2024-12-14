@@ -36,12 +36,12 @@ public class OrderByColumn : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (Column.MightHaveCommonTableClauses)
+        if (Column.MightHaveQueries)
         {
-            return Column.GetCommonTableClauses();
+            return Column.GetQueries();
         }
-        return Enumerable.Empty<CommonTableClause>();
+        return Enumerable.Empty<IQuery>();
     }
 }

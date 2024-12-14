@@ -1,25 +1,27 @@
-﻿using Carbunqlex.Clauses;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
 
 public class SubQuerySource : IDatasource
 {
-    public SelectQuery Query { get; set; }
+    public IQuery Query { get; set; }
     public string Alias { get; set; }
     public ColumnAliases ColumnAliases { get; set; }
-    public SubQuerySource(SelectQuery query, string alias)
+
+    public SubQuerySource(IQuery query, string alias)
     {
         Query = query;
         Alias = alias;
         ColumnAliases = new ColumnAliases(Enumerable.Empty<string>());
     }
-    public SubQuerySource(SelectQuery query, string alias, IEnumerable<string> columnAliases)
+
+    public SubQuerySource(IQuery query, string alias, IEnumerable<string> columnAliases)
     {
         Query = query;
         Alias = alias;
         ColumnAliases = new ColumnAliases(columnAliases);
     }
+
     public string ToSqlWithoutCte()
     {
         if (string.IsNullOrWhiteSpace(Alias))
@@ -34,6 +36,7 @@ public class SubQuerySource : IDatasource
         sb.Append(ColumnAliases.ToSqlWithoutCte());
         return sb.ToString();
     }
+
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         var lexemes = new List<Lexeme>
@@ -47,8 +50,11 @@ public class SubQuerySource : IDatasource
         lexemes.AddRange(ColumnAliases.GenerateLexemesWithoutCte());
         return lexemes;
     }
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+
+    public IEnumerable<IQuery> GetQueries()
     {
-        return Query.GetCommonTableClauses();
+        var queries = new List<IQuery> { Query };
+        queries.AddRange(Query.GetQueries());
+        return queries;
     }
 }

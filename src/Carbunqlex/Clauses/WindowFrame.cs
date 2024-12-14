@@ -14,7 +14,7 @@ public class WindowFrame : IWindowFrame
     public WindowFrameBoundary End { get; set; }
     public FrameType FrameType { get; set; }
 
-    public bool MightHaveCommonTableClauses => Start.MightHaveCommonTableClauses || End.MightHaveCommonTableClauses;
+    public bool MightHaveCommonTableClauses => Start.MightHaveQueries || End.MightHaveQueries;
 
     public WindowFrame(WindowFrameBoundary start, WindowFrameBoundary end, FrameType frameType)
     {
@@ -46,11 +46,11 @@ public class WindowFrame : IWindowFrame
         return sb.ToString();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        var commonTableClauses = new List<CommonTableClause>();
-        commonTableClauses.AddRange(Start.GetCommonTableClauses());
-        commonTableClauses.AddRange(End.GetCommonTableClauses());
-        return commonTableClauses;
+        var queries = new List<IQuery>();
+        queries.AddRange(Start.GetQueries());
+        queries.AddRange(End.GetQueries());
+        return queries;
     }
 }

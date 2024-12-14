@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
@@ -18,7 +17,7 @@ public class InExpression : IValueExpression
 
     public string DefaultName => Left.DefaultName;
 
-    public bool MightHaveCommonTableClauses => Left.MightHaveCommonTableClauses || Right.Any(r => r.MightHaveCommonTableClauses);
+    public bool MightHaveQueries => Left.MightHaveQueries || Right.Any(r => r.MightHaveQueries);
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
@@ -52,27 +51,22 @@ public class InExpression : IValueExpression
         return sb.ToString();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (!MightHaveCommonTableClauses)
-        {
-            return Enumerable.Empty<CommonTableClause>();
-        }
+        var queries = new List<IQuery>();
 
-        var commonTableClauses = new List<CommonTableClause>();
-
-        if (Left.MightHaveCommonTableClauses)
+        if (Left.MightHaveQueries)
         {
-            commonTableClauses.AddRange(Left.GetCommonTableClauses());
+            queries.AddRange(Left.GetQueries());
         }
         foreach (var right in Right)
         {
-            if (right.MightHaveCommonTableClauses)
+            if (right.MightHaveQueries)
             {
-                commonTableClauses.AddRange(right.GetCommonTableClauses());
+                queries.AddRange(right.GetQueries());
             }
         }
 
-        return commonTableClauses;
+        return queries;
     }
 }

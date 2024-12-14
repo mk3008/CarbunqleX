@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
@@ -16,7 +15,7 @@ public class UnaryExpression : IValueExpression
 
     public string DefaultName => Operand.DefaultName;
 
-    public bool MightHaveCommonTableClauses => Operand.MightHaveCommonTableClauses;
+    public bool MightHaveQueries => Operand.MightHaveQueries;
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
@@ -36,12 +35,12 @@ public class UnaryExpression : IValueExpression
         return sb.ToString();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (Operand.MightHaveCommonTableClauses)
+        if (Operand.MightHaveQueries)
         {
-            return Operand.GetCommonTableClauses();
+            return Operand.GetQueries();
         }
-        return Enumerable.Empty<CommonTableClause>();
+        return Enumerable.Empty<IQuery>();
     }
 }

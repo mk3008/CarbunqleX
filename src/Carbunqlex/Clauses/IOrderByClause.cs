@@ -2,5 +2,5 @@
 
 public interface IOrderByClause : ISqlComponent
 {
-    bool MightHaveCommonTableClauses { get; }
+    bool MightHaveQueries { get; }
 }

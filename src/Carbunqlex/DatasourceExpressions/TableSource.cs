@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
 
@@ -69,9 +68,9 @@ public class TableSource : IDatasource
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        // TableSource does not directly use CTEs, so return an empty list
-        return Enumerable.Empty<CommonTableClause>();
+        // TableSource does not directly use queries, so return an empty list
+        return Enumerable.Empty<IQuery>();
     }
 }

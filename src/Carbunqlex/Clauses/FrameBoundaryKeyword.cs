@@ -13,7 +13,7 @@ public class FrameBoundaryKeyword : IWindowFrameBoundaryExpression
         BoundaryKeyword = boundaryKeyword;
     }
 
-    public bool MightHaveCommonTableClauses => false;
+    public bool MightHaveQueries => false;
 
     public string ToSqlWithoutCte()
     {
@@ -25,8 +25,9 @@ public class FrameBoundaryKeyword : IWindowFrameBoundaryExpression
         return new List<Lexeme> { new Lexeme(LexType.Keyword, BoundaryKeyword) };
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        return Enumerable.Empty<CommonTableClause>();
+        // FrameBoundaryKeyword does not directly use queries, so return an empty list
+        return Enumerable.Empty<IQuery>();
     }
 }

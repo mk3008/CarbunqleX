@@ -57,13 +57,14 @@ public static class SelectQueryFactory
         {
             FromClause = fromClause,
             WhereClause = whereClause,
-            GroupByClause = groupByClause,
-            HavingClause = havingClause,
-            OrderByClause = orderByClause,
-            WindowClause = windowClause,
             ForClause = forClause,
             PagingClause = pagingClause
         };
+
+        selectQuery.GroupByClause.GroupByColumns.AddRange(groupByClause.GroupByColumns);
+        selectQuery.HavingClause.Conditions.AddRange(havingClause.Conditions);
+        selectQuery.OrderByClause.OrderByColumns.AddRange(orderByClause.OrderByColumns);
+        selectQuery.WindowClause.WindowExpressions.AddRange(windowClause.WindowExpressions);
 
         return selectQuery;
     }
@@ -108,14 +109,9 @@ public static class SelectQueryFactory
             return _sql;
         }
 
-        public IEnumerable<Lexeme> GetLexemes()
-        {
-            return Enumerable.Empty<Lexeme>();
-        }
-
         public IEnumerable<Lexeme> GenerateLexemes()
         {
-            throw new NotImplementedException();
+            return Enumerable.Empty<Lexeme>();
         }
 
         public string ToSqlWithoutCte()
@@ -125,12 +121,17 @@ public static class SelectQueryFactory
 
         public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
         {
-            throw new NotImplementedException();
+            return Enumerable.Empty<Lexeme>();
         }
 
         public IEnumerable<CommonTableClause> GetCommonTableClauses()
         {
-            throw new NotImplementedException();
+            return Enumerable.Empty<CommonTableClause>();
+        }
+
+        public IEnumerable<IQuery> GetQueries()
+        {
+            return Enumerable.Empty<IQuery>();
         }
     }
 }

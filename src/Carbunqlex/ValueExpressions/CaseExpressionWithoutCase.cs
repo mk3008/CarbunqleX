@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
@@ -16,8 +15,8 @@ public class CaseExpressionWithoutCase : IValueExpression
 
     public string DefaultName => string.Empty;
 
-    public bool MightHaveCommonTableClauses => WhenThenPairs.Any(pair => pair.MightHaveCommonTableClauses) ||
-                                               Else.MightHaveCommonTableClauses;
+    public bool MightHaveQueries => WhenThenPairs.Any(pair => pair.When.MightHaveQueries || pair.Then.MightHaveQueries) ||
+                                    Else.MightHaveQueries;
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
@@ -54,28 +53,27 @@ public class CaseExpressionWithoutCase : IValueExpression
         return sql.ToString();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (!MightHaveCommonTableClauses)
-        {
-            return Enumerable.Empty<CommonTableClause>();
-        }
-
-        var commonTableClauses = new List<CommonTableClause>();
+        var queries = new List<IQuery>();
 
         foreach (var pair in WhenThenPairs)
         {
-            if (pair.MightHaveCommonTableClauses)
+            if (pair.When.MightHaveQueries)
             {
-                commonTableClauses.AddRange(pair.GetCommonTableClauses());
+                queries.AddRange(pair.When.GetQueries());
+            }
+            if (pair.Then.MightHaveQueries)
+            {
+                queries.AddRange(pair.Then.GetQueries());
             }
         }
 
-        if (Else.MightHaveCommonTableClauses)
+        if (Else.MightHaveQueries)
         {
-            commonTableClauses.AddRange(Else.GetCommonTableClauses());
+            queries.AddRange(Else.GetQueries());
         }
 
-        return commonTableClauses;
+        return queries;
     }
 }

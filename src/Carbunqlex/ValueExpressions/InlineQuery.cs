@@ -7,6 +7,7 @@ public class InlineQuery : IValueExpression
     public IQuery Query { get; }
     public string DefaultName => string.Empty;
     public bool MightHaveCommonTableClauses => true;
+    public bool MightHaveQueries => true;
 
     public InlineQuery(IQuery query)
     {
@@ -35,5 +36,10 @@ public class InlineQuery : IValueExpression
     public IEnumerable<CommonTableClause> GetCommonTableClauses()
     {
         return Query.GetCommonTableClauses();
+    }
+
+    public IEnumerable<IQuery> GetQueries()
+    {
+        return new List<IQuery> { Query };
     }
 }

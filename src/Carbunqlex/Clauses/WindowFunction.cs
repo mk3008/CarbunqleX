@@ -9,8 +9,8 @@ public class WindowFunction : IWindowFunction
     public IWindowFrame WindowFrame { get; }
 
     public bool MightHaveCommonTableClauses =>
-        PartitionBy.MightHaveCommonTableClauses ||
-        OrderBy.MightHaveCommonTableClauses ||
+        PartitionBy.MightHaveQueries ||
+        OrderBy.MightHaveQueries ||
         WindowFrame.MightHaveCommonTableClauses;
 
     public WindowFunction(IPartitionByClause partitionBy, IOrderByClause orderBy, IWindowFrame windowFrame)
@@ -78,14 +78,14 @@ public class WindowFunction : IWindowFunction
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        var commonTableClauses = new List<CommonTableClause>();
+        var queries = new List<IQuery>();
 
-        commonTableClauses.AddRange(PartitionBy.GetCommonTableClauses());
-        commonTableClauses.AddRange(OrderBy.GetCommonTableClauses());
-        commonTableClauses.AddRange(WindowFrame.GetCommonTableClauses());
+        queries.AddRange(PartitionBy.GetQueries());
+        queries.AddRange(OrderBy.GetQueries());
+        queries.AddRange(WindowFrame.GetQueries());
 
-        return commonTableClauses;
+        return queries;
     }
 }

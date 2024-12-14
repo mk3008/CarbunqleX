@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex;
+﻿using Carbunqlex.Clauses;
+
+namespace Carbunqlex;
 
 /// <summary>
 /// Represents a SQL query that can generate SQL strings and lexemes, with or without CTEs.
@@ -18,4 +20,11 @@ public interface IQuery : ISqlComponent
     /// </summary>
     /// <returns>The lexemes representing the query.</returns>
     IEnumerable<Lexeme> GenerateLexemes();
+
+    /// <summary>
+    /// Retrieves the common table clauses (CTEs) associated with the component.
+    /// This is used to collect CTEs from nested queries and include them in the root query's WITH clause.
+    /// </summary>
+    /// <returns>The common table clauses associated with the component.</returns>
+    IEnumerable<CommonTableClause> GetCommonTableClauses();
 }

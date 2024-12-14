@@ -6,6 +6,6 @@ public class EmptyWindowFrame : IWindowFrame
     private EmptyWindowFrame() { }
     public string ToSqlWithoutCte() => string.Empty;
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte() => new List<Lexeme>();
-    public IEnumerable<CommonTableClause> GetCommonTableClauses() => new List<CommonTableClause>();
+    public IEnumerable<IQuery> GetQueries() => new List<IQuery>();
     public bool MightHaveCommonTableClauses => false;
 }

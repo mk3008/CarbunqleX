@@ -67,7 +67,22 @@ public class ValuesQuery : IQuery
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()
     {
-        return Enumerable.Empty<CommonTableClause>();
+        var commonTableClauses = new List<CommonTableClause>();
+
+        foreach (var query in GetQueries())
+        {
+            commonTableClauses.AddRange(query.GetCommonTableClauses());
+        }
+
+        return commonTableClauses
+            .GroupBy(cte => cte.Alias)
+            .Select(group => group.First())
+            .OrderByDescending(cte => cte.IsRecursive);
+    }
+
+    public IEnumerable<IQuery> GetQueries()
+    {
+        return [this];
     }
 }
 
@@ -124,6 +139,11 @@ public class ValuesRow : ISqlComponent
     public IEnumerable<CommonTableClause> GetCommonTableClauses()
     {
         return Enumerable.Empty<CommonTableClause>();
+    }
+
+    public IEnumerable<IQuery> GetQueries()
+    {
+        return Enumerable.Empty<IQuery>();
     }
 }
 

@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
@@ -18,9 +17,9 @@ public class CaseExpressionWithCase : IValueExpression
 
     public string DefaultName => string.Empty;
 
-    public bool MightHaveCommonTableClauses => Case.MightHaveCommonTableClauses ||
-                                               WhenThenPairs.Any(pair => pair.MightHaveCommonTableClauses) ||
-                                               Else.MightHaveCommonTableClauses;
+    public bool MightHaveQueries => Case.MightHaveQueries ||
+                                    WhenThenPairs.Any(pair => pair.When.MightHaveQueries || pair.Then.MightHaveQueries) ||
+                                    Else.MightHaveQueries;
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
@@ -63,33 +62,32 @@ public class CaseExpressionWithCase : IValueExpression
         return sql.ToString();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (!MightHaveCommonTableClauses)
-        {
-            return Enumerable.Empty<CommonTableClause>();
-        }
+        var queries = new List<IQuery>();
 
-        var commonTableClauses = new List<CommonTableClause>();
-
-        if (Case.MightHaveCommonTableClauses)
+        if (Case.MightHaveQueries)
         {
-            commonTableClauses.AddRange(Case.GetCommonTableClauses());
+            queries.AddRange(Case.GetQueries());
         }
 
         foreach (var pair in WhenThenPairs)
         {
-            if (pair.MightHaveCommonTableClauses)
+            if (pair.When.MightHaveQueries)
             {
-                commonTableClauses.AddRange(pair.GetCommonTableClauses());
+                queries.AddRange(pair.When.GetQueries());
+            }
+            if (pair.Then.MightHaveQueries)
+            {
+                queries.AddRange(pair.Then.GetQueries());
             }
         }
 
-        if (Else.MightHaveCommonTableClauses)
+        if (Else.MightHaveQueries)
         {
-            commonTableClauses.AddRange(Else.GetCommonTableClauses());
+            queries.AddRange(Else.GetQueries());
         }
 
-        return commonTableClauses;
+        return queries;
     }
 }

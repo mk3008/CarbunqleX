@@ -2,5 +2,5 @@
 
 public interface IPartitionByClause : ISqlComponent
 {
-    bool MightHaveCommonTableClauses { get; }
+    bool MightHaveQueries { get; }
 }

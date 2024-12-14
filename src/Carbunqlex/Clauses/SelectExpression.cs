@@ -40,12 +40,12 @@ public class SelectExpression : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (Expression.MightHaveCommonTableClauses)
+        if (Expression.MightHaveQueries)
         {
-            return Expression.GetCommonTableClauses();
+            return Expression.GetQueries();
         }
-        return Enumerable.Empty<CommonTableClause>();
+        return Enumerable.Empty<IQuery>();
     }
 }

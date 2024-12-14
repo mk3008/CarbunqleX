@@ -45,19 +45,19 @@ public class PagingClause : IPagingClause
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        var commonTableClauses = new List<CommonTableClause>();
+        var queries = new List<IQuery>();
 
-        if (Offset.MightHaveCommonTableClauses)
+        if (Offset.MightHaveQueries)
         {
-            commonTableClauses.AddRange(Offset.GetCommonTableClauses());
+            queries.AddRange(Offset.GetQueries());
         }
-        if (Fetch.MightHaveCommonTableClauses)
+        if (Fetch.MightHaveQueries)
         {
-            commonTableClauses.AddRange(Fetch.GetCommonTableClauses());
+            queries.AddRange(Fetch.GetQueries());
         }
 
-        return commonTableClauses;
+        return queries;
     }
 }

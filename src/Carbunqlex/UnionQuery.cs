@@ -49,7 +49,7 @@ public class UnionQuery : IQuery
         var sb = new StringBuilder();
 
         // Generate merged WITH clause
-        var withClause = new WithClause(Left.GetCommonTableClauses().Union(Right.GetCommonTableClauses())).ToSql();
+        var withClause = new WithClause(GetCommonTableClauses()).ToSql();
         if (!string.IsNullOrEmpty(withClause))
         {
             sb.Append(withClause);
@@ -99,9 +99,28 @@ public class UnionQuery : IQuery
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()
     {
-        var commonTableClauses = new List<CommonTableClause>();
-        commonTableClauses.AddRange(Left.GetCommonTableClauses());
-        commonTableClauses.AddRange(Right.GetCommonTableClauses());
-        return commonTableClauses;
+        var queries = Left.GetCommonTableClauses().Union(Right.GetCommonTableClauses());
+
+        var commonTables = new List<(CommonTableClause Cte, int Index)>();
+        commonTables.AddRange(queries.Select((cte, index) => (cte, index + commonTables.Count)));
+
+        return commonTables
+            .GroupBy(ct => ct.Cte.Alias)
+            .Select(group => group.First())
+            .OrderByDescending(cte => cte.Cte.IsRecursive)
+            .ThenBy(ct => ct.Index)
+            .Select(ct => ct.Cte);
+    }
+
+    public IEnumerable<IQuery> GetQueries()
+    {
+        var queries = new List<IQuery>
+        {
+            this
+        };
+        queries.AddRange(Left.GetQueries());
+        queries.AddRange(Right.GetQueries());
+
+        return queries;
     }
 }

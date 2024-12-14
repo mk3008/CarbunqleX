@@ -34,7 +34,7 @@ public class FunctionExpression : IValueExpression
 
     public string DefaultName => string.Empty;
 
-    public bool MightHaveCommonTableClauses => Arguments.Any(arg => arg.MightHaveCommonTableClauses) || OverClause.MightHaveCommonTableClauses;
+    public bool MightHaveQueries => Arguments.Any(arg => arg.MightHaveQueries) || OverClause.MightHaveCommonTableClauses;
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
@@ -58,28 +58,23 @@ public class FunctionExpression : IValueExpression
         }
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (!MightHaveCommonTableClauses)
-        {
-            return Enumerable.Empty<CommonTableClause>();
-        }
-
-        var commonTableClauses = new List<CommonTableClause>();
+        var queries = new List<IQuery>();
 
         foreach (var argument in Arguments)
         {
-            if (argument.MightHaveCommonTableClauses)
+            if (argument.MightHaveQueries)
             {
-                commonTableClauses.AddRange(argument.GetCommonTableClauses());
+                queries.AddRange(argument.GetQueries());
             }
         }
 
         if (OverClause.MightHaveCommonTableClauses)
         {
-            commonTableClauses.AddRange(OverClause.GetCommonTableClauses());
+            queries.AddRange(OverClause.GetQueries());
         }
 
-        return commonTableClauses;
+        return queries;
     }
 }

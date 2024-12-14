@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
@@ -14,7 +13,7 @@ public class ParenthesizedExpression : IValueExpression
 
     public string DefaultName => InnerExpression.DefaultName;
 
-    public bool MightHaveCommonTableClauses => InnerExpression.MightHaveCommonTableClauses;
+    public bool MightHaveQueries => InnerExpression.MightHaveQueries;
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
@@ -35,12 +34,12 @@ public class ParenthesizedExpression : IValueExpression
         return sb.ToString();
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    public IEnumerable<IQuery> GetQueries()
     {
-        if (InnerExpression.MightHaveCommonTableClauses)
+        if (InnerExpression.MightHaveQueries)
         {
-            return InnerExpression.GetCommonTableClauses();
+            return InnerExpression.GetQueries();
         }
-        return Enumerable.Empty<CommonTableClause>();
+        return Enumerable.Empty<IQuery>();
     }
 }
