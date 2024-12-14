@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.ValueExpressions;
 using System.Text;
 
 namespace Carbunqlex;
@@ -54,13 +53,10 @@ public class ValuesRow : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
-    {
-        return Enumerable.Empty<CommonTableClause>();
-    }
-
     public IEnumerable<IQuery> GetQueries()
     {
-        return Enumerable.Empty<IQuery>();
+        return Columns
+            .Where(column => column.MightHaveQueries)
+            .SelectMany(column => column.GetQueries());
     }
 }

@@ -82,6 +82,14 @@ public class ValuesQuery : IQuery
 
     public IEnumerable<IQuery> GetQueries()
     {
-        return [this];
+        var queries = new List<IQuery>();
+
+        queries.Add(this);
+        foreach (var row in Rows)
+        {
+            queries.AddRange(row.GetQueries());
+        }
+
+        return queries;
     }
 }
