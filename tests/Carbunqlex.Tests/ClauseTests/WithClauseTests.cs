@@ -157,5 +157,10 @@ public class WithClauseTests(ITestOutputHelper output)
         {
             return Enumerable.Empty<IQuery>();
         }
+
+        public IDictionary<string, object?> GetParameters()
+        {
+            return new Dictionary<string, object?>();
+        }
     }
 }

@@ -27,4 +27,10 @@ public interface IQuery : ISqlComponent
     /// </summary>
     /// <returns>The common table clauses associated with the component.</returns>
     IEnumerable<CommonTableClause> GetCommonTableClauses();
+
+    /// <summary>
+    /// Retrieves the parameters used in the query.
+    /// </summary>
+    /// <returns></returns>
+    IDictionary<string, object?> GetParameters();
 }

@@ -94,6 +94,19 @@ public static class SelectQueryFactory
         return new SelectQuery(selectClause);
     }
 
+    public static SelectQuery CreateSelectQueryWithParameters(Dictionary<string, object?> parameters)
+    {
+        var selectClause = new SelectClause(
+            new SelectExpression(new ColumnExpression("ColumnName1"))
+        );
+        var selectQuery = new SelectQuery(selectClause);
+        foreach (var parameter in parameters)
+        {
+            selectQuery.Parameters[parameter.Key] = parameter.Value;
+        }
+        return selectQuery;
+    }
+
     // Simple implementation of IQuery for testing purposes
     private class MockQuery : IQuery
     {
@@ -132,6 +145,11 @@ public static class SelectQueryFactory
         public IEnumerable<IQuery> GetQueries()
         {
             return Enumerable.Empty<IQuery>();
+        }
+
+        public IDictionary<string, object?> GetParameters()
+        {
+            return new Dictionary<string, object?>();
         }
     }
 }

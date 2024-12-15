@@ -161,4 +161,28 @@ public class SelectQuery : IQuery
 
         return queries;
     }
+
+    public Dictionary<string, object?> Parameters { get; } = new();
+
+    public IDictionary<string, object?> GetParameters()
+    {
+        var parameters = new Dictionary<string, object?>();
+
+        // Add own parameters first
+        foreach (var parameter in Parameters)
+        {
+            parameters[parameter.Key] = parameter.Value;
+        }
+
+        // Add internal parameters, excluding duplicates
+        foreach (var parameter in GetQueries().Where(q => q != this).SelectMany(q => q.GetParameters()))
+        {
+            if (!parameters.ContainsKey(parameter.Key))
+            {
+                parameters[parameter.Key] = parameter.Value;
+            }
+        }
+
+        return parameters;
+    }
 }

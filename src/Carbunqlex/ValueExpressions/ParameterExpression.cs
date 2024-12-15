@@ -3,13 +3,11 @@
 public class ParameterExpression : IValueExpression
 {
     public string Name { get; }
-    public object? Value { get; }
     public bool MightHaveQueries => false;
 
-    public ParameterExpression(string name, object? value = null)
+    public ParameterExpression(string name)
     {
         Name = name;
-        Value = value;
     }
 
     public string ToSqlWithoutCte()

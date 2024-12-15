@@ -141,4 +141,77 @@ public class SelectQueryTests(ITestOutputHelper output)
         // Assert
         Assert.Equal("with inner_cte as (SELECT * FROM table), outer_cte as (select ColumnName1 from inner_cte) select ColumnName1 from outer_cte", sql);
     }
+
+    [Fact]
+    public void GetParameters_ShouldReturnOwnParameters()
+    {
+        // Arrange
+        var selectClause = new SelectClause();
+        var selectQuery = new SelectQuery(selectClause);
+        selectQuery.Parameters["param1"] = "value1";
+        selectQuery.Parameters["param2"] = 123;
+
+        // Act
+        var parameters = selectQuery.GetParameters();
+        foreach (var parameter in parameters)
+        {
+            output.WriteLine($"{parameter.Key}: {parameter.Value}");
+        }
+
+        // Assert
+        Assert.Equal(2, parameters.Count);
+        Assert.Equal("value1", parameters["param1"]);
+        Assert.Equal(123, parameters["param2"]);
+    }
+
+    [Fact]
+    public void GetParameters_ShouldIncludeInternalParameters()
+    {
+        // Arrange
+        var selectClause = new SelectClause();
+        var internalQuery = SelectQueryFactory.CreateSelectQueryWithParameters(new Dictionary<string, object?>
+        {
+            { "internalParam", "internalValue" }
+        });
+        var fromClause = new FromClause(new SubQuerySource(internalQuery, "t"));
+        var selectQuery = new SelectQuery(selectClause, fromClause);
+        selectQuery.Parameters["param1"] = "value1";
+
+        // Act
+        var parameters = selectQuery.GetParameters();
+        foreach (var parameter in parameters)
+        {
+            output.WriteLine($"{parameter.Key}: {parameter.Value}");
+        }
+
+        // Assert
+        Assert.Equal(2, parameters.Count);
+        Assert.Equal("value1", parameters["param1"]);
+        Assert.Equal("internalValue", parameters["internalParam"]);
+    }
+
+    [Fact]
+    public void GetParameters_ShouldPrioritizeOwnParameters()
+    {
+        // Arrange
+        var selectClause = new SelectClause();
+        var internalQuery = SelectQueryFactory.CreateSelectQueryWithParameters(new Dictionary<string, object?>
+        {
+            { "param1", "internalValue" }
+        });
+        var fromClause = new FromClause(new SubQuerySource(internalQuery, "t"));
+        var selectQuery = new SelectQuery(selectClause, fromClause);
+        selectQuery.Parameters["param1"] = "ownValue";
+
+        // Act
+        var parameters = selectQuery.GetParameters();
+        foreach (var parameter in parameters)
+        {
+            output.WriteLine($"{parameter.Key}: {parameter.Value}");
+        }
+
+        // Assert
+        Assert.Single(parameters);
+        Assert.Equal("ownValue", parameters["param1"]);
+    }
 }

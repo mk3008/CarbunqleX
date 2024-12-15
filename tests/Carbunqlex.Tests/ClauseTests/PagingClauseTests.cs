@@ -28,8 +28,8 @@ public class PagingClauseTests(ITestOutputHelper output)
     public void ToSql_WithParameterExpressions_ReturnsCorrectSql()
     {
         // Arrange
-        var offset = new ParameterExpression("@offset", 10);
-        var fetch = new ParameterExpression("@fetch", 20);
+        var offset = new ParameterExpression("@offset");
+        var fetch = new ParameterExpression("@fetch");
         var pagingClause = new PagingClause(offset, fetch);
 
         // Act
