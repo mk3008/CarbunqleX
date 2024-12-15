@@ -33,4 +33,10 @@ public interface IQuery : ISqlComponent
     /// </summary>
     /// <returns></returns>
     IDictionary<string, object?> GetParameters();
+
+    /// <summary>
+    /// Retrieves the selected columns.
+    /// </summary>
+    /// <returns></returns>
+    IEnumerable<string> GetSelectedColumns();
 }

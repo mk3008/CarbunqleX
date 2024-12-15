@@ -30,4 +30,35 @@ public class SubQuerySourceTests(ITestOutputHelper output)
         // Assert
         Assert.Equal("(select 1) as alias", sql);
     }
+
+    [Fact]
+    public void GetSelectableColumns_ShouldReturnCorrectColumns()
+    {
+        // Arrange
+        var selectExpressions = new List<SelectExpression>
+        {
+            new SelectExpression(new ColumnExpression("Column1"), "Alias1"),
+            new SelectExpression(new ColumnExpression("Column2"), "Alias2"),
+            new SelectExpression(new ColumnExpression("Column3"), "Alias3")
+        };
+        var selectClause = new SelectClause(selectExpressions.ToArray());
+        var selectQuery = new SelectQuery(selectClause);
+        var subQuerySource = new SubQuerySource(selectQuery, "subquery");
+
+        // Act
+        var selectableColumns = subQuerySource.GetSelectableColumns();
+        foreach (var column in selectableColumns)
+        {
+            output.WriteLine($"{column.ColumnName}");
+        }
+
+        // Assert
+        var expectedColumns = new List<ColumnExpression>
+        {
+            new ColumnExpression("subquery", "Alias1"),
+            new ColumnExpression("subquery", "Alias2"),
+            new ColumnExpression("subquery", "Alias3")
+        };
+        Assert.Equal(expectedColumns.Select(c => c.ColumnName), selectableColumns.Select(c => c.ColumnName));
+    }
 }

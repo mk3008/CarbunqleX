@@ -11,41 +11,32 @@ public class FromClauseTests(ITestOutputHelper output)
 
     private static IDatasource GetDatasource()
     {
-        return new TableSource("table_a", "a");
-    }
-
-    private static IValueExpression GetCondition()
-    {
-        return new BinaryExpression(
-            "=",
-            new ColumnExpression("a", "id"),
-            new ConstantExpression(1)
-        );
+        return new TableSource("table_a", "a")
+        {
+            ColumnNames = new List<string> { "Column1", "Column2", "Column3" }
+        };
     }
 
     private static JoinClause GetInnerJoinClause()
     {
-        var source = new TableSource("table_b", "b");
+        var source = new TableSource("table_b", "b")
+        {
+            ColumnNames = new List<string> { "Column4", "Column5" }
+        };
         var condition = new BinaryExpression(
-            "and"
-            , new BinaryExpression(
+            "and",
+            new BinaryExpression(
                 "=",
                 new ColumnExpression("a", "table_a_id"),
                 new ColumnExpression("b", "table_a_id")
-                )
-            , new BinaryExpression(
+            ),
+            new BinaryExpression(
                 "=",
                 new ColumnExpression("a", "table_a_sub_id"),
                 new ColumnExpression("b", "table_a_sub_id")
-                )
+            )
         );
         return new JoinClause(source, JoinType.Inner, condition);
-    }
-
-    private static JoinClause GetCrossJoinClause()
-    {
-        var source = new TableSource("table_b", "b");
-        return new JoinClause(source, JoinType.Cross);
     }
 
     [Fact]
@@ -69,7 +60,7 @@ public class FromClauseTests(ITestOutputHelper output)
         var datasource = GetDatasource();
         var joinClause = GetInnerJoinClause();
         var fromClause = new FromClause(datasource);
-        fromClause.joinClauses.Add(joinClause);
+        fromClause.JoinClauses.Add(joinClause);
 
         // Act
         var sql = fromClause.ToSqlWithoutCte();
@@ -77,5 +68,57 @@ public class FromClauseTests(ITestOutputHelper output)
 
         // Assert
         Assert.Equal("from table_a as a inner join table_b as b on a.table_a_id = b.table_a_id and a.table_a_sub_id = b.table_a_sub_id", sql);
+    }
+
+    [Fact]
+    public void GetSelectableColumns_NoJoins_ReturnsCorrectColumns()
+    {
+        // Arrange
+        var datasource = GetDatasource();
+        var fromClause = new FromClause(datasource);
+
+        // Act
+        var selectableColumns = fromClause.GetSelectableColumns();
+        foreach (var column in selectableColumns)
+        {
+            output.WriteLine(column.ToSqlWithoutCte());
+        }
+
+        // Assert
+        var expectedColumns = new List<string>
+        {
+            "a.Column1",
+            "a.Column2",
+            "a.Column3"
+        };
+        Assert.Equal(expectedColumns, selectableColumns.Select(c => c.ToSqlWithoutCte()));
+    }
+
+    [Fact]
+    public void GetSelectableColumns_WithJoins_ReturnsCorrectColumns()
+    {
+        // Arrange
+        var datasource = GetDatasource();
+        var joinClause = GetInnerJoinClause();
+        var fromClause = new FromClause(datasource);
+        fromClause.JoinClauses.Add(joinClause);
+
+        // Act
+        var selectableColumns = fromClause.GetSelectableColumns();
+        foreach (var column in selectableColumns)
+        {
+            output.WriteLine(column.ToSqlWithoutCte());
+        }
+
+        // Assert
+        var expectedColumns = new List<string>
+        {
+            "a.Column1",
+            "a.Column2",
+            "a.Column3",
+            "b.Column4",
+            "b.Column5"
+        };
+        Assert.Equal(expectedColumns, selectableColumns.Select(c => c.ToSqlWithoutCte()));
     }
 }

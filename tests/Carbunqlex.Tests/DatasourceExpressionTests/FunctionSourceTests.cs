@@ -1,4 +1,4 @@
-using Carbunqlex.DatasourceExpressions;
+﻿using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
@@ -15,7 +15,7 @@ public class FunctionSourceTests(ITestOutputHelper output)
         var functionName = "TestFunction";
         var arguments = new List<IValueExpression> { new ConstantExpression(1), new ConstantExpression(2) };
         var alias = "TestAlias";
-        var columnAliases = new ColumnAliases(new List<string> { "col1", "col2" });
+        var columnAliases = new ColumnAliasClause(new List<string> { "col1", "col2" });
         var functionSource = new FunctionSource(functionName, arguments, alias, columnAliases);
 
         // Act
@@ -24,5 +24,52 @@ public class FunctionSourceTests(ITestOutputHelper output)
 
         // Assert
         Assert.Equal("TestFunction(1, 2) as TestAlias(col1, col2)", sql);
+    }
+
+
+    [Fact]
+    public void GetSelectableColumns_ShouldReturnCorrectColumns()
+    {
+        // Arrange
+        var functionName = "TestFunction";
+        var arguments = new List<IValueExpression> { new ConstantExpression(1), new ConstantExpression(2) };
+        var alias = "TestAlias";
+        var columnAliases = new ColumnAliasClause(new List<string> { "col1", "col2" });
+        var functionSource = new FunctionSource(functionName, arguments, alias, columnAliases);
+
+        // Act
+        var selectableColumns = functionSource.GetSelectableColumns();
+        foreach (var column in selectableColumns)
+        {
+            output.WriteLine($"{column.ColumnName}");
+        }
+
+        // Assert
+        var expectedColumns = new List<ColumnExpression>
+        {
+            new ColumnExpression("TestAlias", "col1"),
+            new ColumnExpression("TestAlias", "col2")
+        };
+        Assert.Equal(expectedColumns.Select(c => c.ColumnName), selectableColumns.Select(c => c.ColumnName));
+    }
+
+    [Fact]
+    public void GetSelectableColumns_ShouldReturnEmpty_WhenNoColumnAliases()
+    {
+        // Arrange
+        var functionName = "TestFunction";
+        var arguments = new List<IValueExpression> { new ConstantExpression(1), new ConstantExpression(2) };
+        var alias = "TestAlias";
+        var functionSource = new FunctionSource(functionName, arguments, alias);
+
+        // Act
+        var selectableColumns = functionSource.GetSelectableColumns();
+        foreach (var column in selectableColumns)
+        {
+            output.WriteLine($"{column.ColumnName}");
+        }
+
+        // Assert
+        Assert.Empty(selectableColumns);
     }
 }

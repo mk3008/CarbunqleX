@@ -35,10 +35,10 @@ public class CommonTableClause : ISqlComponent
     public bool IsRecursive { get; set; }
     public string Alias { get; set; }
     public IQuery Query { get; }
-    public ColumnAliases? ColumnAliases { get; }
+    public ColumnAliasClause? ColumnAliases { get; }
     public Materialization Materialization { get; }
 
-    public CommonTableClause(IQuery query, string alias, ColumnAliases? columnAliases = null, Materialization materialization = Materialization.None, bool isRecursive = false)
+    public CommonTableClause(IQuery query, string alias, ColumnAliasClause? columnAliases = null, Materialization materialization = Materialization.None, bool isRecursive = false)
     {
         Query = query;
         Alias = alias;
@@ -52,7 +52,7 @@ public class CommonTableClause : ISqlComponent
         var sb = new StringBuilder();
         sb.Append(Alias);
 
-        if (ColumnAliases != null && ColumnAliases.Aliases.Any())
+        if (ColumnAliases != null && ColumnAliases.ColumnAliases.Any())
         {
             sb.Append(ColumnAliases.ToSqlWithoutCte());
         }
@@ -78,7 +78,7 @@ public class CommonTableClause : ISqlComponent
             new Lexeme(LexType.Identifier, Alias)
         };
 
-        if (ColumnAliases != null && ColumnAliases.Aliases.Any())
+        if (ColumnAliases != null && ColumnAliases.ColumnAliases.Any())
         {
             lexemes.AddRange(ColumnAliases.GenerateLexemesWithoutCte());
         }

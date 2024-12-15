@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Carbunqlex.ValueExpressions;
+using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
 
@@ -6,20 +7,20 @@ public class SubQuerySource : IDatasource
 {
     public IQuery Query { get; set; }
     public string Alias { get; set; }
-    public ColumnAliases ColumnAliases { get; set; }
+    public ColumnAliasClause ColumnAliasClause { get; set; }
 
     public SubQuerySource(IQuery query, string alias)
     {
         Query = query;
         Alias = alias;
-        ColumnAliases = new ColumnAliases(Enumerable.Empty<string>());
+        ColumnAliasClause = new ColumnAliasClause(Enumerable.Empty<string>());
     }
 
     public SubQuerySource(IQuery query, string alias, IEnumerable<string> columnAliases)
     {
         Query = query;
         Alias = alias;
-        ColumnAliases = new ColumnAliases(columnAliases);
+        ColumnAliasClause = new ColumnAliasClause(columnAliases);
     }
 
     public string ToSqlWithoutCte()
@@ -33,7 +34,7 @@ public class SubQuerySource : IDatasource
         sb.Append(Query.ToSqlWithoutCte());
         sb.Append(") as ");
         sb.Append(Alias);
-        sb.Append(ColumnAliases.ToSqlWithoutCte());
+        sb.Append(ColumnAliasClause.ToSqlWithoutCte());
         return sb.ToString();
     }
 
@@ -47,7 +48,7 @@ public class SubQuerySource : IDatasource
         lexemes.Add(new Lexeme(LexType.CloseParen, ")"));
         lexemes.Add(new Lexeme(LexType.Keyword, "as"));
         lexemes.Add(new Lexeme(LexType.Identifier, Alias));
-        lexemes.AddRange(ColumnAliases.GenerateLexemesWithoutCte());
+        lexemes.AddRange(ColumnAliasClause.GenerateLexemesWithoutCte());
         return lexemes;
     }
 
@@ -56,5 +57,21 @@ public class SubQuerySource : IDatasource
         var queries = new List<IQuery> { Query };
         queries.AddRange(Query.GetQueries());
         return queries;
+    }
+
+    public IEnumerable<ColumnExpression> GetSelectableColumns()
+    {
+        if (string.IsNullOrEmpty(Alias))
+        {
+            return Enumerable.Empty<ColumnExpression>();
+        }
+        if (ColumnAliasClause.ColumnAliases.Any())
+        {
+            return ColumnAliasClause.ColumnAliases.Select(column => new ColumnExpression(Alias, column));
+        }
+        else
+        {
+            return Query.GetSelectedColumns().Select(column => new ColumnExpression(Alias, column));
+        }
     }
 }

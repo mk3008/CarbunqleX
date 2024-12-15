@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.ValueExpressions;
 using System.Text;
 
 namespace Carbunqlex.Clauses;
@@ -7,7 +8,7 @@ public class FromClause : IFromClause
 {
     public IDatasource RootDatasource { get; set; }
 
-    public List<JoinClause> joinClauses { get; } = new();
+    public List<JoinClause> JoinClauses { get; } = new();
 
     public FromClause(IDatasource datasource)
     {
@@ -18,10 +19,10 @@ public class FromClause : IFromClause
     {
         var sb = new StringBuilder();
         sb.Append($"from {RootDatasource.ToSqlWithoutCte()}");
-        if (joinClauses.Count > 0)
+        if (JoinClauses.Count > 0)
         {
             sb.Append(" ");
-            joinClauses.Select(j => j.ToSqlWithoutCte()).ToList().ForEach(j => sb.Append(j));
+            JoinClauses.Select(j => j.ToSqlWithoutCte()).ToList().ForEach(j => sb.Append(j));
         }
         return sb.ToString();
     }
@@ -33,7 +34,7 @@ public class FromClause : IFromClause
         };
         lexemes.AddRange(RootDatasource.GenerateLexemesWithoutCte());
 
-        foreach (var joinClause in joinClauses)
+        foreach (var joinClause in JoinClauses)
         {
             lexemes.AddRange(joinClause.GenerateLexemesWithoutCte());
         }
@@ -48,11 +49,22 @@ public class FromClause : IFromClause
         var queries = new List<IQuery>();
         queries.AddRange(RootDatasource.GetQueries());
 
-        foreach (var joinClause in joinClauses)
+        foreach (var joinClause in JoinClauses)
         {
             queries.AddRange(joinClause.GetQueries());
         }
 
         return queries;
+    }
+
+    public IEnumerable<ColumnExpression> GetSelectableColumns()
+    {
+        var columns = new List<ColumnExpression>();
+        columns.AddRange(RootDatasource.GetSelectableColumns());
+        foreach (var joinClause in JoinClauses)
+        {
+            columns.AddRange(joinClause.Datasource.GetSelectableColumns());
+        }
+        return columns;
     }
 }

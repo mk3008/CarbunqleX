@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.Clauses;
+﻿using Carbunqlex.ValueExpressions;
+
+namespace Carbunqlex.Clauses;
 
 public class EmptyFromClause : IFromClause
 {
@@ -20,7 +22,11 @@ public class EmptyFromClause : IFromClause
 
     public IEnumerable<IQuery> GetQueries()
     {
-        // EmptyFromClause does not directly use queries, so return an empty list
         return Enumerable.Empty<IQuery>();
+    }
+
+    public IEnumerable<ColumnExpression> GetSelectableColumns()
+    {
+        return Enumerable.Empty<ColumnExpression>();
     }
 }

@@ -116,4 +116,13 @@ public class ValuesQuery : IQuery
 
         return parameters;
     }
+
+    /// <summary>
+    /// Values queries do not have named columns
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<string> GetSelectedColumns()
+    {
+        return Enumerable.Empty<string>();
+    }
 }

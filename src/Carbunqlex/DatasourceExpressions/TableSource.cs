@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Carbunqlex.ValueExpressions;
+using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
 
@@ -7,6 +8,12 @@ public class TableSource : IDatasource
     public List<string> Namespaces { get; set; } = new();
     public string TableName { get; set; }
     public string Alias { get; set; }
+
+    /// <summary>
+    /// List of column names that the table has.
+    /// Set this only if you want to use advanced analysis.
+    /// </summary>
+    public List<string> ColumnNames { get; set; } = new();
 
     public TableSource(IEnumerable<string> namespaces, string tableName, string alias)
     {
@@ -72,5 +79,14 @@ public class TableSource : IDatasource
     {
         // TableSource does not directly use queries, so return an empty list
         return Enumerable.Empty<IQuery>();
+    }
+
+    public IEnumerable<ColumnExpression> GetSelectableColumns()
+    {
+        if (string.IsNullOrEmpty(Alias))
+        {
+            return Enumerable.Empty<ColumnExpression>();
+        }
+        return ColumnNames.Select(column => new ColumnExpression(Alias, column));
     }
 }

@@ -185,4 +185,13 @@ public class SelectQuery : IQuery
 
         return parameters;
     }
+
+    /// <summary>
+    /// Get the columns selected in the query.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<string> GetSelectedColumns()
+    {
+        return SelectClause.Expressions.Select(exp => exp.Alias);
+    }
 }

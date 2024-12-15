@@ -147,4 +147,9 @@ public class UnionQuery : IQuery
 
         return parameters;
     }
+
+    public IEnumerable<string> GetSelectedColumns()
+    {
+        return Left.GetSelectedColumns();
+    }
 }

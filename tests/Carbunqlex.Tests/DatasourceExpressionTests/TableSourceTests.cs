@@ -1,4 +1,5 @@
-using Carbunqlex.DatasourceExpressions;
+﻿using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.DatasourceExpressionTests;
@@ -69,5 +70,53 @@ public class TableSourceTests(ITestOutputHelper output)
 
         // Assert
         Assert.Equal("Users", sql);
+    }
+
+
+    [Fact]
+    public void GetSelectableColumns_ShouldReturnCorrectColumns()
+    {
+        // Arrange
+        var tableName = "Users";
+        var alias = "U";
+        var columnNames = new List<string> { "Column1", "Column2", "Column3" };
+        var tableSource = new TableSource(tableName, alias)
+        {
+            ColumnNames = columnNames
+        };
+
+        // Act
+        var selectableColumns = tableSource.GetSelectableColumns();
+        foreach (var column in selectableColumns)
+        {
+            output.WriteLine($"{column.ColumnName}");
+        }
+
+        // Assert
+        var expectedColumns = new List<ColumnExpression>
+        {
+            new ColumnExpression("U", "Column1"),
+            new ColumnExpression("U", "Column2"),
+            new ColumnExpression("U", "Column3")
+        };
+        Assert.Equal(expectedColumns.Select(c => c.ColumnName), selectableColumns.Select(c => c.ColumnName));
+    }
+
+    [Fact]
+    public void GetSelectableColumns_ShouldReturnEmpty_WhenNoColumnNames()
+    {
+        // Arrange
+        var tableName = "Users";
+        var tableSource = new TableSource(tableName);
+
+        // Act
+        var selectableColumns = tableSource.GetSelectableColumns();
+        foreach (var column in selectableColumns)
+        {
+            output.WriteLine($"{column.ColumnName}");
+        }
+
+        // Assert
+        Assert.Empty(selectableColumns);
     }
 }

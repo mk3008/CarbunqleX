@@ -2,45 +2,45 @@
 
 namespace Carbunqlex.DatasourceExpressions;
 
-public class ColumnAliases : ISqlComponent
+public class ColumnAliasClause : ISqlComponent
 {
-    public List<string> Aliases { get; set; } = new();
+    public List<string> ColumnAliases { get; set; } = new();
 
-    public ColumnAliases(IEnumerable<string> aliases)
+    public ColumnAliasClause(IEnumerable<string> aliases)
     {
-        Aliases = aliases.ToList();
+        ColumnAliases = aliases.ToList();
     }
 
     public string ToSqlWithoutCte()
     {
-        if (!Aliases.Any())
+        if (!ColumnAliases.Any())
         {
             return string.Empty;
         }
 
         var sb = new StringBuilder();
         sb.Append("(");
-        sb.Append(string.Join(", ", Aliases));
+        sb.Append(string.Join(", ", ColumnAliases));
         sb.Append(")");
         return sb.ToString();
     }
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        if (!Aliases.Any())
+        if (!ColumnAliases.Any())
         {
             return Enumerable.Empty<Lexeme>();
         }
 
-        var lexemes = new List<Lexeme>(Aliases.Count * 2 + 2)
+        var lexemes = new List<Lexeme>(ColumnAliases.Count * 2 + 2)
         {
             new Lexeme(LexType.OpenParen, "(")
         };
 
-        for (int i = 0; i < Aliases.Count; i++)
+        for (int i = 0; i < ColumnAliases.Count; i++)
         {
-            lexemes.Add(new Lexeme(LexType.Identifier, Aliases[i]));
-            if (i < Aliases.Count - 1)
+            lexemes.Add(new Lexeme(LexType.Identifier, ColumnAliases[i]));
+            if (i < ColumnAliases.Count - 1)
             {
                 lexemes.Add(new Lexeme(LexType.Comma, ","));
             }

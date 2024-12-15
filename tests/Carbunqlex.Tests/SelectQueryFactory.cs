@@ -151,5 +151,10 @@ public static class SelectQueryFactory
         {
             return new Dictionary<string, object?>();
         }
+
+        public IEnumerable<string> GetSelectedColumns()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

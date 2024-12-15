@@ -8,14 +8,14 @@ public class FunctionSource : IDatasource
     public string FunctionName { get; set; }
     public List<IValueExpression> Arguments { get; set; }
     public string Alias { get; set; }
-    public ColumnAliases ColumnAliases { get; set; }
+    public ColumnAliasClause ColumnAliasClause { get; set; }
 
-    public FunctionSource(string functionName, IEnumerable<IValueExpression> arguments, string alias, ColumnAliases columnAliases)
+    public FunctionSource(string functionName, IEnumerable<IValueExpression> arguments, string alias, ColumnAliasClause columnAliases)
     {
         FunctionName = functionName;
         Arguments = arguments.ToList();
         Alias = alias;
-        ColumnAliases = columnAliases;
+        ColumnAliasClause = columnAliases;
     }
 
     public FunctionSource(string functionName, IEnumerable<IValueExpression> arguments, string alias)
@@ -23,7 +23,7 @@ public class FunctionSource : IDatasource
         FunctionName = functionName;
         Arguments = arguments.ToList();
         Alias = alias;
-        ColumnAliases = new ColumnAliases(Enumerable.Empty<string>());
+        ColumnAliasClause = new ColumnAliasClause(Enumerable.Empty<string>());
     }
 
     public FunctionSource(string functionName, string alias)
@@ -31,7 +31,7 @@ public class FunctionSource : IDatasource
         FunctionName = functionName;
         Arguments = new List<IValueExpression>();
         Alias = alias;
-        ColumnAliases = new ColumnAliases(Enumerable.Empty<string>());
+        ColumnAliasClause = new ColumnAliasClause(Enumerable.Empty<string>());
     }
 
     public string ToSqlWithoutCte()
@@ -50,7 +50,7 @@ public class FunctionSource : IDatasource
         sb.Append(string.Join(", ", Arguments.Select(arg => arg.ToSqlWithoutCte())));
         sb.Append(") as ");
         sb.Append(Alias);
-        sb.Append(ColumnAliases.ToSqlWithoutCte());
+        sb.Append(ColumnAliasClause.ToSqlWithoutCte());
         return sb.ToString();
     }
 
@@ -62,7 +62,7 @@ public class FunctionSource : IDatasource
             new Lexeme(LexType.Identifier, Alias)
         };
         lexemes.AddRange(Arguments.SelectMany(arg => arg.GenerateLexemesWithoutCte()));
-        lexemes.AddRange(ColumnAliases.GenerateLexemesWithoutCte());
+        lexemes.AddRange(ColumnAliasClause.GenerateLexemesWithoutCte());
         return lexemes;
     }
 
@@ -79,5 +79,14 @@ public class FunctionSource : IDatasource
         }
 
         return queries;
+    }
+
+    public IEnumerable<ColumnExpression> GetSelectableColumns()
+    {
+        if (string.IsNullOrEmpty(Alias))
+        {
+            return Enumerable.Empty<ColumnExpression>();
+        }
+        return ColumnAliasClause.ColumnAliases.Select(column => new ColumnExpression(Alias, column));
     }
 }

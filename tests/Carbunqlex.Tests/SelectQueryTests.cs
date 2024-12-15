@@ -214,4 +214,29 @@ public class SelectQueryTests(ITestOutputHelper output)
         Assert.Single(parameters);
         Assert.Equal("ownValue", parameters["param1"]);
     }
+
+    [Fact]
+    public void GetSelectedColumns_ReturnsCorrectColumns()
+    {
+        // Arrange
+        var selectExpressions = new List<SelectExpression>
+        {
+            new SelectExpression(new ColumnExpression("Column1"), "Alias1"),
+            new SelectExpression(new ColumnExpression("Column2"), "Alias2"),
+            new SelectExpression(new ColumnExpression("Column3"), "Alias3")
+        };
+        var selectClause = new SelectClause(selectExpressions.ToArray());
+        var selectQuery = new SelectQuery(selectClause);
+
+        // Act
+        var selectedColumns = selectQuery.GetSelectedColumns();
+        foreach (var column in selectedColumns)
+        {
+            output.WriteLine(column);
+        }
+
+        // Assert
+        var expectedColumns = new List<string> { "Alias1", "Alias2", "Alias3" };
+        Assert.Equal(expectedColumns, selectedColumns.ToList());
+    }
 }

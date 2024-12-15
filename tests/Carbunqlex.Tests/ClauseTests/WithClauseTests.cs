@@ -162,5 +162,10 @@ public class WithClauseTests(ITestOutputHelper output)
         {
             return new Dictionary<string, object?>();
         }
+
+        public IEnumerable<string> GetSelectedColumns()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
