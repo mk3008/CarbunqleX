@@ -3,7 +3,7 @@ using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests;
+namespace Carbunqlex.Tests.QueryTests;
 
 public class SelectQueryTests(ITestOutputHelper output)
 {
@@ -50,35 +50,35 @@ public class SelectQueryTests(ITestOutputHelper output)
     public void ToSql_WithWithClause_ReturnsCorrectSql()
     {
         // Arrange
-        var selectQuery = SelectQueryFactory.CreateSelectQueryWithWithClause("cte");
+        var selectQuery = SelectQueryFactory.CreateSelectAllQueryWithWithClause("table", "cte");
 
         // Act
         var sql = selectQuery.ToSql();
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("with cte as (SELECT * FROM table) select ColumnName1 from cte", sql);
+        Assert.Equal("with cte as (select * from table) select * from cte", sql);
     }
 
     [Fact]
     public void ToSqlWithoutCte_WithWithClause_ReturnsCorrectSql()
     {
         // Arrange
-        var selectQuery = SelectQueryFactory.CreateSelectQueryWithWithClause("cte");
+        var selectQuery = SelectQueryFactory.CreateSelectAllQueryWithWithClause("table", "cte");
 
         // Act
         var sql = selectQuery.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("select ColumnName1 from cte", sql);
+        Assert.Equal("select * from cte", sql);
     }
 
     [Fact]
     public void ToSql_WithSubqueryWithClause_ReturnsCorrectSql()
     {
         // Arrange
-        var subquery = SelectQueryFactory.CreateSelectQueryWithWithClause("cte_sub");
+        var subquery = SelectQueryFactory.CreateSelectAllQueryWithWithClause("table", "cte_sub");
         output.WriteLine(subquery.ToSql());
 
         var selectClause = new SelectClause(
@@ -94,14 +94,14 @@ public class SelectQueryTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("with cte_sub as (SELECT * FROM table) select ColumnName1 from (select ColumnName1 from cte_sub) as subquery", sql);
+        Assert.Equal("with cte_sub as (select * from table) select ColumnName1 from (select * from cte_sub) as subquery", sql);
     }
 
     [Fact]
     public void ToSql_WithInlineQueryWithClause_ReturnsCorrectSql()
     {
         // Arrange
-        var inlineQuery = SelectQueryFactory.CreateSelectQueryWithWithClause("cte_inline");
+        var inlineQuery = SelectQueryFactory.CreateSelectAllQueryWithWithClause("table", "cte_inline");
         output.WriteLine(inlineQuery.ToSql());
 
         var selectClause = new SelectClause(
@@ -114,14 +114,14 @@ public class SelectQueryTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("with cte_inline as (SELECT * FROM table) select (select ColumnName1 from cte_inline) as value", sql);
+        Assert.Equal("with cte_inline as (select * from table) select (select * from cte_inline) as value", sql);
     }
 
     [Fact]
     public void ToSql_WithNestedWithClauses_ReturnsCorrectSql()
     {
         // Arrange
-        var selectQueryWithCte = SelectQueryFactory.CreateSelectQueryWithWithClause("inner_cte");
+        var selectQueryWithCte = SelectQueryFactory.CreateSelectAllQueryWithWithClause("table", "inner_cte");
         output.WriteLine(selectQueryWithCte.ToSql());
 
         var commonTableIncludeCte = new CommonTableClause(selectQueryWithCte, "outer_cte");
@@ -139,7 +139,7 @@ public class SelectQueryTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("with inner_cte as (SELECT * FROM table), outer_cte as (select ColumnName1 from inner_cte) select ColumnName1 from outer_cte", sql);
+        Assert.Equal("with inner_cte as (select * from table), outer_cte as (select * from inner_cte) select ColumnName1 from outer_cte", sql);
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public class SelectQueryTests(ITestOutputHelper output)
     {
         // Arrange
         var selectClause = new SelectClause();
-        var internalQuery = SelectQueryFactory.CreateSelectQueryWithParameters(new Dictionary<string, object?>
+        var internalQuery = SelectQueryFactory.CreateSelectAllQueryWithParameters("table", new Dictionary<string, object?>
         {
             { "internalParam", "internalValue" }
         });
@@ -195,7 +195,7 @@ public class SelectQueryTests(ITestOutputHelper output)
     {
         // Arrange
         var selectClause = new SelectClause();
-        var internalQuery = SelectQueryFactory.CreateSelectQueryWithParameters(new Dictionary<string, object?>
+        var internalQuery = SelectQueryFactory.CreateSelectAllQueryWithParameters("table", new Dictionary<string, object?>
         {
             { "param1", "internalValue" }
         });
@@ -229,14 +229,14 @@ public class SelectQueryTests(ITestOutputHelper output)
         var selectQuery = new SelectQuery(selectClause);
 
         // Act
-        var selectedColumns = selectQuery.GetSelectedColumns();
+        var selectedColumns = selectQuery.GetSelectExpressions();
         foreach (var column in selectedColumns)
         {
-            output.WriteLine(column);
+            output.WriteLine(column.Alias);
         }
 
         // Assert
         var expectedColumns = new List<string> { "Alias1", "Alias2", "Alias3" };
-        Assert.Equal(expectedColumns, selectedColumns.ToList());
+        Assert.Equal(expectedColumns, selectedColumns.Select(x => x.Alias).ToList());
     }
 }

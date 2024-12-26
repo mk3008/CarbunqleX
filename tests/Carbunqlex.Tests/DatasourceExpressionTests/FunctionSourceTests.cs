@@ -1,4 +1,5 @@
-﻿using Carbunqlex.DatasourceExpressions;
+﻿using Carbunqlex.Clauses;
+using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
@@ -41,7 +42,7 @@ public class FunctionSourceTests(ITestOutputHelper output)
         var selectableColumns = functionSource.GetSelectableColumns();
         foreach (var column in selectableColumns)
         {
-            output.WriteLine($"{column.ColumnName}");
+            output.WriteLine($"{column}");
         }
 
         // Assert
@@ -50,7 +51,7 @@ public class FunctionSourceTests(ITestOutputHelper output)
             new ColumnExpression("TestAlias", "col1"),
             new ColumnExpression("TestAlias", "col2")
         };
-        Assert.Equal(expectedColumns.Select(c => c.ColumnName), selectableColumns.Select(c => c.ColumnName));
+        Assert.Equal(expectedColumns.Select(c => c.ColumnName), selectableColumns.Select(c => c));
     }
 
     [Fact]
@@ -66,7 +67,7 @@ public class FunctionSourceTests(ITestOutputHelper output)
         var selectableColumns = functionSource.GetSelectableColumns();
         foreach (var column in selectableColumns)
         {
-            output.WriteLine($"{column.ColumnName}");
+            output.WriteLine($"{column}");
         }
 
         // Assert

@@ -1,8 +1,8 @@
 ﻿using System.Text;
 
-namespace Carbunqlex.DatasourceExpressions;
+namespace Carbunqlex.Clauses;
 
-public class ColumnAliasClause : ISqlComponent
+public class ColumnAliasClause : IColumnAliasClause
 {
     public List<string> ColumnAliases { get; set; } = new();
 
@@ -10,6 +10,8 @@ public class ColumnAliasClause : ISqlComponent
     {
         ColumnAliases = aliases.ToList();
     }
+
+    public IEnumerable<string> GetColumnNames() => ColumnAliases;
 
     public string ToSqlWithoutCte()
     {

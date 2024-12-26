@@ -13,7 +13,19 @@ public class SelectClause : ISqlComponent
         Expressions = selectExpressions.ToList();
     }
 
+    public SelectClause(IEnumerable<SelectExpression> selectExpressions)
+    {
+        DistinctClause = EmptyDistinctClause.Instance;
+        Expressions = selectExpressions.ToList();
+    }
+
     public SelectClause(IDistinctClause distinctClause, params SelectExpression[] selectExpressions)
+    {
+        DistinctClause = distinctClause;
+        Expressions = selectExpressions.ToList();
+    }
+
+    public SelectClause(IDistinctClause distinctClause, IEnumerable<SelectExpression> selectExpressions)
     {
         DistinctClause = distinctClause;
         Expressions = selectExpressions.ToList();

@@ -1,4 +1,5 @@
-﻿using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.ValueExpressions;
 
 namespace Carbunqlex.Clauses;
 
@@ -6,6 +7,7 @@ public class EmptyFromClause : IFromClause
 {
     // Singleton instance
     public static readonly EmptyFromClause Instance = new EmptyFromClause();
+
 
     // Private constructor to prevent instantiation
     private EmptyFromClause() { }
@@ -25,8 +27,13 @@ public class EmptyFromClause : IFromClause
         return Enumerable.Empty<IQuery>();
     }
 
-    public IEnumerable<ColumnExpression> GetSelectableColumns()
+    public IEnumerable<ColumnExpression> GetSelectableColumnExpressions()
     {
         return Enumerable.Empty<ColumnExpression>();
+    }
+
+    public IEnumerable<IDatasource> GetDatasources()
+    {
+        return Enumerable.Empty<IDatasource>();
     }
 }

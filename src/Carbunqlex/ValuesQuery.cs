@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using System.Text;
 
@@ -117,12 +118,13 @@ public class ValuesQuery : IQuery
         return parameters;
     }
 
-    /// <summary>
-    /// Values queries do not have named columns
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<string> GetSelectedColumns()
+    public IEnumerable<SelectExpression> GetSelectExpressions()
     {
-        return Enumerable.Empty<string>();
+        return Enumerable.Empty<SelectExpression>();
+    }
+
+    public IEnumerable<IDatasource> GetDatasources()
+    {
+        return Enumerable.Empty<IDatasource>();
     }
 }

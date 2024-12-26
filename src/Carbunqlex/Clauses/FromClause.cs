@@ -57,14 +57,18 @@ public class FromClause : IFromClause
         return queries;
     }
 
-    public IEnumerable<ColumnExpression> GetSelectableColumns()
+    public IEnumerable<ColumnExpression> GetSelectableColumnExpressions()
     {
-        var columns = new List<ColumnExpression>();
-        columns.AddRange(RootDatasource.GetSelectableColumns());
+        var columns = RootDatasource.GetSelectableColumnExpressions().ToList();
         foreach (var joinClause in JoinClauses)
         {
-            columns.AddRange(joinClause.Datasource.GetSelectableColumns());
+            columns.AddRange(joinClause.Datasource.GetSelectableColumnExpressions());
         }
         return columns;
+    }
+
+    public IEnumerable<IDatasource> GetDatasources()
+    {
+        return new IDatasource[] { RootDatasource }.Union(JoinClauses.Select(join => join.Datasource));
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.DatasourceExpressions;
 using System.Text;
 
 namespace Carbunqlex;
@@ -186,12 +187,13 @@ public class SelectQuery : IQuery
         return parameters;
     }
 
-    /// <summary>
-    /// Get the columns selected in the query.
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<string> GetSelectedColumns()
+    public IEnumerable<SelectExpression> GetSelectExpressions()
     {
-        return SelectClause.Expressions.Select(exp => exp.Alias);
+        return SelectClause.Expressions;
+    }
+
+    public IEnumerable<IDatasource> GetDatasources()
+    {
+        return FromClause.GetDatasources();
     }
 }

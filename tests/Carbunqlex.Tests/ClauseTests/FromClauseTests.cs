@@ -11,18 +11,13 @@ public class FromClauseTests(ITestOutputHelper output)
 
     private static IDatasource GetDatasource()
     {
-        return new TableSource("table_a", "a")
-        {
-            ColumnNames = new List<string> { "Column1", "Column2", "Column3" }
-        };
+        return new TableSource("table_a", "a", new List<string> { "Column1", "Column2", "Column3" });
     }
 
     private static JoinClause GetInnerJoinClause()
     {
-        var source = new TableSource("table_b", "b")
-        {
-            ColumnNames = new List<string> { "Column4", "Column5" }
-        };
+        var source = new TableSource("table_b", "b", new List<string> { "Column4", "Column5" });
+
         var condition = new BinaryExpression(
             "and",
             new BinaryExpression(
@@ -78,7 +73,7 @@ public class FromClauseTests(ITestOutputHelper output)
         var fromClause = new FromClause(datasource);
 
         // Act
-        var selectableColumns = fromClause.GetSelectableColumns();
+        var selectableColumns = fromClause.GetSelectableColumnExpressions();
         foreach (var column in selectableColumns)
         {
             output.WriteLine(column.ToSqlWithoutCte());
@@ -104,7 +99,7 @@ public class FromClauseTests(ITestOutputHelper output)
         fromClause.JoinClauses.Add(joinClause);
 
         // Act
-        var selectableColumns = fromClause.GetSelectableColumns();
+        var selectableColumns = fromClause.GetSelectableColumnExpressions();
         foreach (var column in selectableColumns)
         {
             output.WriteLine(column.ToSqlWithoutCte());

@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.DatasourceExpressions;
 
 namespace Carbunqlex;
 
@@ -35,8 +36,14 @@ public interface IQuery : ISqlComponent
     IDictionary<string, object?> GetParameters();
 
     /// <summary>
-    /// Retrieves the selected columns.
+    /// Retrieves the select expressions.
     /// </summary>
     /// <returns></returns>
-    IEnumerable<string> GetSelectedColumns();
+    IEnumerable<SelectExpression> GetSelectExpressions();
+
+    /// <summary>
+    /// Retrieves the datasources.
+    /// </summary>
+    /// <returns></returns>
+    IEnumerable<IDatasource> GetDatasources();
 }

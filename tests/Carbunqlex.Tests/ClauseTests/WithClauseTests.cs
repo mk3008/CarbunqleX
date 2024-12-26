@@ -11,8 +11,8 @@ public class WithClauseTests(ITestOutputHelper output)
     public void ToSql_WithoutRecursiveCommonTableClauses_ReturnsCorrectSql()
     {
         // Arrange
-        var commonTableClause1 = new CommonTableClause(new MockQuery("SELECT * FROM table1"), "cte1");
-        var commonTableClause2 = new CommonTableClause(new MockQuery("SELECT * FROM table2"), "cte2");
+        var commonTableClause1 = new CommonTableClause(SelectQueryFactory.CreateSelectAllQuery("table1"), "cte1");
+        var commonTableClause2 = new CommonTableClause(SelectQueryFactory.CreateSelectAllQuery("table2"), "cte2");
 
         var withClause = new WithClause(commonTableClause1, commonTableClause2);
 
@@ -21,15 +21,15 @@ public class WithClauseTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("with cte1 as (SELECT * FROM table1), cte2 as (SELECT * FROM table2)", sql);
+        Assert.Equal("with cte1 as (select * from table1), cte2 as (select * from table2)", sql);
     }
 
     [Fact]
     public void ToSql_WithRecursiveCommonTableClauses_ReturnsCorrectSql()
     {
         // Arrange
-        var commonTableClause1 = new CommonTableClause(new MockQuery("SELECT 1 AS number UNION ALL SELECT number + 1 FROM number_series WHERE number < 10"), "number_series", isRecursive: true);
-        var commonTableClause2 = new CommonTableClause(new MockQuery("SELECT * FROM table2"), "cte2");
+        var commonTableClause1 = new CommonTableClause(SelectQueryFactory.CreateSelectRecursiveQuery(), "number_series", isRecursive: true);
+        var commonTableClause2 = new CommonTableClause(SelectQueryFactory.CreateSelectAllQuery("table2"), "cte2");
 
         var withClause = new WithClause(commonTableClause1, commonTableClause2);
 
@@ -38,15 +38,15 @@ public class WithClauseTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("with recursive number_series as (SELECT 1 AS number UNION ALL SELECT number + 1 FROM number_series WHERE number < 10), cte2 as (SELECT * FROM table2)", sql);
+        Assert.Equal("with recursive number_series as (select 1 as number union all select number + 1 from number_series where number < 10), cte2 as (select * from table2)", sql);
     }
 
     [Fact]
     public void ToSql_WithMixedRecursiveCommonTableClauses_RecursiveFirst()
     {
         // Arrange
-        var commonTableClause1 = new CommonTableClause(new MockQuery("SELECT 1 AS number UNION ALL SELECT number + 1 FROM number_series WHERE number < 10"), "number_series", isRecursive: true);
-        var commonTableClause2 = new CommonTableClause(new MockQuery("SELECT * FROM table2"), "cte2");
+        var commonTableClause1 = new CommonTableClause(SelectQueryFactory.CreateSelectRecursiveQuery(), "number_series", isRecursive: true);
+        var commonTableClause2 = new CommonTableClause(SelectQueryFactory.CreateSelectAllQuery("table2"), "cte2");
 
         var withClause = new WithClause(commonTableClause2, commonTableClause1);
 
@@ -55,15 +55,15 @@ public class WithClauseTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("with recursive number_series as (SELECT 1 AS number UNION ALL SELECT number + 1 FROM number_series WHERE number < 10), cte2 as (SELECT * FROM table2)", sql);
+        Assert.Equal("with recursive number_series as (select 1 as number union all select number + 1 from number_series where number < 10), cte2 as (select * from table2)", sql);
     }
 
     [Fact]
     public void TryValidate_DuplicateCteNamesWithDifferentSql_ReturnsError()
     {
         // Arrange
-        var cte1 = new CommonTableClause(new MockQuery("SELECT * FROM table1"), "cte1");
-        var cte2 = new CommonTableClause(new MockQuery("SELECT * FROM table2"), "cte1");
+        var cte1 = new CommonTableClause(SelectQueryFactory.CreateSelectAllQuery("table1"), "cte1");
+        var cte2 = new CommonTableClause(SelectQueryFactory.CreateSelectAllQuery("table2"), "cte1");
         var withClause = new WithClause(cte1, cte2);
 
         // Act
@@ -82,8 +82,8 @@ public class WithClauseTests(ITestOutputHelper output)
     public void TryValidate_DuplicateCteNamesWithSameSql_ReturnsNoError()
     {
         // Arrange
-        var cte1 = new CommonTableClause(new MockQuery("SELECT * FROM table1"), "cte1");
-        var cte2 = new CommonTableClause(new MockQuery("SELECT * FROM table1"), "cte1");
+        var cte1 = new CommonTableClause(SelectQueryFactory.CreateSelectAllQuery("table1"), "cte1");
+        var cte2 = new CommonTableClause(SelectQueryFactory.CreateSelectAllQuery("table1"), "cte1");
         var withClause = new WithClause(cte1, cte2);
 
         // Act
@@ -102,8 +102,8 @@ public class WithClauseTests(ITestOutputHelper output)
     public void TryValidate_MultipleRecursiveCtes_ReturnsError()
     {
         // Arrange
-        var cte1 = new CommonTableClause(new MockQuery("SELECT * FROM table1"), "cte1", isRecursive: true);
-        var cte2 = new CommonTableClause(new MockQuery("SELECT * FROM table2"), "cte2", isRecursive: true);
+        var cte1 = new CommonTableClause(SelectQueryFactory.CreateSelectAllQuery("table1"), "cte1", isRecursive: true);
+        var cte2 = new CommonTableClause(SelectQueryFactory.CreateSelectAllQuery("table2"), "cte2", isRecursive: true);
         var withClause = new WithClause(cte1, cte2);
 
         // Act
@@ -116,56 +116,5 @@ public class WithClauseTests(ITestOutputHelper output)
         // Assert
         Assert.False(isValid);
         Assert.Contains("Multiple recursive CTEs found.", errorMessages);
-    }
-
-    // Simple implementation of IQuery for testing purposes
-    private class MockQuery : IQuery
-    {
-        private readonly string _sql;
-
-        public MockQuery(string sql)
-        {
-            _sql = sql;
-        }
-
-        public string ToSql()
-        {
-            return _sql;
-        }
-
-        public IEnumerable<Lexeme> GenerateLexemes()
-        {
-            return Enumerable.Empty<Lexeme>();
-        }
-
-        public string ToSqlWithoutCte()
-        {
-            return _sql;
-        }
-
-        public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
-        {
-            return Enumerable.Empty<Lexeme>();
-        }
-
-        public IEnumerable<CommonTableClause> GetCommonTableClauses()
-        {
-            return Enumerable.Empty<CommonTableClause>();
-        }
-
-        public IEnumerable<IQuery> GetQueries()
-        {
-            return Enumerable.Empty<IQuery>();
-        }
-
-        public IDictionary<string, object?> GetParameters()
-        {
-            return new Dictionary<string, object?>();
-        }
-
-        public IEnumerable<string> GetSelectedColumns()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

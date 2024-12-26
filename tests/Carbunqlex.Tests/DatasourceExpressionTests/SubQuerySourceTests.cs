@@ -49,7 +49,7 @@ public class SubQuerySourceTests(ITestOutputHelper output)
         var selectableColumns = subQuerySource.GetSelectableColumns();
         foreach (var column in selectableColumns)
         {
-            output.WriteLine($"{column.ColumnName}");
+            output.WriteLine($"{column}");
         }
 
         // Assert
@@ -59,6 +59,6 @@ public class SubQuerySourceTests(ITestOutputHelper output)
             new ColumnExpression("subquery", "Alias2"),
             new ColumnExpression("subquery", "Alias3")
         };
-        Assert.Equal(expectedColumns.Select(c => c.ColumnName), selectableColumns.Select(c => c.ColumnName));
+        Assert.Equal(expectedColumns.Select(c => c.ColumnName), selectableColumns.Select(c => c));
     }
 }

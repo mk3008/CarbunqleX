@@ -15,4 +15,6 @@ public enum LexType : byte
     StartClause,
     EndClause,
     Parameter,
+    OpenBracket,
+    CloseBracket,
 }

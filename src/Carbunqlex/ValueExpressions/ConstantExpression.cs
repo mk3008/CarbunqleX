@@ -4,10 +4,10 @@ namespace Carbunqlex.ValueExpressions;
 
 public class ConstantExpression : IValueExpression
 {
-    public static ConstantExpression CreateEscapeString(string value)
-    {
-        return new ConstantExpression($"'{value.Replace("'", "''")}'");
-    }
+    //public static ConstantExpression CreateEscapeString(string value)
+    //{
+    //    return new ConstantExpression($"'{value.Replace("'", "''")}'");
+    //}
 
     public object Value { get; set; }
 
@@ -58,3 +58,4 @@ public class ConstantExpression : IValueExpression
         return new ConstantExpression(columnValue);
     }
 }
+

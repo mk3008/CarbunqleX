@@ -1,4 +1,4 @@
-﻿using Carbunqlex.ValueExpressions;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
@@ -13,13 +13,20 @@ public class TableSource : IDatasource
     /// List of column names that the table has.
     /// Set this only if you want to use advanced analysis.
     /// </summary>
-    public List<string> ColumnNames { get; set; } = new();
+    public List<string> ColumnNames { get; } = new();
 
     public TableSource(IEnumerable<string> namespaces, string tableName, string alias)
     {
         Namespaces = namespaces.ToList();
         TableName = tableName;
         Alias = alias;
+    }
+
+    public TableSource(string tableName, string alias, IEnumerable<string> columns)
+    {
+        TableName = tableName;
+        Alias = alias;
+        ColumnNames = columns.ToList();
     }
 
     public TableSource(string tableName, string alias)
@@ -34,7 +41,7 @@ public class TableSource : IDatasource
         Alias = tableName;
     }
 
-    public string ToSqlWithoutCte()
+    private string GetTableFullName()
     {
         var sb = new StringBuilder();
         if (Namespaces.Any())
@@ -43,6 +50,13 @@ public class TableSource : IDatasource
             sb.Append(".");
         }
         sb.Append(TableName);
+        return sb.ToString();
+    }
+
+    public string ToSqlWithoutCte()
+    {
+        var sb = new StringBuilder(GetTableFullName());
+
         if (!string.IsNullOrEmpty(Alias) && Alias != TableName)
         {
             sb.Append(" as ");
@@ -81,12 +95,26 @@ public class TableSource : IDatasource
         return Enumerable.Empty<IQuery>();
     }
 
-    public IEnumerable<ColumnExpression> GetSelectableColumns()
+    public IEnumerable<string> GetSelectableColumns()
     {
-        if (string.IsNullOrEmpty(Alias))
-        {
-            return Enumerable.Empty<ColumnExpression>();
-        }
-        return ColumnNames.Select(column => new ColumnExpression(Alias, column));
+        return ColumnNames;
+    }
+
+    public bool TryGetSubQuery([NotNullWhen(true)] out IQuery? subQuery)
+    {
+        subQuery = null;
+        return false;
+    }
+
+    public bool TryGetTableName([NotNullWhen(true)] out string? tableFullName)
+    {
+        tableFullName = GetTableFullName();
+        return true;
+    }
+
+    public bool TryGetUnionQuerySource([NotNullWhen(true)] out UnionQuerySource? unionQuerySource)
+    {
+        unionQuerySource = null;
+        return false;
     }
 }

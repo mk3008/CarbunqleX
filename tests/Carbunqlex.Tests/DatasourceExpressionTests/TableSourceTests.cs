@@ -79,17 +79,13 @@ public class TableSourceTests(ITestOutputHelper output)
         // Arrange
         var tableName = "Users";
         var alias = "U";
-        var columnNames = new List<string> { "Column1", "Column2", "Column3" };
-        var tableSource = new TableSource(tableName, alias)
-        {
-            ColumnNames = columnNames
-        };
+        var tableSource = new TableSource(tableName, alias, new List<string> { "Column1", "Column2", "Column3" });
 
         // Act
         var selectableColumns = tableSource.GetSelectableColumns();
         foreach (var column in selectableColumns)
         {
-            output.WriteLine($"{column.ColumnName}");
+            output.WriteLine($"{column}");
         }
 
         // Assert
@@ -99,7 +95,7 @@ public class TableSourceTests(ITestOutputHelper output)
             new ColumnExpression("U", "Column2"),
             new ColumnExpression("U", "Column3")
         };
-        Assert.Equal(expectedColumns.Select(c => c.ColumnName), selectableColumns.Select(c => c.ColumnName));
+        Assert.Equal(expectedColumns.Select(c => c.ColumnName), selectableColumns.Select(c => c));
     }
 
     [Fact]
@@ -113,7 +109,7 @@ public class TableSourceTests(ITestOutputHelper output)
         var selectableColumns = tableSource.GetSelectableColumns();
         foreach (var column in selectableColumns)
         {
-            output.WriteLine($"{column.ColumnName}");
+            output.WriteLine($"{column}");
         }
 
         // Assert

@@ -10,7 +10,7 @@ public class SelectExpression : ISqlComponent
     public SelectExpression(IValueExpression expression)
     {
         Expression = expression;
-        Alias = string.Empty;
+        Alias = expression.DefaultName;
     }
 
     public SelectExpression(IValueExpression expression, string alias)
@@ -22,7 +22,7 @@ public class SelectExpression : ISqlComponent
     public string ToSqlWithoutCte()
     {
         var sql = Expression.ToSqlWithoutCte();
-        if (string.IsNullOrEmpty(Alias) || sql == Alias)
+        if (string.IsNullOrEmpty(Alias) || Expression.DefaultName == Alias)
         {
             return sql;
         }

@@ -133,7 +133,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void LikeExpression_ToSql_ReturnsCorrectSql()
     {
         var left = new ColumnExpression("TableName", "ColumnName");
-        var right = ConstantExpression.CreateEscapeString("%value%");
+        var right = ConstantExpression.Create("%value%");
         var likeExpression = new LikeExpression(left, false, right);
         var sql = likeExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -144,7 +144,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void LikeExpression_NotLike_ToSql_ReturnsCorrectSql()
     {
         var left = new ColumnExpression("TableName", "ColumnName");
-        var right = ConstantExpression.CreateEscapeString("%value%");
+        var right = ConstantExpression.Create("%value%");
         var likeExpression = new LikeExpression(left, true, right);
         var sql = likeExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -156,7 +156,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     {
         var input = "O'Reilly";
         var expected = "'O''Reilly'";
-        var constantExpression = ConstantExpression.CreateEscapeString(input);
+        var constantExpression = ConstantExpression.Create(input);
         var actual = constantExpression.ToSqlWithoutCte();
         output.WriteLine(actual);
         Assert.Equal(expected, actual);
@@ -166,10 +166,10 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void CaseExpressionWithoutCase_ToSql_ReturnsCorrectSql()
     {
         var when1 = new ConstantExpression(1);
-        var then1 = ConstantExpression.CreateEscapeString("One");
+        var then1 = ConstantExpression.Create("One");
         var when2 = new ConstantExpression(2);
-        var then2 = ConstantExpression.CreateEscapeString("Two");
-        var elseExpr = ConstantExpression.CreateEscapeString("Other");
+        var then2 = ConstantExpression.Create("Two");
+        var elseExpr = ConstantExpression.Create("Other");
 
         var caseExpression = new CaseExpressionWithoutCase(
             new List<WhenThenPair>
@@ -190,10 +190,10 @@ public class ValueExpressionTests(ITestOutputHelper output)
     {
         var caseExpr = new ColumnExpression("TableName", "ColumnName");
         var when1 = new ConstantExpression(1);
-        var then1 = ConstantExpression.CreateEscapeString("One");
+        var then1 = ConstantExpression.Create("One");
         var when2 = new ConstantExpression(2);
-        var then2 = ConstantExpression.CreateEscapeString("Two");
-        var elseExpr = ConstantExpression.CreateEscapeString("Other");
+        var then2 = ConstantExpression.Create("Two");
+        var elseExpr = ConstantExpression.Create("Other");
 
         var caseExpression = new CaseExpressionWithCase(
             caseExpr,

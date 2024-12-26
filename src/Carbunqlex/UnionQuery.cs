@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.DatasourceExpressions;
 using System.Text;
 
 namespace Carbunqlex;
@@ -32,7 +33,7 @@ public class UnionQuery : IQuery
     public IQuery Right { get; }
     public UnionType UnionType { get; }
 
-    public UnionQuery(IQuery left, IQuery right, UnionType unionType)
+    public UnionQuery(UnionType unionType, IQuery left, IQuery right)
     {
         Left = left;
         Right = right;
@@ -148,8 +149,46 @@ public class UnionQuery : IQuery
         return parameters;
     }
 
-    public IEnumerable<string> GetSelectedColumns()
+    public IEnumerable<SelectExpression> GetSelectExpressions()
     {
-        return Left.GetSelectedColumns();
+        // Since filtering cannot be applied to union queries, return an empty list
+        return Enumerable.Empty<SelectExpression>();
+    }
+
+    internal IEnumerable<IQuery> GetUnionQueryComponents()
+    {
+        if (Left is UnionQuery leftQuery)
+        {
+            foreach (var query in leftQuery.GetUnionQueryComponents())
+            {
+                yield return query;
+            }
+        }
+        else
+        {
+            yield return Left;
+        }
+        if (Right is UnionQuery rightQuery)
+        {
+            foreach (var query in rightQuery.GetUnionQueryComponents())
+            {
+                yield return query;
+            }
+        }
+        else
+        {
+            yield return Right;
+        }
+    }
+
+    public IEnumerable<IDatasource> GetDatasources()
+    {
+        var components = GetUnionQueryComponents().Select(static (query, index) => new { Index = index, Datasource = query }).ToList();
+        var columns = Left.GetSelectExpressions().Select(x => x.Alias).ToList();
+
+        foreach (var component in components)
+        {
+            yield return new UnionQuerySource(component.Datasource, component.Index.ToString(), columns);
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Carbunqlex.DatasourceExpressions;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.Clauses;
 
@@ -35,14 +34,14 @@ public class CommonTableClause : ISqlComponent
     public bool IsRecursive { get; set; }
     public string Alias { get; set; }
     public IQuery Query { get; }
-    public ColumnAliasClause? ColumnAliases { get; }
+    public ColumnAliasClause? ColumnAliasClause { get; }
     public Materialization Materialization { get; }
 
     public CommonTableClause(IQuery query, string alias, ColumnAliasClause? columnAliases = null, Materialization materialization = Materialization.None, bool isRecursive = false)
     {
         Query = query;
         Alias = alias;
-        ColumnAliases = columnAliases;
+        ColumnAliasClause = columnAliases;
         Materialization = materialization;
         IsRecursive = isRecursive;
     }
@@ -52,9 +51,9 @@ public class CommonTableClause : ISqlComponent
         var sb = new StringBuilder();
         sb.Append(Alias);
 
-        if (ColumnAliases != null && ColumnAliases.ColumnAliases.Any())
+        if (ColumnAliasClause != null && ColumnAliasClause.ColumnAliases.Any())
         {
-            sb.Append(ColumnAliases.ToSqlWithoutCte());
+            sb.Append(ColumnAliasClause.ToSqlWithoutCte());
         }
 
         sb.Append(" as ");
@@ -78,9 +77,9 @@ public class CommonTableClause : ISqlComponent
             new Lexeme(LexType.Identifier, Alias)
         };
 
-        if (ColumnAliases != null && ColumnAliases.ColumnAliases.Any())
+        if (ColumnAliasClause != null && ColumnAliasClause.ColumnAliases.Any())
         {
-            lexemes.AddRange(ColumnAliases.GenerateLexemesWithoutCte());
+            lexemes.AddRange(ColumnAliasClause.GenerateLexemesWithoutCte());
         }
 
         lexemes.Add(Lexeme.AsKeyword);
@@ -102,9 +101,6 @@ public class CommonTableClause : ISqlComponent
 
     public IEnumerable<IQuery> GetQueries()
     {
-        var queries = new List<IQuery>();
-        queries.AddRange(Query.GetQueries());
-        queries.Add(Query);
-        return queries;
+        return Query.GetQueries().Union([Query]);
     }
 }

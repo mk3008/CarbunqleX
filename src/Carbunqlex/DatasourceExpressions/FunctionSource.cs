@@ -1,4 +1,6 @@
-﻿using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Clauses;
+using Carbunqlex.ValueExpressions;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
@@ -8,7 +10,7 @@ public class FunctionSource : IDatasource
     public string FunctionName { get; set; }
     public List<IValueExpression> Arguments { get; set; }
     public string Alias { get; set; }
-    public ColumnAliasClause ColumnAliasClause { get; set; }
+    public IColumnAliasClause ColumnAliasClause { get; set; }
 
     public FunctionSource(string functionName, IEnumerable<IValueExpression> arguments, string alias, ColumnAliasClause columnAliases)
     {
@@ -23,7 +25,7 @@ public class FunctionSource : IDatasource
         FunctionName = functionName;
         Arguments = arguments.ToList();
         Alias = alias;
-        ColumnAliasClause = new ColumnAliasClause(Enumerable.Empty<string>());
+        ColumnAliasClause = EmptyColumnAliasClause.Instance;
     }
 
     public FunctionSource(string functionName, string alias)
@@ -81,12 +83,26 @@ public class FunctionSource : IDatasource
         return queries;
     }
 
-    public IEnumerable<ColumnExpression> GetSelectableColumns()
+    public IEnumerable<string> GetSelectableColumns()
     {
-        if (string.IsNullOrEmpty(Alias))
-        {
-            return Enumerable.Empty<ColumnExpression>();
-        }
-        return ColumnAliasClause.ColumnAliases.Select(column => new ColumnExpression(Alias, column));
+        return ColumnAliasClause.GetColumnNames();
+    }
+
+    public bool TryGetSubQuery([NotNullWhen(true)] out IQuery? subQuery)
+    {
+        subQuery = null;
+        return false;
+    }
+
+    public bool TryGetTableName([NotNullWhen(true)] out string? tableFullName)
+    {
+        tableFullName = null;
+        return false;
+    }
+
+    public bool TryGetUnionQuerySource([NotNullWhen(true)] out UnionQuerySource? unionQuerySource)
+    {
+        unionQuerySource = null;
+        return false;
     }
 }

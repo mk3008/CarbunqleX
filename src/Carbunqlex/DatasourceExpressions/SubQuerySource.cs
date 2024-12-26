@@ -1,4 +1,5 @@
-﻿using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Clauses;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;
@@ -7,13 +8,13 @@ public class SubQuerySource : IDatasource
 {
     public IQuery Query { get; set; }
     public string Alias { get; set; }
-    public ColumnAliasClause ColumnAliasClause { get; set; }
+    public IColumnAliasClause ColumnAliasClause { get; set; }
 
     public SubQuerySource(IQuery query, string alias)
     {
         Query = query;
         Alias = alias;
-        ColumnAliasClause = new ColumnAliasClause(Enumerable.Empty<string>());
+        ColumnAliasClause = EmptyColumnAliasClause.Instance;
     }
 
     public SubQuerySource(IQuery query, string alias, IEnumerable<string> columnAliases)
@@ -59,19 +60,33 @@ public class SubQuerySource : IDatasource
         return queries;
     }
 
-    public IEnumerable<ColumnExpression> GetSelectableColumns()
+    public IEnumerable<string> GetSelectableColumns()
     {
-        if (string.IsNullOrEmpty(Alias))
+        if (ColumnAliasClause.GetColumnNames().Any())
         {
-            return Enumerable.Empty<ColumnExpression>();
-        }
-        if (ColumnAliasClause.ColumnAliases.Any())
-        {
-            return ColumnAliasClause.ColumnAliases.Select(column => new ColumnExpression(Alias, column));
+            return ColumnAliasClause.GetColumnNames();
         }
         else
         {
-            return Query.GetSelectedColumns().Select(column => new ColumnExpression(Alias, column));
+            return Query.GetSelectExpressions().Select(column => column.Alias);
         }
+    }
+
+    public bool TryGetSubQuery([NotNullWhen(true)] out IQuery subQuery)
+    {
+        subQuery = Query;
+        return true;
+    }
+
+    public bool TryGetTableName([NotNullWhen(true)] out string? tableFullName)
+    {
+        tableFullName = null;
+        return false;
+    }
+
+    public bool TryGetUnionQuerySource([NotNullWhen(true)] out UnionQuerySource? unionQuerySource)
+    {
+        unionQuerySource = null;
+        return false;
     }
 }
