@@ -19,7 +19,7 @@ public class QueryNode
     /// <summary>
     /// The datasource nodes that make up the query.
     /// </summary>
-    private ReadOnlyDictionary<string, DatasourceNode> DatasourceNodes { get; }
+    internal ReadOnlyDictionary<string, DatasourceNode> DatasourceNodes { get; }
 
     public QueryNode(IQuery query, IEnumerable<DatasourceNode> datasourceNodes)
     {
@@ -45,7 +45,7 @@ public class QueryNode
         sb.AppendLine($"{indent}*Query");
         sb.AppendLine($"{indent} Type: {Query.GetType().Name}");
         sb.AppendLine($"{indent} Current: {Query.ToSqlWithoutCte()}");
-        sb.AppendLine($"{indent} Columns: {string.Join(", ", SelectExpressions.Select(x => x.Key))}");
+        sb.AppendLine($"{indent} SelectedColumns: {string.Join(", ", SelectExpressions.Select(x => x.Key))}");
 
         indentLevel++;
         indent = new string(' ', indentLevel * 2);

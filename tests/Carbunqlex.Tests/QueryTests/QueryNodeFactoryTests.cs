@@ -26,6 +26,17 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void TestWildCard()
+    {
+        // Arrange
+        var query = CreateSelectQuery_WildCardDecode();
+
+        // Act
+        var queryNode = QueryNodeFactory.Create(query);
+        output.WriteLine(queryNode.ToTreeString());
+    }
+
+    [Fact]
     public void TestSubQuery()
     {
         // Arrange
@@ -154,15 +165,22 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
 
     private static SelectQuery CreateSelectQuery_WildCardDecode()
     {
-        var coreQuery = SelectQueryFactory.CreateSelectQuery("Table1", "t1", "ColumnName1", "ColumnName2");
+        var firstQuery = SelectQueryFactory.CreateSelectQuery("Table1", "t1", "ColumnName1", "ColumnName2");
 
-        var subQuery = new SelectQuery(
+        var secondQuery = new SelectQuery(
            new SelectClause(
                new SelectExpression(new ColumnExpression("*"))
            ),
-           fromClause: new FromClause(new SubQuerySource(coreQuery, "subquery"))
+           fromClause: new FromClause(new SubQuerySource(firstQuery, "sub"))
         );
 
-        return subQuery;
+        var thirdQuery = new SelectQuery(
+           new SelectClause(
+               new SelectExpression(new ColumnExpression("*"))
+           ),
+           fromClause: new FromClause(new SubQuerySource(secondQuery, "sub"))
+        );
+
+        return thirdQuery;
     }
 }

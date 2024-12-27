@@ -22,16 +22,29 @@ public class QueryNodeFactory
             if (datasource.TryGetSubQuery(out var subQuery))
             {
                 // If the datasource is a subquery, recursively generate query nodes
-                childQueryNodes.Add(Create(subQuery));
+                var child = Create(subQuery);
+                childQueryNodes.Add(child);
 
-                var datasourceColumns = subQuery.GetSelectExpressions().Select(static expr => expr.Alias);
-                var datasourceNode = new DatasourceNode(datasource, DatasourceType.SubQuery, datasourceColumns, childQueryNodes);
-                datasourceNodes.Add(datasourceNode);
+                var datasourceColumns = subQuery.GetSelectExpressions().Select(static expr => expr.Alias).Where(static x => x != "*").ToList();
+
+                if (datasourceColumns.Any())
+                {
+                    var datasourceNode = new DatasourceNode(datasource, DatasourceType.SubQuery, datasourceColumns, childQueryNodes);
+                    datasourceNodes.Add(datasourceNode);
+                }
+                else
+                {
+                    // If the datasource cannot retrieve columns due to a wildcard, use the columns from the child datasource
+                    var selectedColumns = child.DatasourceNodes.SelectMany(static node => node.Value.Columns.Select(static column => column.Value)).Distinct();
+                    var datasourceNode = new DatasourceNode(datasource, DatasourceType.SubQuery, selectedColumns, childQueryNodes);
+                    datasourceNodes.Add(datasourceNode);
+                }
             }
             else if (datasource.TryGetUnionQuerySource(out var unionQuerySource))
             {
                 // If the datasource is a union query, recursively generate query nodes
-                childQueryNodes.Add(Create(unionQuerySource.Query));
+                var child = Create(unionQuerySource.Query);
+                childQueryNodes.Add(child);
 
                 var datasourceColumns = datasource.GetSelectableColumns();
                 var datasourceNode = new DatasourceNode(datasource, DatasourceType.UnionSubQuery, datasourceColumns, childQueryNodes);
