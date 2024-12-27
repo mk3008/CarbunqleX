@@ -151,4 +151,18 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
         var unionAllQueryWithSubQuery = new UnionQuery(UnionType.Union, unionAllQuery, subQuery);
         return unionAllQueryWithSubQuery;
     }
+
+    private static SelectQuery CreateSelectQuery_WildCardDecode()
+    {
+        var coreQuery = SelectQueryFactory.CreateSelectQuery("Table1", "t1", "ColumnName1", "ColumnName2");
+
+        var subQuery = new SelectQuery(
+           new SelectClause(
+               new SelectExpression(new ColumnExpression("*"))
+           ),
+           fromClause: new FromClause(new SubQuerySource(coreQuery, "subquery"))
+        );
+
+        return subQuery;
+    }
 }

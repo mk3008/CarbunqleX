@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Carbunqlex.ValueExpressions;
+using System.Text;
 
 namespace Carbunqlex.Clauses;
 
@@ -96,5 +97,10 @@ public class SelectClause : ISqlComponent
         return Expressions
             .Where(item => item.Expression.MightHaveQueries)
             .SelectMany(item => item.Expression.GetQueries());
+    }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Expressions.SelectMany(expr => expr.Expression.ExtractColumnExpressions());
     }
 }

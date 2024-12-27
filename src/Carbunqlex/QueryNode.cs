@@ -43,6 +43,7 @@ public class QueryNode
     {
         var indent = new string(' ', indentLevel * 2);
         sb.AppendLine($"{indent}*Query");
+        sb.AppendLine($"{indent} Type: {Query.GetType().Name}");
         sb.AppendLine($"{indent} Current: {Query.ToSqlWithoutCte()}");
         sb.AppendLine($"{indent} Columns: {string.Join(", ", SelectExpressions.Select(x => x.Key))}");
 
@@ -52,7 +53,9 @@ public class QueryNode
         foreach (var datasourceNode in DatasourceNodes)
         {
             sb.AppendLine($"{indent}*Datasource");
+            sb.AppendLine($"{indent} Type: {datasourceNode.Value.DatasourceType}");
             sb.AppendLine($"{indent} Name: {datasourceNode.Value.Name}");
+            sb.AppendLine($"{indent} Table: {datasourceNode.Value.TableFullName}");
             sb.AppendLine($"{indent} Columns: {string.Join(", ", datasourceNode.Value.Columns.Select(x => x.Key))}");
 
             foreach (var childQueryNode in datasourceNode.Value.ChildQueryNodes)

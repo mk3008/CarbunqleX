@@ -11,6 +11,7 @@ public class FunctionSource : IDatasource
     public List<IValueExpression> Arguments { get; set; }
     public string Alias { get; set; }
     public IColumnAliasClause ColumnAliasClause { get; set; }
+    public string TableFullName => string.Empty;
 
     public FunctionSource(string functionName, IEnumerable<IValueExpression> arguments, string alias, ColumnAliasClause columnAliases)
     {

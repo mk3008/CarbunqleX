@@ -15,4 +15,10 @@ public interface IFromClause : ISqlComponent
     /// Retrieves the datasources.
     /// </summary>
     IEnumerable<IDatasource> GetDatasources();
+
+    /// <summary>
+    /// Retrieves the column expressions.
+    /// </summary>
+    /// <returns></returns>
+    IEnumerable<ColumnExpression> ExtractColumnExpressions();
 }

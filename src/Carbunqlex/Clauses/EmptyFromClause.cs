@@ -36,4 +36,9 @@ public class EmptyFromClause : IFromClause
     {
         return Enumerable.Empty<IDatasource>();
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Enumerable.Empty<ColumnExpression>();
+    }
 }

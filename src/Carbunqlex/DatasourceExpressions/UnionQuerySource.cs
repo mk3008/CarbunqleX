@@ -8,6 +8,8 @@ public class UnionQuerySource : IDatasource
 
     public string Alias { get; set; }
 
+    public string TableFullName => string.Empty;
+
     public List<string> ColumnNames { get; } = new();
 
     public UnionQuerySource(IQuery query, string alias, IEnumerable<string> columns)

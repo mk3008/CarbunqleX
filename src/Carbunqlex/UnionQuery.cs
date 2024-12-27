@@ -1,5 +1,6 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.ValueExpressions;
 using System.Text;
 
 namespace Carbunqlex;
@@ -190,5 +191,10 @@ public class UnionQuery : IQuery
         {
             yield return new UnionQuerySource(component.Datasource, component.Index.ToString(), columns);
         }
+    }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Left.ExtractColumnExpressions().Union(Right.ExtractColumnExpressions());
     }
 }

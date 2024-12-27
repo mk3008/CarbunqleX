@@ -8,7 +8,7 @@ public class TableSource : IDatasource
     public List<string> Namespaces { get; set; } = new();
     public string TableName { get; set; }
     public string Alias { get; set; }
-
+    public string TableFullName => GetTableFullName();
     /// <summary>
     /// List of column names that the table has.
     /// Set this only if you want to use advanced analysis.

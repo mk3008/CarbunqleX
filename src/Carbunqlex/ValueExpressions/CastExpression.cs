@@ -45,4 +45,9 @@ public class CastExpression : IValueExpression
     {
         return $"CAST({Expression} AS {TargetType})";
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Expression.ExtractColumnExpressions();
+    }
 }

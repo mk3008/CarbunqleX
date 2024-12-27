@@ -38,4 +38,9 @@ public class WhereClause : IWhereClause
         }
         return Enumerable.Empty<IQuery>();
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Condition.ExtractColumnExpressions();
+    }
 }

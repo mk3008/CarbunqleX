@@ -90,4 +90,20 @@ public class CaseExpressionWithCase : IValueExpression
 
         return queries;
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        var columns = new List<ColumnExpression>();
+
+        columns.AddRange(Case.ExtractColumnExpressions());
+
+        foreach (var pair in WhenThenPairs)
+        {
+            columns.AddRange(pair.ExtractColumnExpressions());
+        }
+
+        columns.AddRange(Else.ExtractColumnExpressions());
+
+        return columns;
+    }
 }

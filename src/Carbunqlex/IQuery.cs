@@ -1,5 +1,6 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.ValueExpressions;
 
 namespace Carbunqlex;
 
@@ -46,4 +47,10 @@ public interface IQuery : ISqlComponent
     /// </summary>
     /// <returns></returns>
     IEnumerable<IDatasource> GetDatasources();
+
+    /// <summary>
+    /// Retrieves the column expressions.
+    /// </summary>
+    /// <returns></returns>
+    IEnumerable<ColumnExpression> ExtractColumnExpressions();
 }

@@ -62,4 +62,12 @@ public class BinaryExpression : IValueExpression
 
         return queries;
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        var columns = new List<ColumnExpression>();
+        columns.AddRange(Left.ExtractColumnExpressions());
+        columns.AddRange(Right.ExtractColumnExpressions());
+        return columns;
+    }
 }

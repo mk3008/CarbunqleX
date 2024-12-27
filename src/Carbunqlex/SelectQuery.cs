@@ -1,5 +1,6 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.ValueExpressions;
 using System.Text;
 
 namespace Carbunqlex;
@@ -195,5 +196,16 @@ public class SelectQuery : IQuery
     public IEnumerable<IDatasource> GetDatasources()
     {
         return FromClause.GetDatasources();
+    }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        var columnExpressions = new List<ColumnExpression>();
+
+        columnExpressions.AddRange(SelectClause.ExtractColumnExpressions());
+        columnExpressions.AddRange(FromClause.ExtractColumnExpressions());
+        columnExpressions.AddRange(WhereClause.ExtractColumnExpressions());
+
+        return columnExpressions;
     }
 }

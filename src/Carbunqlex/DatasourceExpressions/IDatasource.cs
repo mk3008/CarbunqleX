@@ -11,6 +11,11 @@ public interface IDatasource : ISqlComponent
     string Alias { get; }
 
     /// <summary>
+    /// The full name of the table.
+    /// </summary>
+    string TableFullName { get; }
+
+    /// <summary>
     /// Retrieves the selectable columns.
     /// </summary>
     /// <returns></returns>

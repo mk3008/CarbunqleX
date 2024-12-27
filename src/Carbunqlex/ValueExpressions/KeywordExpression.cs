@@ -31,4 +31,9 @@ public class KeywordExpression : IValueExpression
     {
         return Enumerable.Empty<IQuery>();
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Enumerable.Empty<ColumnExpression>();
+    }
 }

@@ -35,4 +35,9 @@ public class ModifierExpression : IValueExpression
     {
         return Value.GetQueries();
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Value.ExtractColumnExpressions();
+    }
 }

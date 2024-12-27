@@ -30,4 +30,10 @@ public class ParameterExpression : IValueExpression
         // ParameterExpression does not directly use queries, so return an empty list
         return Enumerable.Empty<IQuery>();
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        // ParameterExpression does not directly use columns, so return an empty list
+        return Enumerable.Empty<ColumnExpression>();
+    }
 }

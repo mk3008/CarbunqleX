@@ -71,4 +71,11 @@ public class FromClause : IFromClause
     {
         return new IDatasource[] { RootDatasource }.Union(JoinClauses.Select(join => join.Datasource));
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return JoinClauses
+            .Where(static joinClause => joinClause.Condition != null)
+            .SelectMany(static joinClause => joinClause.Condition!.ExtractColumnExpressions());
+    }
 }

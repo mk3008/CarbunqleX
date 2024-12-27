@@ -4,11 +4,6 @@ namespace Carbunqlex.ValueExpressions;
 
 public class ConstantExpression : IValueExpression
 {
-    //public static ConstantExpression CreateEscapeString(string value)
-    //{
-    //    return new ConstantExpression($"'{value.Replace("'", "''")}'");
-    //}
-
     public object Value { get; set; }
 
     public ConstantExpression(object value)
@@ -56,6 +51,12 @@ public class ConstantExpression : IValueExpression
             columnValue = value?.ToString() ?? "null";
         }
         return new ConstantExpression(columnValue);
+    }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        // ConstantExpression does not have columns, so return an empty list
+        return Enumerable.Empty<ColumnExpression>();
     }
 }
 

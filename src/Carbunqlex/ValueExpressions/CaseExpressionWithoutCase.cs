@@ -76,4 +76,18 @@ public class CaseExpressionWithoutCase : IValueExpression
 
         return queries;
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        var columns = new List<ColumnExpression>();
+
+        foreach (var pair in WhenThenPairs)
+        {
+            columns.AddRange(pair.ExtractColumnExpressions());
+        }
+
+        columns.AddRange(Else.ExtractColumnExpressions());
+
+        return columns;
+    }
 }

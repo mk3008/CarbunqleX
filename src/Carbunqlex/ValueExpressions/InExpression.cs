@@ -69,4 +69,17 @@ public class InExpression : IValueExpression
 
         return queries;
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        var columns = new List<ColumnExpression>();
+
+        columns.AddRange(Left.ExtractColumnExpressions());
+        foreach (var right in Right)
+        {
+            columns.AddRange(right.ExtractColumnExpressions());
+        }
+
+        return columns;
+    }
 }

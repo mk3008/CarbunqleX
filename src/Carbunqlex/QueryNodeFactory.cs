@@ -25,7 +25,7 @@ public class QueryNodeFactory
                 childQueryNodes.Add(Create(subQuery));
 
                 var datasourceColumns = subQuery.GetSelectExpressions().Select(static expr => expr.Alias);
-                var datasourceNode = new DatasourceNode(datasource, datasourceColumns, childQueryNodes);
+                var datasourceNode = new DatasourceNode(datasource, DatasourceType.SubQuery, datasourceColumns, childQueryNodes);
                 datasourceNodes.Add(datasourceNode);
             }
             else if (datasource.TryGetUnionQuerySource(out var unionQuerySource))
@@ -34,7 +34,7 @@ public class QueryNodeFactory
                 childQueryNodes.Add(Create(unionQuerySource.Query));
 
                 var datasourceColumns = datasource.GetSelectableColumns();
-                var datasourceNode = new DatasourceNode(datasource, datasourceColumns, childQueryNodes);
+                var datasourceNode = new DatasourceNode(datasource, DatasourceType.UnionSubQuery, datasourceColumns, childQueryNodes);
 
                 datasourceNodes.Add(datasourceNode);
             }
@@ -47,20 +47,35 @@ public class QueryNodeFactory
                 var columnAliases = cte.ColumnAliasClause?.ColumnAliases;
                 if (columnAliases != null)
                 {
-                    var datasourceNode = new DatasourceNode(datasource, columnAliases, childQueryNodes);
+                    var datasourceNode = new DatasourceNode(datasource, DatasourceType.CommonTableExtension, columnAliases, childQueryNodes);
                     datasourceNodes.Add(datasourceNode);
                 }
                 else
                 {
                     var datasourceColumns = cte.Query.GetSelectExpressions().Select(static expr => expr.Alias);
-                    var datasourceNode = new DatasourceNode(datasource, datasourceColumns, childQueryNodes);
+                    var datasourceNode = new DatasourceNode(datasource, DatasourceType.CommonTableExtension, datasourceColumns, childQueryNodes);
                     datasourceNodes.Add(datasourceNode);
                 }
             }
             else
             {
-                var datasourceNode = new DatasourceNode(datasource, datasource.GetSelectableColumns(), childQueryNodes);
-                datasourceNodes.Add(datasourceNode);
+                var datasourceColumns = datasource.GetSelectableColumns().ToList();
+
+                if (datasourceColumns.Any())
+                {
+                    // If the datasource has selectable columns, use them
+                    var datasourceNode = new DatasourceNode(datasource, DatasourceType.Table, datasource.GetSelectableColumns(), childQueryNodes);
+                    datasourceNodes.Add(datasourceNode);
+                }
+                else
+                {
+                    // If the datasource has no selectable columns, use the columns from the query
+                    var queryColumns = query.ExtractColumnExpressions();
+                    var columnComponents = queryColumns.Where(x => string.IsNullOrEmpty(x.NamespaceFullName) || x.NamespaceFullName.ToLowerInvariant() == datasource.Alias.ToLowerInvariant()).Select(static x => x.ColumnName).Distinct();
+
+                    var datasourceNode = new DatasourceNode(datasource, DatasourceType.Table, columnComponents, childQueryNodes);
+                    datasourceNodes.Add(datasourceNode);
+                }
             }
         }
         return new QueryNode(query, datasourceNodes);

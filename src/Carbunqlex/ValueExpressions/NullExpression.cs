@@ -27,4 +27,10 @@ public class NullExpression : IValueExpression
         // NullExpression does not directly use queries, so return an empty list
         return Enumerable.Empty<IQuery>();
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        // NullExpression does not have columns, so return an empty list
+        return Enumerable.Empty<ColumnExpression>();
+    }
 }

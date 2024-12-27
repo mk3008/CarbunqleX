@@ -56,4 +56,14 @@ public class WhenThenPair : IValueExpression
 
         return queries;
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        var columns = new List<ColumnExpression>();
+
+        columns.AddRange(When.ExtractColumnExpressions());
+        columns.AddRange(Then.ExtractColumnExpressions());
+
+        return columns;
+    }
 }

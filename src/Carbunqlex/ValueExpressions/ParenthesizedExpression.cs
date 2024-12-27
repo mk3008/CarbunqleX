@@ -42,4 +42,9 @@ public class ParenthesizedExpression : IValueExpression
         }
         return Enumerable.Empty<IQuery>();
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return InnerExpression.ExtractColumnExpressions();
+    }
 }

@@ -7,6 +7,8 @@ public class ColumnExpression : IValueExpression
     public List<string> Namespaces { get; set; }
     public string ColumnName { get; set; }
 
+    public string NamespaceFullName => string.Join(".", Namespaces);
+
     public ColumnExpression(string columnName)
     {
         Namespaces = new List<string>();
@@ -49,7 +51,7 @@ public class ColumnExpression : IValueExpression
         }
 
         var sb = new StringBuilder();
-        sb.Append(string.Join(".", Namespaces));
+        sb.Append(NamespaceFullName);
         sb.Append(".");
         sb.Append(ColumnName);
         return sb.ToString();
@@ -59,5 +61,10 @@ public class ColumnExpression : IValueExpression
     {
         // ColumnExpression does not directly use queries, so return an empty list
         return Enumerable.Empty<IQuery>();
+    }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        yield return this;
     }
 }

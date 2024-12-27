@@ -43,4 +43,9 @@ public class UnaryExpression : IValueExpression
         }
         return Enumerable.Empty<IQuery>();
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Operand.ExtractColumnExpressions();
+    }
 }

@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.Clauses;
+﻿using Carbunqlex.ValueExpressions;
+
+namespace Carbunqlex.Clauses;
 
 public class EmptyWhereClause : IWhereClause
 {
@@ -22,6 +24,11 @@ public class EmptyWhereClause : IWhereClause
     public IEnumerable<IQuery> GetQueries()
     {
         return Enumerable.Empty<IQuery>();
+    }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Enumerable.Empty<ColumnExpression>();
     }
 }
 

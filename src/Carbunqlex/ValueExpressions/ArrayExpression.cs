@@ -58,4 +58,9 @@ public class ArrayExpression : IValueExpression
         }
         return queries;
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Elements.SelectMany(element => element.ExtractColumnExpressions());
+    }
 }

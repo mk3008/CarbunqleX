@@ -9,7 +9,7 @@ public class SubQuerySource : IDatasource
     public IQuery Query { get; set; }
     public string Alias { get; set; }
     public IColumnAliasClause ColumnAliasClause { get; set; }
-
+    public string TableFullName => string.Empty;
     public SubQuerySource(IQuery query, string alias)
     {
         Query = query;

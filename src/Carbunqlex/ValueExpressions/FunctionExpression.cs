@@ -77,4 +77,9 @@ public class FunctionExpression : IValueExpression
 
         return queries;
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Arguments.SelectMany(arg => arg.ExtractColumnExpressions());
+    }
 }

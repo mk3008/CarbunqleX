@@ -42,4 +42,9 @@ public class InlineQuery : IValueExpression
     {
         return new List<IQuery> { Query };
     }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Enumerable.Empty<ColumnExpression>();
+    }
 }

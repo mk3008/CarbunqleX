@@ -127,4 +127,8 @@ public class ValuesQuery : IQuery
     {
         return Enumerable.Empty<IDatasource>();
     }
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Rows.SelectMany(row => row.Columns.SelectMany(column => column.ExtractColumnExpressions()));
+    }
 }
