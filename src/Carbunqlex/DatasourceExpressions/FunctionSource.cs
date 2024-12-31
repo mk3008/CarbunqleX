@@ -69,9 +69,9 @@ public class FunctionSource : IDatasource
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<IQuery>();
+        var queries = new List<ISelectQuery>();
 
         foreach (var argument in Arguments)
         {
@@ -89,7 +89,7 @@ public class FunctionSource : IDatasource
         return ColumnAliasClause.GetColumnNames();
     }
 
-    public bool TryGetSubQuery([NotNullWhen(true)] out IQuery? subQuery)
+    public bool TryGetSubQuery([NotNullWhen(true)] out ISelectQuery? subQuery)
     {
         subQuery = null;
         return false;

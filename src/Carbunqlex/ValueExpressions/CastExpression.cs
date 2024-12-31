@@ -36,7 +36,7 @@ public class CastExpression : IValueExpression
         yield return new Lexeme(LexType.CloseParen, ")");
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         return Expression.GetQueries();
     }

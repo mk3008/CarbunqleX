@@ -1,16 +1,17 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex;
 
-public class SelectQuery : IQuery
+public class SelectQuery : ISelectQuery
 {
     public WithClause WithClause { get; } = new WithClause();
     public SelectClause SelectClause { get; }
     public IFromClause FromClause { get; set; }
-    public IWhereClause WhereClause { get; set; } = EmptyWhereClause.Instance;
+    public WhereClause WhereClause { get; set; } = new WhereClause();
     public GroupByClause GroupByClause { get; } = new GroupByClause();
     public HavingClause HavingClause { get; } = new HavingClause();
     public OrderByClause OrderByClause { get; } = new OrderByClause();
@@ -145,9 +146,9 @@ public class SelectQuery : IQuery
         return commonTables;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<IQuery>();
+        var queries = new List<ISelectQuery>();
 
         queries.Add(this);
         queries.AddRange(WithClause.GetQueries());
@@ -207,5 +208,18 @@ public class SelectQuery : IQuery
         columnExpressions.AddRange(WhereClause.ExtractColumnExpressions());
 
         return columnExpressions;
+    }
+
+    public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
+    {
+        whereClause = WhereClause;
+        return true;
+    }
+
+    public ParameterExpression AddParameter(string name, object value)
+    {
+        var parameter = new ParameterExpression(name);
+        Parameters[name] = value;
+        return parameter;
     }
 }

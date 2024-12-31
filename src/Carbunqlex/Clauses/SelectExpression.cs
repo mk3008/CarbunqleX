@@ -40,12 +40,12 @@ public class SelectExpression : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         if (Expression.MightHaveQueries)
         {
             return Expression.GetQueries();
         }
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 }

@@ -26,7 +26,7 @@ public interface IDatasource : ISqlComponent
     /// </summary>
     /// <param name="subSuqery"></param>
     /// <returns></returns>
-    bool TryGetSubQuery([NotNullWhen(true)] out IQuery? subQuery);
+    bool TryGetSubQuery([NotNullWhen(true)] out ISelectQuery? subQuery);
 
     /// <summary>
     /// Retrieves the table name.

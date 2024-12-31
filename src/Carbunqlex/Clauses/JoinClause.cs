@@ -83,9 +83,9 @@ public class JoinClause : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<IQuery>();
+        var queries = new List<ISelectQuery>();
         queries.AddRange(Datasource.GetQueries());
 
         if (Condition != null)

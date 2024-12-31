@@ -60,7 +60,7 @@ public class OrderByClause : IOrderByClause
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         return OrderByColumns
             .Where(orderByColumn => orderByColumn.Column.MightHaveQueries)

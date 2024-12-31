@@ -50,14 +50,14 @@ public class BetweenExpression : IValueExpression
         return sb.ToString();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         if (!MightHaveQueries)
         {
-            return Enumerable.Empty<IQuery>();
+            return Enumerable.Empty<ISelectQuery>();
         }
 
-        var queries = new List<IQuery>();
+        var queries = new List<ISelectQuery>();
 
         if (Left.MightHaveQueries)
         {

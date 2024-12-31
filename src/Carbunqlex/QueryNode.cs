@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.ValueExpressions;
 using System.Collections.ObjectModel;
 using System.Text;
 
@@ -9,7 +10,7 @@ public class QueryNode
     /// <summary>
     /// The query.
     /// </summary>
-    public IQuery Query { get; }
+    public ISelectQuery Query { get; }
 
     /// <summary>
     /// The column names selected by the query.
@@ -21,7 +22,7 @@ public class QueryNode
     /// </summary>
     internal ReadOnlyDictionary<string, DatasourceNode> DatasourceNodes { get; }
 
-    public QueryNode(IQuery query, IEnumerable<DatasourceNode> datasourceNodes)
+    public QueryNode(ISelectQuery query, IEnumerable<DatasourceNode> datasourceNodes)
     {
         Query = query;
         SelectExpressions = query.GetSelectExpressions().ToDictionary(static expr => expr.Alias.ToLowerInvariant(), expr => expr).AsReadOnly();
@@ -62,6 +63,58 @@ public class QueryNode
             {
                 childQueryNode.AppendTreeString(sb, indentLevel + 1);
             }
+        }
+    }
+
+    /// <summary>
+    /// Searches for queries that match the predicate and executes
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
+    public QueryNode When(string columnName, Action<QueryAccessor> action)
+    {
+        var column = columnName.ToLowerInvariant();
+
+        var result = new List<QueryAccessor>();
+        WhenRecursive(this, column, result);
+        foreach (var item in result)
+        {
+            action(item);
+        }
+        return this;
+    }
+
+    private void WhenRecursive(QueryNode node, string columnName, List<QueryAccessor> result)
+    {
+        // Search child nodes first
+        foreach (var datasourceNode in node.DatasourceNodes.Values)
+        {
+            foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+            {
+                WhenRecursive(childQueryNode, columnName, result);
+            }
+        }
+
+        if (result.Any())
+        {
+            return;
+        }
+
+        // datasource で定義されている列名を検索
+        var column = node.DatasourceNodes.Values.Where(ds => ds.Columns.ContainsKey(columnName)).FirstOrDefault();
+        if (column != null)
+        {
+            var expr = new ColumnExpression(column.Name, column.Columns[columnName]);
+            result.Add(new(node.Query, expr));
+            return;
+        }
+
+        // query で使用されている列名を検索
+        if (node.SelectExpressions.ContainsKey(columnName))
+        {
+            result.Add(new(node.Query, node.SelectExpressions[columnName].Expression));
+            return;
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace Carbunqlex.ValueExpressions;
+﻿namespace Carbunqlex.ValueExpressions;
 
 public class ConstantExpression : IValueExpression
 {
@@ -25,32 +23,10 @@ public class ConstantExpression : IValueExpression
         return Value.ToString()!;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         // ConstantExpression does not directly use queries, so return an empty list
-        return Enumerable.Empty<IQuery>();
-    }
-
-    public static ConstantExpression Create(object? value)
-    {
-        string columnValue;
-        if (value is DateTime dateTimeValue)
-        {
-            columnValue = "'" + dateTimeValue.ToString("yyyy-MM-dd HH:mm:ss") + "'";
-        }
-        else if (value is double doubleValue)
-        {
-            columnValue = doubleValue.ToString("G", CultureInfo.InvariantCulture);
-        }
-        else if (value is string stringValue)
-        {
-            columnValue = "'" + stringValue.Replace("'", "''") + "'";
-        }
-        else
-        {
-            columnValue = value?.ToString() ?? "null";
-        }
-        return new ConstantExpression(columnValue);
+        return Enumerable.Empty<ISelectQuery>();
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()

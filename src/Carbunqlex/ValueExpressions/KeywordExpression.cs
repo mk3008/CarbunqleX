@@ -27,9 +27,9 @@ public class KeywordExpression : IValueExpression
         yield return new Lexeme(LexType.Keyword, Keyword);
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()

@@ -22,9 +22,9 @@ public class EmptyFromClause : IFromClause
         return Enumerable.Empty<Lexeme>();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 
     public IEnumerable<ColumnExpression> GetSelectableColumnExpressions()

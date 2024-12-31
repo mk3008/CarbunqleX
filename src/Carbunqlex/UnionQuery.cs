@@ -1,6 +1,7 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex;
@@ -28,13 +29,13 @@ internal static class UnionTypeExtensions
     }
 }
 
-public class UnionQuery : IQuery
+public class UnionQuery : ISelectQuery
 {
-    public IQuery Left { get; }
-    public IQuery Right { get; }
+    public ISelectQuery Left { get; }
+    public ISelectQuery Right { get; }
     public UnionType UnionType { get; }
 
-    public UnionQuery(UnionType unionType, IQuery left, IQuery right)
+    public UnionQuery(UnionType unionType, ISelectQuery left, ISelectQuery right)
     {
         Left = left;
         Right = right;
@@ -114,9 +115,9 @@ public class UnionQuery : IQuery
             .Select(ct => ct.Cte);
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<IQuery>
+        var queries = new List<ISelectQuery>
         {
             this
         };
@@ -156,7 +157,7 @@ public class UnionQuery : IQuery
         return Enumerable.Empty<SelectExpression>();
     }
 
-    internal IEnumerable<IQuery> GetUnionQueryComponents()
+    internal IEnumerable<ISelectQuery> GetUnionQueryComponents()
     {
         if (Left is UnionQuery leftQuery)
         {
@@ -196,5 +197,18 @@ public class UnionQuery : IQuery
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()
     {
         return Left.ExtractColumnExpressions().Union(Right.ExtractColumnExpressions());
+    }
+
+    public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
+    {
+        whereClause = null;
+        return false;
+    }
+
+    public ParameterExpression AddParameter(string name, object value)
+    {
+        var parameter = new ParameterExpression(name);
+        Parameters[name] = value;
+        return parameter;
     }
 }

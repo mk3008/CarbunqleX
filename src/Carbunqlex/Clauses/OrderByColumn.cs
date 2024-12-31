@@ -36,12 +36,12 @@ public class OrderByColumn : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         if (Column.MightHaveQueries)
         {
             return Column.GetQueries();
         }
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 }

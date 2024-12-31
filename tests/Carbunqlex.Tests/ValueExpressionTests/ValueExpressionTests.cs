@@ -52,7 +52,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void FunctionExpression_ToSql_ReturnsCorrectSql()
     {
         var argument = new ConstantExpression(42);
-        var function = new FunctionExpression("ABS", new[] { argument });
+        var function = ValueBuilder.Function("ABS", new[] { argument });
         var sql = function.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("ABS(42)", sql);
@@ -97,7 +97,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var left = new ColumnExpression("TableName", "ColumnName");
         var right1 = new ConstantExpression(1);
         var right2 = new ConstantExpression(2);
-        var inExpression = new InExpression(left, false, right1, right2);
+        var inExpression = ValueBuilder.In(left, new ValueSet(right1, right2));
         var sql = inExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("TableName.ColumnName in (1, 2)", sql);
@@ -109,7 +109,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var left = new ColumnExpression("TableName", "ColumnName");
         var right1 = new ConstantExpression(1);
         var right2 = new ConstantExpression(2);
-        var inExpression = new InExpression(left, true, right1, right2);
+        var inExpression = ValueBuilder.NotIn(left, new ValueSet(right1, right2));
         var sql = inExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("TableName.ColumnName not in (1, 2)", sql);
@@ -133,8 +133,8 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void LikeExpression_ToSql_ReturnsCorrectSql()
     {
         var left = new ColumnExpression("TableName", "ColumnName");
-        var right = ConstantExpression.Create("%value%");
-        var likeExpression = new LikeExpression(left, false, right);
+        var right = ValueBuilder.Constant("%value%");
+        var likeExpression = ValueBuilder.Like(left, right);
         var sql = likeExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("TableName.ColumnName like '%value%'", sql);
@@ -144,8 +144,8 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void LikeExpression_NotLike_ToSql_ReturnsCorrectSql()
     {
         var left = new ColumnExpression("TableName", "ColumnName");
-        var right = ConstantExpression.Create("%value%");
-        var likeExpression = new LikeExpression(left, true, right);
+        var right = ValueBuilder.Constant("%value%");
+        var likeExpression = ValueBuilder.NotLike(left, right);
         var sql = likeExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("TableName.ColumnName not like '%value%'", sql);
@@ -156,7 +156,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     {
         var input = "O'Reilly";
         var expected = "'O''Reilly'";
-        var constantExpression = ConstantExpression.Create(input);
+        var constantExpression = ValueBuilder.Constant(input);
         var actual = constantExpression.ToSqlWithoutCte();
         output.WriteLine(actual);
         Assert.Equal(expected, actual);
@@ -166,10 +166,10 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void CaseExpressionWithoutCase_ToSql_ReturnsCorrectSql()
     {
         var when1 = new ConstantExpression(1);
-        var then1 = ConstantExpression.Create("One");
+        var then1 = ValueBuilder.Constant("One");
         var when2 = new ConstantExpression(2);
-        var then2 = ConstantExpression.Create("Two");
-        var elseExpr = ConstantExpression.Create("Other");
+        var then2 = ValueBuilder.Constant("Two");
+        var elseExpr = ValueBuilder.Constant("Other");
 
         var caseExpression = new CaseExpressionWithoutCase(
             new List<WhenThenPair>
@@ -190,10 +190,10 @@ public class ValueExpressionTests(ITestOutputHelper output)
     {
         var caseExpr = new ColumnExpression("TableName", "ColumnName");
         var when1 = new ConstantExpression(1);
-        var then1 = ConstantExpression.Create("One");
+        var then1 = ValueBuilder.Constant("One");
         var when2 = new ConstantExpression(2);
-        var then2 = ConstantExpression.Create("Two");
-        var elseExpr = ConstantExpression.Create("Other");
+        var then2 = ValueBuilder.Constant("Two");
+        var elseExpr = ValueBuilder.Constant("Other");
 
         var caseExpression = new CaseExpressionWithCase(
             caseExpr,
@@ -229,10 +229,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
 
         var overClause = new OverClause(windowFunction);
 
-        var functionExpression = new FunctionExpression("sum", new ColumnExpression("a", "value"))
-        {
-            OverClause = overClause
-        };
+        var functionExpression = ValueBuilder.Function("sum", [new ColumnExpression("a", "value")], overClause);
 
         // Act
         var sql = functionExpression.ToSqlWithoutCte();
@@ -248,10 +245,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         // Arrange
         var overClause = new OverClause();
 
-        var functionExpression = new FunctionExpression("sum", new ColumnExpression("a", "value"))
-        {
-            OverClause = overClause
-        };
+        var functionExpression = ValueBuilder.Function("sum", [new ColumnExpression("a", "value")], overClause);
 
         // Act
         var sql = functionExpression.ToSqlWithoutCte();

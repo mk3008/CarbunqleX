@@ -32,7 +32,7 @@ public class WindowFrameBoundary : ISqlComponent
         return Boundary.GenerateLexemesWithoutCte();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         return Boundary.GetQueries();
     }

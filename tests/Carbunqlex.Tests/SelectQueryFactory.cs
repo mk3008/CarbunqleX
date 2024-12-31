@@ -85,7 +85,7 @@ public static class SelectQueryFactory
         var selectExpressions = new SelectClause(
             new SelectExpression(new ColumnExpression("s", "sale_date")),
             new SelectExpression(
-                new FunctionExpression(
+                ValueBuilder.Function(
                     "SUM",
                     new BinaryExpression(
                         "*",
@@ -105,8 +105,8 @@ public static class SelectQueryFactory
                 new ColumnExpression("s", "sale_date"),
                 new BinaryExpression(
                     "-",
-                    new FunctionExpression("CURRENT_DATE"),
-                    new ModifierExpression("INTERVAL", ConstantExpression.Create("'7 days'"))
+                    new KeywordExpression("CURRENT_DATE"),
+                    new ModifierExpression("INTERVAL", new ConstantExpression("'7 days'"))
                 )
             )
         );
@@ -129,7 +129,7 @@ public static class SelectQueryFactory
         var selectClause = new SelectClause(
           new SelectExpression(new ColumnExpression("c", "category_name")),
           new SelectExpression(new ColumnExpression("s", "sale_date")),
-          new SelectExpression(new FunctionExpression(
+          new SelectExpression(ValueBuilder.Function(
               "SUM",
               new BinaryExpression(
                   "*",
@@ -171,7 +171,7 @@ public static class SelectQueryFactory
                 new BinaryExpression(
                     "-",
                     new KeywordExpression("CURRENT_DATE"),
-                    new ModifierExpression("INTERVAL", ConstantExpression.Create("7 days"))
+                    new ModifierExpression("INTERVAL", new ConstantExpression("7 days"))
                 )
             )
         );
@@ -342,7 +342,7 @@ public static class SelectQueryFactory
                 new BinaryExpression(
                     "-",
                     new KeywordExpression("CURRENT_DATE"),
-                    new ModifierExpression("INTERVAL", ConstantExpression.Create("7 days"))
+                    new ModifierExpression("INTERVAL", new ConstantExpression("7 days"))
                 )
             )
         );
@@ -518,7 +518,7 @@ public static class SelectQueryFactory
     public static SelectQuery CreateSelectConstantQuery(object value, string alias)
     {
         var selectClause = new SelectClause(
-            new SelectExpression(ConstantExpression.Create(value), alias)
+            new SelectExpression(ValueBuilder.Constant(value), alias)
         );
         return new SelectQuery(selectClause);
     }

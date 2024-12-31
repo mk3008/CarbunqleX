@@ -57,10 +57,10 @@ public class ColumnExpression : IValueExpression
         return sb.ToString();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         // ColumnExpression does not directly use queries, so return an empty list
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()

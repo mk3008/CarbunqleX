@@ -36,7 +36,7 @@ public class FrameBoundaryExpression : IWindowFrameBoundaryExpression
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         return Value.GetQueries();
     }

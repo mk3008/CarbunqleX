@@ -25,9 +25,9 @@ public class FrameBoundaryKeyword : IWindowFrameBoundaryExpression
         return new List<Lexeme> { new Lexeme(LexType.Keyword, BoundaryKeyword) };
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         // FrameBoundaryKeyword does not directly use queries, so return an empty list
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 }

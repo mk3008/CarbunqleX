@@ -6,7 +6,7 @@ namespace Carbunqlex.ValueExpressions;
 /// Represents an array value expression.
 /// e.g. ARRAY[1, 2, 3]
 /// </summary>
-public class ArrayExpression : IValueExpression
+public class ArrayExpression : IValueExpression, IArgumentExpression
 {
     public IEnumerable<IValueExpression> Elements { get; }
 
@@ -46,9 +46,9 @@ public class ArrayExpression : IValueExpression
         yield return new Lexeme(LexType.CloseBracket, "]");
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<IQuery>();
+        var queries = new List<ISelectQuery>();
         foreach (var element in Elements)
         {
             if (element.MightHaveQueries)

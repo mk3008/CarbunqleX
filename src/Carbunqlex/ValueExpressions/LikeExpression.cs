@@ -6,12 +6,12 @@ public class LikeExpression : IValueExpression
 {
     public IValueExpression Left { get; set; }
     public IValueExpression Right { get; set; }
-    public bool IsNotLike { get; set; }
+    public bool IsNegated { get; set; }
 
-    public LikeExpression(IValueExpression left, bool isNotLike, IValueExpression right)
+    public LikeExpression(bool IsNegated, IValueExpression left, IValueExpression right)
     {
+        this.IsNegated = IsNegated;
         Left = left;
-        IsNotLike = isNotLike;
         Right = right;
     }
 
@@ -25,7 +25,7 @@ public class LikeExpression : IValueExpression
         {
             yield return lexeme;
         }
-        yield return new Lexeme(LexType.Operator, IsNotLike ? "not like" : "like");
+        yield return new Lexeme(LexType.Operator, IsNegated ? "not like" : "like");
         foreach (var lexeme in Right.GenerateLexemesWithoutCte())
         {
             yield return lexeme;
@@ -36,14 +36,14 @@ public class LikeExpression : IValueExpression
     {
         var sb = new StringBuilder();
         sb.Append(Left.ToSqlWithoutCte());
-        sb.Append(IsNotLike ? " not like " : " like ");
+        sb.Append(IsNegated ? " not like " : " like ");
         sb.Append(Right.ToSqlWithoutCte());
         return sb.ToString();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<IQuery>();
+        var queries = new List<ISelectQuery>();
 
         if (Left.MightHaveQueries)
         {

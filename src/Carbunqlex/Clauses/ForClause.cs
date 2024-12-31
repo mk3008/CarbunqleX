@@ -53,9 +53,9 @@ public class ForClause : IForClause
             };
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         // ForClause does not directly use queries, so return an empty list
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 }

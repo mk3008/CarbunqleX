@@ -62,9 +62,9 @@ public class CaseExpressionWithCase : IValueExpression
         return sql.ToString();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<IQuery>();
+        var queries = new List<ISelectQuery>();
 
         if (Case.MightHaveQueries)
         {

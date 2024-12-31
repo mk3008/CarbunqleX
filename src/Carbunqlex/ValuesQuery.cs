@@ -1,11 +1,12 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex;
 
-public class ValuesQuery : IQuery
+public class ValuesQuery : ISelectQuery
 {
     public readonly List<ValuesRow> Rows = new();
     private int? columnCount;
@@ -81,9 +82,9 @@ public class ValuesQuery : IQuery
             .OrderByDescending(cte => cte.IsRecursive);
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<IQuery>();
+        var queries = new List<ISelectQuery>();
 
         queries.Add(this);
         foreach (var row in Rows)
@@ -130,5 +131,18 @@ public class ValuesQuery : IQuery
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()
     {
         return Rows.SelectMany(row => row.Columns.SelectMany(column => column.ExtractColumnExpressions()));
+    }
+
+    public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
+    {
+        whereClause = null;
+        return false;
+    }
+
+    public ParameterExpression AddParameter(string name, object value)
+    {
+        var parameter = new ParameterExpression(name);
+        Parameters[name] = value;
+        return parameter;
     }
 }

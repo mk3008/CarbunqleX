@@ -2,7 +2,7 @@
 
 namespace Carbunqlex.Clauses;
 
-public class OverClause : IOverClause
+public class OverClause : ISqlComponent
 {
     public IWindowFunction WindowFunction { get; set; }
 
@@ -41,7 +41,7 @@ public class OverClause : IOverClause
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         return WindowFunction.GetQueries();
     }

@@ -18,8 +18,8 @@ public class EmptyPagingClause : IPagingClause
         return Enumerable.Empty<Lexeme>();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 }

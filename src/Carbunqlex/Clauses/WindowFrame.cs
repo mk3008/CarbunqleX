@@ -46,9 +46,9 @@ public class WindowFrame : IWindowFrame
         return sb.ToString();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<IQuery>();
+        var queries = new List<ISelectQuery>();
         queries.AddRange(Start.GetQueries());
         queries.AddRange(End.GetQueries());
         return queries;

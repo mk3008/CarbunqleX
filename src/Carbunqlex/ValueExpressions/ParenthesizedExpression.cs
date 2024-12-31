@@ -34,13 +34,13 @@ public class ParenthesizedExpression : IValueExpression
         return sb.ToString();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         if (InnerExpression.MightHaveQueries)
         {
             return InnerExpression.GetQueries();
         }
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()

@@ -52,7 +52,7 @@ public class HavingClause : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         return Conditions
             .Where(condition => condition.MightHaveQueries)

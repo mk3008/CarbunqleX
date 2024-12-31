@@ -4,12 +4,12 @@ namespace Carbunqlex.ValueExpressions;
 
 public class InlineQuery : IValueExpression
 {
-    public IQuery Query { get; }
+    public ISelectQuery Query { get; }
     public string DefaultName => string.Empty;
     public bool MightHaveCommonTableClauses => true;
     public bool MightHaveQueries => true;
 
-    public InlineQuery(IQuery query)
+    public InlineQuery(ISelectQuery query)
     {
         Query = query;
     }
@@ -38,9 +38,9 @@ public class InlineQuery : IValueExpression
         return Query.GetCommonTableClauses();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        return new List<IQuery> { Query };
+        return new List<ISelectQuery> { Query };
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()

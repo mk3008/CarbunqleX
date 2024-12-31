@@ -14,8 +14,8 @@ public class ValuesQueryTests(ITestOutputHelper output)
         var query = new ValuesQuery();
         var columns = new List<IValueExpression>
         {
-            ConstantExpression.Create(1),
-            ConstantExpression.Create("test")
+            ValueBuilder.Constant(1),
+            ValueBuilder.Constant("test")
         };
 
         // Act
@@ -33,21 +33,21 @@ public class ValuesQueryTests(ITestOutputHelper output)
         var query = new ValuesQuery();
         var columns1 = new List<IValueExpression>
         {
-            ConstantExpression.Create(1),
-            ConstantExpression.Create("test"),
-            ConstantExpression.Create(null)
+            ValueBuilder.Constant(1),
+            ValueBuilder.Constant("test"),
+            ValueBuilder.Null
         };
         var columns2 = new List<IValueExpression>
         {
-            ConstantExpression.Create(2),
-            ConstantExpression.Create("example"),
-            ConstantExpression.Create(new DateTime(2001,2,3))
+            ValueBuilder.Constant(2),
+            ValueBuilder.Constant("example"),
+            ValueBuilder.Constant(new DateTime(2001,2,3))
         };
         var columns3 = new List<IValueExpression>
         {
-            ConstantExpression.Create(3),
-            ConstantExpression.Create("O'Reilly"),
-            ConstantExpression.Create(null)
+            ValueBuilder.Constant(3),
+            ValueBuilder.Constant("O'Reilly"),
+            ValueBuilder.Null
         };
         query.AddRow(columns1);
         query.AddRow(columns2);
@@ -68,8 +68,8 @@ public class ValuesQueryTests(ITestOutputHelper output)
         var query = new ValuesQuery();
         var columns = new List<IValueExpression>
         {
-            ConstantExpression.Create(1.23),
-            ConstantExpression.Create("double test")
+            ValueBuilder.Constant(1.23),
+            ValueBuilder.Constant("double test")
         };
         query.AddRow(columns);
 

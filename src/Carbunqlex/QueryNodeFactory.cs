@@ -4,13 +4,13 @@ namespace Carbunqlex;
 
 public class QueryNodeFactory
 {
-    public static QueryNode Create(IQuery query)
+    public static QueryNode Create(ISelectQuery query)
     {
         var ctes = query.GetCommonTableClauses().ToList();
         return Create(ctes, query);
     }
 
-    public static QueryNode Create(IList<CommonTableClause> ctes, IQuery query)
+    public static QueryNode Create(IList<CommonTableClause> ctes, ISelectQuery query)
     {
         var datasourceNodes = new List<DatasourceNode>();
 

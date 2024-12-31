@@ -5,15 +5,15 @@ namespace Carbunqlex.ValueExpressions;
 
 public class FunctionExpression : IValueExpression
 {
-    public List<IValueExpression> Arguments { get; set; }
+    public IArgumentExpression Arguments { get; set; }
     public string FunctionName { get; set; }
-    public IOverClause OverClause { get; set; }
+    public OverClause? OverClause { get; set; }
 
-    public FunctionExpression(string functionName, params IValueExpression[] arguments)
+    public FunctionExpression(string functionName, IArgumentExpression arguments, OverClause? overClause = null)
     {
         FunctionName = functionName;
-        Arguments = arguments.ToList();
-        OverClause = EmptyOverClause.Instance;
+        Arguments = arguments;
+        OverClause = overClause;
     }
 
     public string ToSqlWithoutCte()
@@ -21,56 +21,49 @@ public class FunctionExpression : IValueExpression
         var sb = new StringBuilder();
         sb.Append(FunctionName);
         sb.Append("(");
-        sb.Append(string.Join(", ", Arguments.Select(arg => arg.ToSqlWithoutCte())));
+        sb.Append(Arguments.ToSqlWithoutCte());
         sb.Append(")");
 
-        var overClause = OverClause.ToSqlWithoutCte();
-        if (!string.IsNullOrEmpty(overClause))
+        if (OverClause != null)
         {
-            sb.Append(" ").Append(overClause);
+            sb.Append(" ").Append(OverClause.ToSqlWithoutCte());
         }
         return sb.ToString();
     }
 
     public string DefaultName => string.Empty;
 
-    public bool MightHaveQueries => Arguments.Any(arg => arg.MightHaveQueries) || OverClause.MightHaveCommonTableClauses;
+    public bool MightHaveQueries => Arguments.MightHaveQueries || (OverClause?.MightHaveCommonTableClauses ?? false);
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
         yield return new Lexeme(LexType.Keyword, FunctionName);
         yield return new Lexeme(LexType.OpenParen, "(");
-        for (int i = 0; i < Arguments.Count; i++)
-        {
-            foreach (var lexeme in Arguments[i].GenerateLexemesWithoutCte())
-            {
-                yield return lexeme;
-            }
-            if (i < Arguments.Count - 1)
-            {
-                yield return Lexeme.Comma;
-            }
-        }
-        yield return new Lexeme(LexType.CloseParen, ")");
-        foreach (var lexeme in OverClause.GenerateLexemesWithoutCte())
+        foreach (var lexeme in Arguments.GenerateLexemesWithoutCte())
         {
             yield return lexeme;
         }
-    }
+        yield return new Lexeme(LexType.CloseParen, ")");
 
-    public IEnumerable<IQuery> GetQueries()
-    {
-        var queries = new List<IQuery>();
-
-        foreach (var argument in Arguments)
+        if (OverClause != null)
         {
-            if (argument.MightHaveQueries)
+            foreach (var lexeme in OverClause.GenerateLexemesWithoutCte())
             {
-                queries.AddRange(argument.GetQueries());
+                yield return lexeme;
             }
         }
+    }
 
-        if (OverClause.MightHaveCommonTableClauses)
+    public IEnumerable<ISelectQuery> GetQueries()
+    {
+        var queries = new List<ISelectQuery>();
+
+        if (Arguments.MightHaveQueries)
+        {
+            queries.AddRange(Arguments.GetQueries());
+        }
+
+        if (OverClause?.MightHaveCommonTableClauses == true)
         {
             queries.AddRange(OverClause.GetQueries());
         }
@@ -80,6 +73,6 @@ public class FunctionExpression : IValueExpression
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()
     {
-        return Arguments.SelectMany(arg => arg.ExtractColumnExpressions());
+        return Arguments.ExtractColumnExpressions();
     }
 }

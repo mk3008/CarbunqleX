@@ -31,7 +31,7 @@ public class ModifierExpression : IValueExpression
         }
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         return Value.GetQueries();
     }

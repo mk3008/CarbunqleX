@@ -44,9 +44,9 @@ public class FromClause : IFromClause
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<IQuery>();
+        var queries = new List<ISelectQuery>();
         queries.AddRange(RootDatasource.GetQueries());
 
         foreach (var joinClause in JoinClauses)

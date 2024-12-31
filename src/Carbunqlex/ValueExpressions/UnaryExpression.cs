@@ -35,13 +35,13 @@ public class UnaryExpression : IValueExpression
         return sb.ToString();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         if (Operand.MightHaveQueries)
         {
             return Operand.GetQueries();
         }
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()

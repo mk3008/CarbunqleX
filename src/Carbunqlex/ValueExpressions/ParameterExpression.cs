@@ -1,6 +1,6 @@
 ﻿namespace Carbunqlex.ValueExpressions;
 
-public class ParameterExpression : IValueExpression
+public class ParameterExpression : IValueExpression, IArgumentExpression
 {
     public string Name { get; }
     public bool MightHaveQueries => false;
@@ -25,10 +25,10 @@ public class ParameterExpression : IValueExpression
 
     public string DefaultName => string.Empty;
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         // ParameterExpression does not directly use queries, so return an empty list
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()

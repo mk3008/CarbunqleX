@@ -44,7 +44,7 @@ public class WindowExpression : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         return WindowFunction.GetQueries();
     }

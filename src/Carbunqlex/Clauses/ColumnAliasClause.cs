@@ -52,9 +52,9 @@ public class ColumnAliasClause : IColumnAliasClause
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         // ColumnAliases does not directly use queries, so return an empty list
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 }

@@ -25,5 +25,5 @@ public interface ISqlComponent
     /// Retrieves the queries used internally, including itself.
     /// </summary>
     /// <returns>An enumerable of queries.</returns>
-    IEnumerable<IQuery> GetQueries();
+    IEnumerable<ISelectQuery> GetQueries();
 }

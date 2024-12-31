@@ -33,11 +33,11 @@ public class CommonTableClause : ISqlComponent
 {
     public bool IsRecursive { get; set; }
     public string Alias { get; set; }
-    public IQuery Query { get; }
+    public ISelectQuery Query { get; }
     public ColumnAliasClause? ColumnAliasClause { get; }
     public Materialization Materialization { get; }
 
-    public CommonTableClause(IQuery query, string alias, ColumnAliasClause? columnAliases = null, Materialization materialization = Materialization.None, bool isRecursive = false)
+    public CommonTableClause(ISelectQuery query, string alias, ColumnAliasClause? columnAliases = null, Materialization materialization = Materialization.None, bool isRecursive = false)
     {
         Query = query;
         Alias = alias;
@@ -99,7 +99,7 @@ public class CommonTableClause : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         return Query.GetQueries().Union([Query]);
     }

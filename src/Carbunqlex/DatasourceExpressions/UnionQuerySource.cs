@@ -4,7 +4,7 @@ namespace Carbunqlex.DatasourceExpressions;
 
 public class UnionQuerySource : IDatasource
 {
-    public IQuery Query { get; set; }
+    public ISelectQuery Query { get; set; }
 
     public string Alias { get; set; }
 
@@ -12,7 +12,7 @@ public class UnionQuerySource : IDatasource
 
     public List<string> ColumnNames { get; } = new();
 
-    public UnionQuerySource(IQuery query, string alias, IEnumerable<string> columns)
+    public UnionQuerySource(ISelectQuery query, string alias, IEnumerable<string> columns)
     {
         Query = query;
         Alias = alias;
@@ -29,7 +29,7 @@ public class UnionQuerySource : IDatasource
         return Query.GenerateLexemesWithoutCte();
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         yield return Query;
     }
@@ -39,7 +39,7 @@ public class UnionQuerySource : IDatasource
         return Query.GetSelectExpressions().Select(column => column.Alias);
     }
 
-    public bool TryGetSubQuery([NotNullWhen(true)] out IQuery? subQuery)
+    public bool TryGetSubQuery([NotNullWhen(true)] out ISelectQuery? subQuery)
     {
         subQuery = null;
         return false;

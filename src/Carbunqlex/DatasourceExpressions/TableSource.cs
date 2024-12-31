@@ -89,10 +89,10 @@ public class TableSource : IDatasource
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         // TableSource does not directly use queries, so return an empty list
-        return Enumerable.Empty<IQuery>();
+        return Enumerable.Empty<ISelectQuery>();
     }
 
     public IEnumerable<string> GetSelectableColumns()
@@ -100,7 +100,7 @@ public class TableSource : IDatasource
         return ColumnNames;
     }
 
-    public bool TryGetSubQuery([NotNullWhen(true)] out IQuery? subQuery)
+    public bool TryGetSubQuery([NotNullWhen(true)] out ISelectQuery? subQuery)
     {
         subQuery = null;
         return false;

@@ -6,6 +6,6 @@ public class EmptyOrderByClause : IOrderByClause
     private EmptyOrderByClause() { }
     public string ToSqlWithoutCte() => string.Empty;
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte() => new List<Lexeme>();
-    public IEnumerable<IQuery> GetQueries() => new List<IQuery>();
+    public IEnumerable<ISelectQuery> GetQueries() => new List<ISelectQuery>();
     public bool MightHaveQueries => false;
 }

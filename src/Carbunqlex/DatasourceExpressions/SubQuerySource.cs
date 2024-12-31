@@ -6,18 +6,18 @@ namespace Carbunqlex.DatasourceExpressions;
 
 public class SubQuerySource : IDatasource
 {
-    public IQuery Query { get; set; }
+    public ISelectQuery Query { get; set; }
     public string Alias { get; set; }
     public IColumnAliasClause ColumnAliasClause { get; set; }
     public string TableFullName => string.Empty;
-    public SubQuerySource(IQuery query, string alias)
+    public SubQuerySource(ISelectQuery query, string alias)
     {
         Query = query;
         Alias = alias;
         ColumnAliasClause = EmptyColumnAliasClause.Instance;
     }
 
-    public SubQuerySource(IQuery query, string alias, IEnumerable<string> columnAliases)
+    public SubQuerySource(ISelectQuery query, string alias, IEnumerable<string> columnAliases)
     {
         Query = query;
         Alias = alias;
@@ -53,9 +53,9 @@ public class SubQuerySource : IDatasource
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<IQuery> { Query };
+        var queries = new List<ISelectQuery> { Query };
         queries.AddRange(Query.GetQueries());
         return queries;
     }
@@ -72,7 +72,7 @@ public class SubQuerySource : IDatasource
         }
     }
 
-    public bool TryGetSubQuery([NotNullWhen(true)] out IQuery subQuery)
+    public bool TryGetSubQuery([NotNullWhen(true)] out ISelectQuery subQuery)
     {
         subQuery = Query;
         return true;

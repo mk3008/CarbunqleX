@@ -55,7 +55,7 @@ public class WindowClause : ISqlComponent
         return lexemes;
     }
 
-    public IEnumerable<IQuery> GetQueries()
+    public IEnumerable<ISelectQuery> GetQueries()
     {
         return WindowExpressions.SelectMany(we => we.GetQueries());
     }
