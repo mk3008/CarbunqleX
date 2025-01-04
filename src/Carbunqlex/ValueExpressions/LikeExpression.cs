@@ -7,12 +7,14 @@ public class LikeExpression : IValueExpression
     public IValueExpression Left { get; set; }
     public IValueExpression Right { get; set; }
     public bool IsNegated { get; set; }
+    public char? EscapeCharacter { get; set; }
 
-    public LikeExpression(bool IsNegated, IValueExpression left, IValueExpression right)
+    public LikeExpression(bool isNegated, IValueExpression left, IValueExpression right, char? escapeCharacter = null)
     {
-        this.IsNegated = IsNegated;
+        IsNegated = isNegated;
         Left = left;
         Right = right;
+        EscapeCharacter = escapeCharacter;
     }
 
     public string DefaultName => Left.DefaultName;
@@ -30,6 +32,11 @@ public class LikeExpression : IValueExpression
         {
             yield return lexeme;
         }
+        if (EscapeCharacter.HasValue)
+        {
+            yield return new Lexeme(LexType.Keyword, "escape");
+            yield return new Lexeme(LexType.Value, $"'{EscapeCharacter}'");
+        }
     }
 
     public string ToSqlWithoutCte()
@@ -38,6 +45,12 @@ public class LikeExpression : IValueExpression
         sb.Append(Left.ToSqlWithoutCte());
         sb.Append(IsNegated ? " not like " : " like ");
         sb.Append(Right.ToSqlWithoutCte());
+        if (EscapeCharacter.HasValue)
+        {
+            sb.Append(" escape '");
+            sb.Append(EscapeCharacter);
+            sb.Append("'");
+        }
         return sb.ToString();
     }
 
