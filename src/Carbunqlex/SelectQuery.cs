@@ -222,4 +222,19 @@ public class SelectQuery : ISelectQuery
         Parameters[name] = value;
         return parameter;
     }
+
+    public void AddColumn(SelectExpression expr)
+    {
+        SelectClause.Expressions.Add(expr);
+    }
+
+    public void AddColumn(IValueExpression value, string alias)
+    {
+        SelectClause.Expressions.Add(new SelectExpression(value, alias));
+    }
+
+    public void RemoveColumn(SelectExpression expr)
+    {
+        SelectClause.Expressions.Remove(expr);
+    }
 }

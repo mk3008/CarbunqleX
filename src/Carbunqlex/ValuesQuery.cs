@@ -145,4 +145,19 @@ public class ValuesQuery : ISelectQuery
         Parameters[name] = value;
         return parameter;
     }
+
+    public void AddColumn(SelectExpression expr)
+    {
+        throw new NotSupportedException("ValuesQuery does not support adding columns.");
+    }
+
+    public void RemoveColumn(SelectExpression expr)
+    {
+        throw new NotSupportedException("ValuesQuery does not support removing columns.");
+    }
+
+    public void AddColumn(IValueExpression value, string alias)
+    {
+        throw new NotSupportedException("ValuesQuery does not support adding columns.");
+    }
 }

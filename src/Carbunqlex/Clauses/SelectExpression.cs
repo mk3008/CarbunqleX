@@ -4,25 +4,25 @@ namespace Carbunqlex.Clauses;
 
 public class SelectExpression : ISqlComponent
 {
-    public IValueExpression Expression { get; }
+    public IValueExpression Value { get; internal set; }
     public string Alias { get; }
 
     public SelectExpression(IValueExpression expression)
     {
-        Expression = expression;
+        Value = expression;
         Alias = expression.DefaultName;
     }
 
     public SelectExpression(IValueExpression expression, string alias)
     {
-        Expression = expression;
+        Value = expression;
         Alias = alias;
     }
 
     public string ToSqlWithoutCte()
     {
-        var sql = Expression.ToSqlWithoutCte();
-        if (string.IsNullOrEmpty(Alias) || Expression.DefaultName == Alias)
+        var sql = Value.ToSqlWithoutCte();
+        if (string.IsNullOrEmpty(Alias) || Value.DefaultName == Alias)
         {
             return sql;
         }
@@ -31,8 +31,8 @@ public class SelectExpression : ISqlComponent
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        var lexemes = new List<Lexeme>(Expression.GenerateLexemesWithoutCte());
-        if (!string.IsNullOrEmpty(Alias) && Alias != Expression.DefaultName)
+        var lexemes = new List<Lexeme>(Value.GenerateLexemesWithoutCte());
+        if (!string.IsNullOrEmpty(Alias) && Alias != Value.DefaultName)
         {
             lexemes.Add(new Lexeme(LexType.Keyword, "as"));
             lexemes.Add(new Lexeme(LexType.Identifier, Alias));
@@ -42,9 +42,9 @@ public class SelectExpression : ISqlComponent
 
     public IEnumerable<ISelectQuery> GetQueries()
     {
-        if (Expression.MightHaveQueries)
+        if (Value.MightHaveQueries)
         {
-            return Expression.GetQueries();
+            return Value.GetQueries();
         }
         return Enumerable.Empty<ISelectQuery>();
     }

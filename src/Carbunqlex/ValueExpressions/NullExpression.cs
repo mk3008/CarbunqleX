@@ -2,24 +2,24 @@
 
 public class NullExpression : IValueExpression
 {
-    public bool IsNotNull { get; set; }
+    public bool IsNegated { get; set; }
     public bool MightHaveQueries => false;
 
-    public NullExpression(bool isNotNull = false)
+    public NullExpression(bool isNegated = false)
     {
-        IsNotNull = isNotNull;
+        IsNegated = isNegated;
     }
 
     public string DefaultName => string.Empty;
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, IsNotNull ? "not null" : "null");
+        yield return new Lexeme(LexType.Keyword, IsNegated ? "not null" : "null");
     }
 
     public string ToSqlWithoutCte()
     {
-        return IsNotNull ? "not null" : "null";
+        return IsNegated ? "not null" : "null";
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

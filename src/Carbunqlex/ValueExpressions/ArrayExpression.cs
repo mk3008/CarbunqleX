@@ -22,7 +22,7 @@ public class ArrayExpression : IValueExpression, IArgumentExpression
     public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
-        sb.Append("ARRAY[");
+        sb.Append("array[");
         sb.Append(string.Join(", ", Elements.Select(element => element.ToSqlWithoutCte())));
         sb.Append("]");
         return sb.ToString();
@@ -30,7 +30,7 @@ public class ArrayExpression : IValueExpression, IArgumentExpression
 
     public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, "ARRAY");
+        yield return new Lexeme(LexType.Keyword, "array");
         yield return new Lexeme(LexType.OpenBracket, "[");
         for (int i = 0; i < Elements.Count(); i++)
         {

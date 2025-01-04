@@ -67,6 +67,12 @@ public interface ISelectQuery : IQuery
     IEnumerable<ColumnExpression> ExtractColumnExpressions();
 
     bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause);
+
+    void AddColumn(SelectExpression expr);
+
+    void AddColumn(IValueExpression value, string alias);
+
+    void RemoveColumn(SelectExpression expr);
 }
 
 //public static class ISelectQueryExtensions

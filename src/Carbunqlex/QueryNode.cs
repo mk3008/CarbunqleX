@@ -72,11 +72,11 @@ public class QueryNode
     /// <param name="predicate"></param>
     /// <param name="action"></param>
     /// <returns></returns>
-    public QueryNode When(string columnName, Action<QueryAccessor> action)
+    public QueryNode When(string columnName, Action<ColumnModifier> action)
     {
         var column = columnName.ToLowerInvariant();
 
-        var result = new List<QueryAccessor>();
+        var result = new List<ColumnModifier>();
         WhenRecursive(this, column, result);
         foreach (var item in result)
         {
@@ -85,7 +85,7 @@ public class QueryNode
         return this;
     }
 
-    private void WhenRecursive(QueryNode node, string columnName, List<QueryAccessor> result)
+    private void WhenRecursive(QueryNode node, string columnName, List<ColumnModifier> result)
     {
         // Search child nodes first
         foreach (var datasourceNode in node.DatasourceNodes.Values)
@@ -101,19 +101,19 @@ public class QueryNode
             return;
         }
 
+        // query で使用されている列名を検索
+        if (node.SelectExpressions.ContainsKey(columnName))
+        {
+            result.Add(new(node.Query, node.SelectExpressions[columnName].Value));
+            return;
+        }
+
         // datasource で定義されている列名を検索
         var column = node.DatasourceNodes.Values.Where(ds => ds.Columns.ContainsKey(columnName)).FirstOrDefault();
         if (column != null)
         {
             var expr = new ColumnExpression(column.Name, column.Columns[columnName]);
             result.Add(new(node.Query, expr));
-            return;
-        }
-
-        // query で使用されている列名を検索
-        if (node.SelectExpressions.ContainsKey(columnName))
-        {
-            result.Add(new(node.Query, node.SelectExpressions[columnName].Expression));
             return;
         }
     }

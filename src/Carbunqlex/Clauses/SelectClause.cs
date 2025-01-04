@@ -95,12 +95,12 @@ public class SelectClause : ISqlComponent
     public IEnumerable<ISelectQuery> GetQueries()
     {
         return Expressions
-            .Where(item => item.Expression.MightHaveQueries)
-            .SelectMany(item => item.Expression.GetQueries());
+            .Where(item => item.Value.MightHaveQueries)
+            .SelectMany(item => item.Value.GetQueries());
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()
     {
-        return Expressions.SelectMany(expr => expr.Expression.ExtractColumnExpressions());
+        return Expressions.SelectMany(expr => expr.Value.ExtractColumnExpressions());
     }
 }

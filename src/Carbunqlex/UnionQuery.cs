@@ -211,4 +211,19 @@ public class UnionQuery : ISelectQuery
         Parameters[name] = value;
         return parameter;
     }
+
+    public void AddColumn(SelectExpression expr)
+    {
+        throw new NotSupportedException("Columns cannot be added to a union query.");
+    }
+
+    public void RemoveColumn(SelectExpression expr)
+    {
+        throw new NotSupportedException("Columns cannot be removed from a union query.");
+    }
+
+    public void AddColumn(IValueExpression value, string alias)
+    {
+        throw new NotSupportedException("Columns cannot be added to a union query.");
+    }
 }

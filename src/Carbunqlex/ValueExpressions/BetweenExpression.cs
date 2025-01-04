@@ -7,12 +7,12 @@ public class BetweenExpression : IValueExpression
     public IValueExpression Left { get; set; }
     public IValueExpression Start { get; set; }
     public IValueExpression End { get; set; }
-    public bool IsNotBetween { get; set; }
+    public bool IsNegated { get; set; }
 
-    public BetweenExpression(IValueExpression left, bool isNotBetween, IValueExpression start, IValueExpression end)
+    public BetweenExpression(bool isNegated, IValueExpression left, IValueExpression start, IValueExpression end)
     {
         Left = left;
-        IsNotBetween = isNotBetween;
+        IsNegated = isNegated;
         Start = start;
         End = end;
     }
@@ -27,7 +27,7 @@ public class BetweenExpression : IValueExpression
         {
             yield return lexeme;
         }
-        yield return new Lexeme(LexType.Operator, IsNotBetween ? "not between" : "between");
+        yield return new Lexeme(LexType.Operator, IsNegated ? "not between" : "between");
         foreach (var lexeme in Start.GenerateLexemesWithoutCte())
         {
             yield return lexeme;
@@ -43,7 +43,7 @@ public class BetweenExpression : IValueExpression
     {
         var sb = new StringBuilder();
         sb.Append(Left.ToSqlWithoutCte());
-        sb.Append(IsNotBetween ? " not between " : " between ");
+        sb.Append(IsNegated ? " not between " : " between ");
         sb.Append(Start.ToSqlWithoutCte());
         sb.Append(" and ");
         sb.Append(End.ToSqlWithoutCte());

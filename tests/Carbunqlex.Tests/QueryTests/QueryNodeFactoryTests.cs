@@ -10,37 +10,6 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
     private readonly ITestOutputHelper output = output;
 
     [Fact]
-    public void QueryNodeTest_Filter()
-    {
-        // Arrange
-        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
-
-        // Act
-        var queryNode = QueryNodeFactory.Create(query);
-        output.WriteLine(queryNode.ToTreeString());
-
-        queryNode.When("table_a_id", r =>
-        {
-            r.Equal(100)
-                .NotEqual(-100)
-                .GreaterThan(50)
-                .GreaterThanOrEqual(30)
-                .LessThan(200)
-                .LessThanOrEqual(300)
-                .In(1, 2, 3)
-                .In(SelectQueryFactory.CreateSelectQuery("table_b", "b", "table_a_id"))
-                .NotIn(4, 5, 6)
-                .NotIn(SelectQueryFactory.CreateSelectQuery("table_c", "c", "table_a_id"))
-                .Like("%a%")
-                .NotLike("%b%")
-                .Any(1, 2, 3)
-                .Any(r.AddParameter(":prm", new int[] { 1, 2, 3 }));
-        });
-
-        output.WriteLine(queryNode.Query.ToSql());
-    }
-
-    [Fact]
     public void TestAllComponents()
     {
         // Arrange
@@ -49,20 +18,6 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
         // Act
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.ToTreeString());
-
-        // when(column, static q => q.EqualTo(100));
-        queryNode.When("ColumnName1", accessor =>
-        {
-            output.WriteLine(accessor.ToString());
-            accessor.Equal(100)
-                .In(1, 2, 3)
-                .In(SelectQueryFactory.CreateSelectQuery("Table1", "t1", "ColumnName1"));
-            //.NotIn(4, 5, 6)
-            //.NotIn(SelectQueryFactory.CreateSelectQuery("Table2", "t2", "ColumnName1", "ColumnName2"));
-
-        });
-
-        output.WriteLine(queryNode.Query.ToSql());
     }
 
     [Fact]
