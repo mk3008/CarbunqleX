@@ -1,11 +1,13 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex;
 
-public class QueryNode
+public class QueryNode : ISelectQuery
 {
     /// <summary>
     /// The query.
@@ -116,5 +118,80 @@ public class QueryNode
             result.Add(new(node.Query, expr));
             return;
         }
+    }
+
+    public IEnumerable<SelectExpression> GetSelectExpressions()
+    {
+        return Query.GetSelectExpressions();
+    }
+
+    public IEnumerable<IDatasource> GetDatasources()
+    {
+        return Query.GetDatasources();
+    }
+
+    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    {
+        return Query.ExtractColumnExpressions();
+    }
+
+    public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
+    {
+        return Query.TryGetWhereClause(out whereClause);
+    }
+
+    public void AddColumn(SelectExpression expr)
+    {
+        Query.AddColumn(expr);
+    }
+
+    public void AddColumn(IValueExpression value, string alias)
+    {
+        Query.AddColumn(value, alias);
+    }
+
+    public void RemoveColumn(SelectExpression expr)
+    {
+        Query.RemoveColumn(expr);
+    }
+
+    public string ToSql()
+    {
+        return Query.ToSql();
+    }
+
+    public IEnumerable<Lexeme> GenerateLexemes()
+    {
+        return Query.GenerateLexemes();
+    }
+
+    public IEnumerable<CommonTableClause> GetCommonTableClauses()
+    {
+        return Query.GetCommonTableClauses();
+    }
+
+    public IDictionary<string, object?> GetParameters()
+    {
+        return Query.GetParameters();
+    }
+
+    public ParameterExpression AddParameter(string name, object value)
+    {
+        return Query.AddParameter(name, value);
+    }
+
+    public string ToSqlWithoutCte()
+    {
+        return Query.ToSqlWithoutCte();
+    }
+
+    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    {
+        return Query.GenerateLexemesWithoutCte();
+    }
+
+    public IEnumerable<ISelectQuery> GetQueries()
+    {
+        return Query.GetQueries();
     }
 }
