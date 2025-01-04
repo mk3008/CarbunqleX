@@ -199,6 +199,29 @@ public class ColumnModifierTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void ColumnModifiedFilterTest()
+    {
+        // Arrange
+        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+
+        // Act
+        var queryNode = QueryNodeFactory.Create(query);
+        output.WriteLine(queryNode.Query.ToSql());
+
+        queryNode.When("table_a_id", r =>
+        {
+            r.WhereModifier.Coalesce(0)
+                .GreaterThanOrEqual(0);
+        });
+
+        var actual = queryNode.Query.ToSql();
+        output.WriteLine(actual);
+
+        var expected = "select a.table_a_id, a.value from table_a as a where coalesce(a.table_a_id, 0) >= 0";
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
     public void GreatestAndLeastTest()
     {
         // Arrange

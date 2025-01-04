@@ -334,6 +334,42 @@ public class WhereModifier
         _queryAccessor.AddCondition(condition);
         return this;
     }
+
+    public WhereModifier Coalesce(params object[] values)
+    {
+        var expr = ValueBuilder.Coalesce(new object[] { _queryAccessor.Value }.Union(values));
+        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+    }
+
+    public WhereModifier Coalesce(IEnumerable<object> values)
+    {
+        var expr = ValueBuilder.Coalesce(new object[] { _queryAccessor.Value }.Union(values));
+        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+    }
+
+    public WhereModifier Greatest(params object[] values)
+    {
+        var expr = ValueBuilder.Greatest(new object[] { _queryAccessor.Value }.Union(values));
+        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+    }
+
+    public WhereModifier Greatest(IEnumerable<object> values)
+    {
+        var expr = ValueBuilder.Greatest(new object[] { _queryAccessor.Value }.Union(values));
+        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+    }
+
+    public WhereModifier Least(params object[] values)
+    {
+        var expr = ValueBuilder.Least(new object[] { _queryAccessor.Value }.Union(values));
+        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+    }
+
+    public WhereModifier Least(IEnumerable<object> values)
+    {
+        var expr = ValueBuilder.Least(new object[] { _queryAccessor.Value }.Union(values));
+        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+    }
 }
 
 public static class ValueBuilder
