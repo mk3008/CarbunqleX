@@ -163,84 +163,94 @@ public class FromModifier
 
 public class SelectModifier
 {
-    private readonly ColumnModifier _queryAccessor;
+    private IValueExpression Value { get; set; }
+
+    private readonly ISelectQuery Query;
+    private readonly SelectExpression? SelectExpression;
 
     public SelectModifier(ColumnModifier queryAccessor)
     {
-        _queryAccessor = queryAccessor;
+        Query = queryAccessor.Query;
+        Value = queryAccessor.Value;
+        SelectExpression = queryAccessor.SelectExpression;
+    }
+
+    public ParameterExpression AddParameter(string name, object value)
+    {
+        return Query.AddParameter(name, value);
     }
 
     public SelectModifier Greatest(params object[] values)
     {
-        if (_queryAccessor.SelectExpression != null)
+        if (SelectExpression != null)
         {
-            var expr = ValueBuilder.Greatest(new object[] { _queryAccessor.Value }.Union(values));
-            _queryAccessor.SelectExpression.Value = expr;
-            _queryAccessor.Value = expr;
+            var expr = ValueBuilder.Greatest(new object[] { Value }.Union(values));
+            SelectExpression.Value = expr;
+            Value = expr;
         }
         return this;
     }
 
     public SelectModifier Greatest(IEnumerable<object> values)
     {
-        if (_queryAccessor.SelectExpression != null)
+        if (SelectExpression != null)
         {
-            var expr = ValueBuilder.Greatest(new object[] { _queryAccessor.Value }.Union(values));
-            _queryAccessor.SelectExpression.Value = expr;
-            _queryAccessor.Value = expr;
+            var expr = ValueBuilder.Greatest(new object[] { Value }.Union(values));
+            SelectExpression.Value = expr;
+            Value = expr;
         }
         return this;
     }
 
     public SelectModifier Least(params object[] values)
     {
-        if (_queryAccessor.SelectExpression != null)
+        if (SelectExpression != null)
         {
-            var expr = ValueBuilder.Least(new object[] { _queryAccessor.Value }.Union(values));
-            _queryAccessor.SelectExpression.Value = expr;
-            _queryAccessor.Value = expr;
+            var expr = ValueBuilder.Least(new object[] { Value }.Union(values));
+            SelectExpression.Value = expr;
+            Value = expr;
         }
         return this;
     }
 
     public SelectModifier Least(IEnumerable<object> values)
     {
-        if (_queryAccessor.SelectExpression != null)
+        if (SelectExpression != null)
         {
-            var expr = ValueBuilder.Least(new object[] { _queryAccessor.Value }.Union(values));
-            _queryAccessor.SelectExpression.Value = expr;
-            _queryAccessor.Value = expr;
+            var expr = ValueBuilder.Least(new object[] { Value }.Union(values));
+            SelectExpression.Value = expr;
+            Value = expr;
         }
         return this;
     }
 
     public SelectModifier Coalesce(params object[] values)
     {
-        if (_queryAccessor.SelectExpression != null)
+        if (SelectExpression != null)
         {
-            var expr = ValueBuilder.Coalesce(new object[] { _queryAccessor.Value }.Union(values));
-            _queryAccessor.SelectExpression.Value = expr;
-            _queryAccessor.Value = expr;
+            var expr = ValueBuilder.Coalesce(new object[] { Value }.Union(values));
+            SelectExpression.Value = expr;
+            Value = expr;
         }
         return this;
     }
 
     public SelectModifier Coalesce(IEnumerable<object> values)
     {
-        if (_queryAccessor.SelectExpression != null)
+        if (SelectExpression != null)
         {
-            var expr = ValueBuilder.Coalesce(new object[] { _queryAccessor.Value }.Union(values));
-            _queryAccessor.SelectExpression.Value = expr;
-            _queryAccessor.Value = expr;
+            var expr = ValueBuilder.Coalesce(new object[] { Value }.Union(values));
+            SelectExpression.Value = expr;
+            Value = expr;
         }
         return this;
     }
 
     public void Remove()
     {
-        if (_queryAccessor.SelectExpression != null)
+        if (SelectExpression != null)
         {
-            _queryAccessor.Query.RemoveColumn(_queryAccessor.SelectExpression);
+            Query.RemoveColumn(SelectExpression);
         }
     }
 }
@@ -255,6 +265,11 @@ public class WhereModifier
     {
         Query = modifier.Query;
         Value = modifier.Value;
+    }
+
+    public ParameterExpression AddParameter(string name, object value)
+    {
+        return Query.AddParameter(name, value);
     }
 
     internal void AddCondition(IValueExpression condition)

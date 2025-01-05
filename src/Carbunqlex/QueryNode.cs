@@ -90,6 +90,23 @@ public class QueryNode : ISelectQuery
         return this;
     }
 
+    public QueryNode WhereModifier(string columnName, Action<WhereModifier> action)
+    {
+        if (MustRefresh) Refresh();
+
+        var result = GetColumnModifiers(columnName);
+
+        foreach (var columnModifier in result)
+        {
+            var whereModifier = new WhereModifier(columnModifier);
+            action(whereModifier);
+        }
+
+        if (result.Any()) MustRefresh = true;
+
+        return this;
+    }
+
     private List<ColumnModifier> GetColumnModifiers(string columnName)
     {
         var column = columnName.ToLowerInvariant();

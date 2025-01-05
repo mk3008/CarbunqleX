@@ -16,12 +16,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("table_a_id", r =>
-        {
-            r.WhereModifier
-                .Equal(100)
-                .NotEqual(-100);
-        });
+        queryNode.WhereModifier("table_a_id", r => r.Equal(100).NotEqual(-100));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -40,12 +35,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("table_a_id", r =>
-        {
-            r.WhereModifier
-                .GreaterThan(50)
-                .GreaterThanOrEqual(30);
-        });
+        queryNode.WhereModifier("table_a_id", r => r.GreaterThan(50).GreaterThanOrEqual(30));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -64,12 +54,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("table_a_id", r =>
-        {
-            r.WhereModifier
-                .LessThan(200)
-                .LessThanOrEqual(300);
-        });
+        queryNode.WhereModifier("table_a_id", r => r.LessThan(200).LessThanOrEqual(300));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -88,12 +73,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("table_a_id", r =>
-        {
-            r.WhereModifier
-                .In(1, 2, 3)
-                .NotIn(4, 5, 6);
-        });
+        queryNode.WhereModifier("table_a_id", r => r.In(1, 2, 3).NotIn(4, 5, 6));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -111,13 +91,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         // Act
         var queryNode = QueryNodeFactory.Create(query);
 
-
-        queryNode.When("table_a_id", r =>
-        {
-            r.WhereModifier
-                .Like("%a%")
-                .NotLike("%b%");
-        });
+        queryNode.WhereModifier("table_a_id", r => r.Like("%a%").NotLike("%b%"));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -136,12 +110,8 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("table_a_id", r =>
-        {
-            r.WhereModifier
-                .Any(1, 2, 3)
-                .Any(r.AddParameter(":prm", new int[] { 1, 2, 3 }));
-        });
+        queryNode.WhereModifier("table_a_id",
+            static r => r.Any(1, 2, 3).Any(r.AddParameter(":prm", new int[] { 1, 2, 3 })));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -160,12 +130,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("table_a_id", r =>
-        {
-            r.WhereModifier
-                .IsNull()
-                .IsNotNull();
-        });
+        queryNode.WhereModifier("table_a_id", r => r.IsNull().IsNotNull());
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -184,12 +149,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("table_a_id", r =>
-        {
-            r.WhereModifier
-                .Between(1, 10)
-                .NotBetween(20, 30);
-        });
+        queryNode.WhereModifier("table_a_id", r => r.Between(1, 10).NotBetween(20, 30));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -208,11 +168,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("table_a_id", r =>
-        {
-            r.WhereModifier.Coalesce(0)
-                .GreaterThanOrEqual(0);
-        });
+        queryNode.WhereModifier("table_a_id", r => r.Coalesce(0).GreaterThanOrEqual(0));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
