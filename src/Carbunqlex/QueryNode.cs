@@ -73,6 +73,31 @@ public class QueryNode : ISelectQuery
         }
     }
 
+    public QueryNode SelectModifier(string columnName, Action<SelectModifier> action)
+    {
+        if (MustRefresh) Refresh();
+
+        var result = GetColumnModifiers(columnName);
+
+        foreach (var columnModifier in result)
+        {
+            var selectModifier = new SelectModifier(columnModifier);
+            action(selectModifier);
+        }
+
+        if (result.Any()) MustRefresh = true;
+
+        return this;
+    }
+
+    private List<ColumnModifier> GetColumnModifiers(string columnName)
+    {
+        var column = columnName.ToLowerInvariant();
+        var result = new List<ColumnModifier>();
+        WhenRecursive(this, column, result);
+        return result;
+    }
+
     /// <summary>
     /// Searches for queries that match the predicate and executes
     /// </summary>

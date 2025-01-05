@@ -16,12 +16,7 @@ public class SelectModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("value", r =>
-        {
-            r.SelectModifier
-                .Greatest(1)
-                .Least(10);
-        });
+        queryNode.SelectModifier("value", r => r.Greatest(1).Least(10));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -40,11 +35,7 @@ public class SelectModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("value", r =>
-        {
-            r.SelectModifier
-                .Coalesce(1, 2, 3);
-        });
+        queryNode.SelectModifier("value", r => r.Coalesce(1, 2, 3));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -88,11 +79,7 @@ public class SelectModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("value", r =>
-        {
-            r.SelectModifier
-                .Remove();
-        });
+        queryNode.SelectModifier("value", r => r.Remove());
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
