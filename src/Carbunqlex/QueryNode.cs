@@ -12,23 +12,26 @@ public class QueryNode : ISelectQuery
     /// <summary>
     /// The query.
     /// </summary>
-    public ISelectQuery Query { get; }
+    public ISelectQuery Query { get; private set; }
 
     /// <summary>
     /// The column names selected by the query.
     /// </summary>
-    private ReadOnlyDictionary<string, SelectExpression> SelectExpressions { get; }
+    private ReadOnlyDictionary<string, SelectExpression> SelectExpressions { get; set; }
+
+    private bool MustRefresh { get; set; }
 
     /// <summary>
     /// The datasource nodes that make up the query.
     /// </summary>
-    internal ReadOnlyDictionary<string, DatasourceNode> DatasourceNodes { get; }
+    internal ReadOnlyDictionary<string, DatasourceNode> DatasourceNodes { get; private set; }
 
     public QueryNode(ISelectQuery query, IEnumerable<DatasourceNode> datasourceNodes)
     {
         Query = query;
         SelectExpressions = query.GetSelectExpressions().ToDictionary(static expr => expr.Alias.ToLowerInvariant(), expr => expr).AsReadOnly();
         DatasourceNodes = datasourceNodes.ToDictionary(static ds => ds.Name.ToLowerInvariant(), static ds => ds).AsReadOnly();
+        MustRefresh = false;
     }
 
     /// <summary>
@@ -37,6 +40,8 @@ public class QueryNode : ISelectQuery
     /// <returns>A string representing the state of the query node.</returns>
     public string ToTreeString()
     {
+        if (MustRefresh) Refresh();
+
         var sb = new StringBuilder();
         AppendTreeString(sb, 0);
         return sb.ToString();
@@ -76,6 +81,8 @@ public class QueryNode : ISelectQuery
     /// <returns></returns>
     public QueryNode When(string columnName, Action<ColumnModifier> action)
     {
+        if (MustRefresh) Refresh();
+
         var column = columnName.ToLowerInvariant();
 
         var result = new List<ColumnModifier>();
@@ -84,6 +91,9 @@ public class QueryNode : ISelectQuery
         {
             action(item);
         }
+
+        if (result.Any()) MustRefresh = true;
+
         return this;
     }
 
@@ -193,5 +203,20 @@ public class QueryNode : ISelectQuery
     public IEnumerable<ISelectQuery> GetQueries()
     {
         return Query.GetQueries();
+    }
+
+    public void AddJoin(JoinClause joinClause)
+    {
+        Query.AddJoin(joinClause);
+    }
+
+    private void Refresh()
+    {
+        var node = QueryNodeFactory.Create(Query);
+        Query = node.Query;
+        SelectExpressions = node.SelectExpressions;
+        DatasourceNodes = node.DatasourceNodes;
+
+        MustRefresh = false;
     }
 }

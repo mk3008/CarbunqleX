@@ -85,7 +85,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var left = new ConstantExpression(10);
         var start = new ConstantExpression(5);
         var end = new ConstantExpression(15);
-        var between = ValueBuilder.Between(left, start, end);
+        var between = ValueBuilder.NotBetween(left, start, end);
         var sql = between.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("10 not between 5 and 15", sql);

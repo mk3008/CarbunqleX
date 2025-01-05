@@ -5,6 +5,7 @@ namespace Carbunqlex.Tests.QueryTests;
 public class SelectModifierTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
+
     [Fact]
     public void GreatestAndLeastTest()
     {

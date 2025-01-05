@@ -160,4 +160,9 @@ public class ValuesQuery : ISelectQuery
     {
         throw new NotSupportedException("ValuesQuery does not support adding columns.");
     }
+
+    public void AddJoin(JoinClause joinClause)
+    {
+        throw new NotSupportedException("ValuesQuery does not support adding joins.");
+    }
 }

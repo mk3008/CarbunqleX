@@ -226,4 +226,9 @@ public class UnionQuery : ISelectQuery
     {
         throw new NotSupportedException("Columns cannot be added to a union query.");
     }
+
+    public void AddJoin(JoinClause joinClause)
+    {
+        throw new NotSupportedException("Joins cannot be added to a union query.");
+    }
 }

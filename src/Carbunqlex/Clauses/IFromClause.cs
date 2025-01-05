@@ -21,4 +21,6 @@ public interface IFromClause : ISqlComponent
     /// </summary>
     /// <returns></returns>
     IEnumerable<ColumnExpression> ExtractColumnExpressions();
+
+    void AddJoin(JoinClause joinClause);
 }

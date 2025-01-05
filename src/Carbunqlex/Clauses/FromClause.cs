@@ -78,4 +78,9 @@ public class FromClause : IFromClause
             .Where(static joinClause => joinClause.Condition != null)
             .SelectMany(static joinClause => joinClause.Condition!.ExtractColumnExpressions());
     }
+
+    public void AddJoin(JoinClause joinClause)
+    {
+        JoinClauses.Add(joinClause);
+    }
 }

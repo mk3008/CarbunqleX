@@ -41,4 +41,9 @@ public class EmptyFromClause : IFromClause
     {
         return Enumerable.Empty<ColumnExpression>();
     }
+
+    public void AddJoin(JoinClause joinClause)
+    {
+        throw new NotSupportedException("Cannot add a join to an empty from clause.");
+    }
 }

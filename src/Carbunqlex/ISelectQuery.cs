@@ -73,6 +73,8 @@ public interface ISelectQuery : IQuery
     void AddColumn(IValueExpression value, string alias);
 
     void RemoveColumn(SelectExpression expr);
+
+    void AddJoin(JoinClause joinClause);
 }
 
 //public static class ISelectQueryExtensions

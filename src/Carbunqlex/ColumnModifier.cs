@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using System.Globalization;
 
@@ -19,6 +20,9 @@ public class ColumnModifier(ISelectQuery query, IValueExpression expression, Sel
     private WhereModifier? _whereModifier;
     public WhereModifier WhereModifier => _whereModifier ??= new(this);
 
+    private FromModifier? _fromModifier;
+    public FromModifier FromModifier => _fromModifier ??= new(this);
+
     public override string ToString()
     {
         try
@@ -31,23 +35,11 @@ public class ColumnModifier(ISelectQuery query, IValueExpression expression, Sel
         }
     }
 
-    internal void AddCondition(IValueExpression condition)
-    {
-        if (Query.TryGetWhereClause(out var whereClause))
-        {
-            whereClause.And(condition);
-        }
-        else
-        {
-            throw new InvalidOperationException();
-        }
-    }
-
-    internal void AddCondition(string operatorSymbol, IValueExpression rightValue)
-    {
-        var condition = new BinaryExpression(operatorSymbol, Value, rightValue);
-        AddCondition(condition);
-    }
+    //internal void AddCondition(string operatorSymbol, IValueExpression rightValue)
+    //{
+    //    var condition = new BinaryExpression(operatorSymbol, Value, rightValue);
+    //    AddCondition(condition);
+    //}
 
     public ParameterExpression AddParameter(string name, object value)
     {
@@ -60,6 +52,11 @@ public class ColumnModifier(ISelectQuery query, IValueExpression expression, Sel
         return new SelectModifier(new ColumnModifier(Query, expr.Value, expr));
     }
 
+    public SelectModifier AddColumn(IValueExpression value)
+    {
+        return AddColumn(value, value.DefaultName);
+    }
+
     public SelectModifier AddColumn(IValueExpression value, string alias)
     {
         var expr = new SelectExpression(value, alias);
@@ -67,13 +64,102 @@ public class ColumnModifier(ISelectQuery query, IValueExpression expression, Sel
         return new SelectModifier(new ColumnModifier(Query, expr.Value, expr));
     }
 
-    internal IValueExpression ToValueExpression(object value)
+    internal static IValueExpression ToValueExpression(object value)
     {
         return value is IValueExpression expr
             ? expr
             : ValueBuilder.Constant(value);
     }
 }
+
+public class DatasourceModifier
+{
+    private readonly ISelectQuery Query;
+
+    private readonly string DatasourceAlias;
+
+    public DatasourceModifier(ISelectQuery query, string datasourceAlias)
+    {
+        Query = query;
+        DatasourceAlias = datasourceAlias;
+    }
+
+    public SelectModifier AddColumn(string columnName)
+    {
+        return AddColumn(columnName, columnName);
+    }
+
+    public SelectModifier AddColumn(string columnName, string columnAlias)
+    {
+        var expr = new SelectExpression(new ColumnExpression(DatasourceAlias, columnName), columnAlias);
+        Query.AddColumn(expr);
+        return new SelectModifier(new ColumnModifier(Query, expr.Value, expr));
+    }
+
+    public WhereModifier Filter(string columnName)
+    {
+        return new WhereModifier(new ColumnModifier(Query, new ColumnExpression(DatasourceAlias, columnName)));
+    }
+}
+
+
+public class FromModifier
+{
+    private readonly ColumnModifier _queryAccessor;
+    public FromModifier(ColumnModifier queryAccessor)
+    {
+        _queryAccessor = queryAccessor;
+    }
+
+    public DatasourceModifier Join(JoinType joinType, IDatasource datasource, IValueExpression condition)
+    {
+        var joinClause = new JoinClause(datasource, joinType, condition);
+        _queryAccessor.Query.AddJoin(joinClause);
+        return new DatasourceModifier(_queryAccessor.Query, datasource.Alias);
+    }
+
+    public DatasourceModifier InnerJoin(string tableName, string alias)
+    {
+        var column = _queryAccessor.Value.DefaultName;
+        if (string.IsNullOrEmpty(column))
+        {
+            throw new InvalidOperationException("Column name is required for inner join.");
+        }
+        var datasource = new TableSource(tableName, alias);
+        return Join(JoinType.Inner, datasource, new BinaryExpression("=", _queryAccessor.Value, new ColumnExpression(alias, column)));
+    }
+
+    public DatasourceModifier LeftJoin(string tableName, string alias)
+    {
+        var column = _queryAccessor.Value.DefaultName;
+        if (string.IsNullOrEmpty(column))
+        {
+            throw new InvalidOperationException("Column name is required for left join.");
+        }
+        var datasource = new TableSource(tableName, alias);
+        return Join(JoinType.Left, datasource, new BinaryExpression("=", _queryAccessor.Value, new ColumnExpression(alias, column)));
+    }
+
+    public DatasourceModifier RightJoin(string tableName, string alias)
+    {
+        var column = _queryAccessor.Value.DefaultName;
+        if (string.IsNullOrEmpty(column))
+        {
+            throw new InvalidOperationException("Column name is required for right join.");
+        }
+        var datasource = new TableSource(tableName, alias);
+        return Join(JoinType.Right, datasource, new BinaryExpression("=", _queryAccessor.Value, new ColumnExpression(alias, column)));
+    }
+
+    public DatasourceModifier CrossJoin(string tableName, string alias)
+    {
+        var datasource = new TableSource(tableName, alias);
+        var joinClause = new JoinClause(datasource, JoinType.Cross);
+        _queryAccessor.Query.AddJoin(joinClause);
+        return new DatasourceModifier(_queryAccessor.Query, datasource.Alias);
+    }
+}
+
 
 public class SelectModifier
 {
@@ -161,214 +247,200 @@ public class SelectModifier
 
 public class WhereModifier
 {
-    private readonly ColumnModifier _queryAccessor;
+    private readonly IValueExpression Value;
 
-    public WhereModifier(ColumnModifier queryAccessor)
+    private readonly ISelectQuery Query;
+
+    public WhereModifier(ColumnModifier modifier)
     {
-        _queryAccessor = queryAccessor;
+        Query = modifier.Query;
+        Value = modifier.Value;
+    }
+
+    internal void AddCondition(IValueExpression condition)
+    {
+        if (Query.TryGetWhereClause(out var whereClause))
+        {
+            whereClause.And(condition);
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
     }
 
     public WhereModifier Equal(object rightValue)
     {
-        var rightExpression = _queryAccessor.ToValueExpression(rightValue);
-        _queryAccessor.AddCondition("=", rightExpression);
+        AddCondition(Value.Equal(rightValue));
         return this;
     }
 
     public WhereModifier NotEqual(object rightValue)
     {
-        var rightExpression = _queryAccessor.ToValueExpression(rightValue);
-        _queryAccessor.AddCondition("<>", rightExpression);
+        AddCondition(Value.NotEqual(rightValue));
         return this;
     }
 
     public WhereModifier GreaterThan(object rightValue)
     {
-        var rightExpression = _queryAccessor.ToValueExpression(rightValue);
-        _queryAccessor.AddCondition(">", rightExpression);
+        AddCondition(Value.GreaterThan(rightValue));
         return this;
     }
 
     public WhereModifier GreaterThanOrEqual(object rightValue)
     {
-        var rightExpression = _queryAccessor.ToValueExpression(rightValue);
-        _queryAccessor.AddCondition(">=", rightExpression);
+        AddCondition(Value.GreaterThanOrEqual(rightValue));
         return this;
     }
 
     public WhereModifier LessThan(object rightValue)
     {
-        var rightExpression = _queryAccessor.ToValueExpression(rightValue);
-        _queryAccessor.AddCondition("<", rightExpression);
+        AddCondition(Value.LessThan(rightValue));
         return this;
     }
 
     public WhereModifier LessThanOrEqual(object rightValue)
     {
-        var rightExpression = _queryAccessor.ToValueExpression(rightValue);
-        _queryAccessor.AddCondition("<=", rightExpression);
+        AddCondition(Value.LessThanOrEqual(rightValue));
+        return this;
+    }
+
+    public WhereModifier Like(IValueExpression rightValue)
+    {
+        AddCondition(Value.Like(rightValue));
         return this;
     }
 
     public WhereModifier Like(object rightValue)
     {
-        var rightExpression = _queryAccessor.ToValueExpression(rightValue);
-        var condition = ValueBuilder.Like(_queryAccessor.Value, rightExpression);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.Like(rightValue));
         return this;
     }
 
-    public WhereModifier Like(IArgumentExpression rightValue)
+    public WhereModifier NotLike(IValueExpression rightValue)
     {
-        var rightExpression = _queryAccessor.ToValueExpression(rightValue);
-        var condition = ValueBuilder.Like(_queryAccessor.Value, rightExpression);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.NotLike(rightValue));
         return this;
     }
 
     public WhereModifier NotLike(object rightValue)
     {
-        var rightExpression = _queryAccessor.ToValueExpression(rightValue);
-        var condition = ValueBuilder.NotLike(_queryAccessor.Value, rightExpression);
-        _queryAccessor.AddCondition(condition);
-        return this;
-    }
-
-    public WhereModifier NotLike(IArgumentExpression rightValue)
-    {
-        var rightExpression = _queryAccessor.ToValueExpression(rightValue);
-        var condition = ValueBuilder.NotLike(_queryAccessor.Value, rightExpression);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.NotLike(rightValue));
         return this;
     }
 
     public WhereModifier In(params object[] values)
     {
-        var condition = ValueBuilder.In(_queryAccessor.Value, values);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.In(values));
         return this;
     }
 
     public WhereModifier In(ISelectQuery scalarSubQuery)
     {
-        var condition = ValueBuilder.In(_queryAccessor.Value, scalarSubQuery);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.In(scalarSubQuery));
         return this;
     }
 
     public WhereModifier In(IArgumentExpression rightValue)
     {
-        var condition = ValueBuilder.In(_queryAccessor.Value, rightValue);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.In(rightValue));
         return this;
     }
 
     public WhereModifier NotIn(params object[] values)
     {
-        var condition = ValueBuilder.NotIn(_queryAccessor.Value, values);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.NotIn(values));
         return this;
     }
 
     public WhereModifier NotIn(ISelectQuery scalarSubQuery)
     {
-        var condition = ValueBuilder.NotIn(_queryAccessor.Value, scalarSubQuery);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.NotIn(scalarSubQuery));
         return this;
     }
 
     public WhereModifier NotIn(IArgumentExpression rightValue)
     {
-        var condition = ValueBuilder.NotIn(_queryAccessor.Value, rightValue);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.NotIn(rightValue));
         return this;
     }
 
     public WhereModifier Any(params object[] values)
     {
-        var condition = ValueBuilder.Any(_queryAccessor.Value, values);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.Any(values));
         return this;
     }
 
     public WhereModifier Any(ISelectQuery scalarSubQuery)
     {
-        var condition = ValueBuilder.Any(_queryAccessor.Value, scalarSubQuery);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.Any(scalarSubQuery));
         return this;
     }
 
     public WhereModifier Any(IArgumentExpression rightValue)
     {
-        var condition = ValueBuilder.Any(_queryAccessor.Value, rightValue);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.Any(rightValue));
         return this;
     }
 
     public WhereModifier IsNull()
     {
-        _queryAccessor.AddCondition("is", ValueBuilder.Null);
+        AddCondition(Value.IsNull());
         return this;
     }
 
     public WhereModifier IsNotNull()
     {
-        _queryAccessor.AddCondition("is", ValueBuilder.NotNull);
+        AddCondition(Value.IsNotNull());
         return this;
     }
 
     public WhereModifier Between(object start, object end)
     {
-        var startExpression = _queryAccessor.ToValueExpression(start);
-        var endExpression = _queryAccessor.ToValueExpression(end);
-        var condition = ValueBuilder.Between(_queryAccessor.Value, startExpression, endExpression);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.Between(start, end));
         return this;
     }
 
     public WhereModifier NotBetween(object start, object end)
     {
-        var startExpression = _queryAccessor.ToValueExpression(start);
-        var endExpression = _queryAccessor.ToValueExpression(end);
-        var condition = ValueBuilder.NotBetween(_queryAccessor.Value, startExpression, endExpression);
-        _queryAccessor.AddCondition(condition);
+        AddCondition(Value.NotBetween(start, end));
         return this;
     }
 
     public WhereModifier Coalesce(params object[] values)
     {
-        var expr = ValueBuilder.Coalesce(new object[] { _queryAccessor.Value }.Union(values));
-        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+        var expr = Value.Coalesce(values);
+        return new WhereModifier(new ColumnModifier(Query, expr));
     }
 
     public WhereModifier Coalesce(IEnumerable<object> values)
     {
-        var expr = ValueBuilder.Coalesce(new object[] { _queryAccessor.Value }.Union(values));
-        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+        var expr = Value.Coalesce(values);
+        return new WhereModifier(new ColumnModifier(Query, expr));
     }
 
     public WhereModifier Greatest(params object[] values)
     {
-        var expr = ValueBuilder.Greatest(new object[] { _queryAccessor.Value }.Union(values));
-        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+        var expr = Value.Greatest(values);
+        return new WhereModifier(new ColumnModifier(Query, expr));
     }
 
     public WhereModifier Greatest(IEnumerable<object> values)
     {
-        var expr = ValueBuilder.Greatest(new object[] { _queryAccessor.Value }.Union(values));
-        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+        var expr = Value.Greatest(values);
+        return new WhereModifier(new ColumnModifier(Query, expr));
     }
 
     public WhereModifier Least(params object[] values)
     {
-        var expr = ValueBuilder.Least(new object[] { _queryAccessor.Value }.Union(values));
-        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+        var expr = Value.Least(values);
+        return new WhereModifier(new ColumnModifier(Query, expr));
     }
 
     public WhereModifier Least(IEnumerable<object> values)
     {
-        var expr = ValueBuilder.Least(new object[] { _queryAccessor.Value }.Union(values));
-        return new WhereModifier(new ColumnModifier(_queryAccessor.Query, expr));
+        var expr = Value.Least(values);
+        return new WhereModifier(new ColumnModifier(Query, expr));
     }
 }
 

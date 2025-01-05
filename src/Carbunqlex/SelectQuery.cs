@@ -237,4 +237,9 @@ public class SelectQuery : ISelectQuery
     {
         SelectClause.Expressions.Remove(expr);
     }
+
+    public void AddJoin(JoinClause joinClause)
+    {
+        FromClause.AddJoin(joinClause);
+    }
 }
