@@ -5,7 +5,7 @@ using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.QueryTests;
 
-public class FromModifierTests(ITestOutputHelper output)
+public class JoinModifierTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
 
@@ -19,9 +19,9 @@ public class FromModifierTests(ITestOutputHelper output)
         // Act
         output.WriteLine(queryNode.ToSql());
 
-        queryNode.When("table_a_id", r =>
+        queryNode.JoinModifier(["table_a_id"], r =>
         {
-            r.FromModifier.Join(JoinType.Inner, new TableSource("table_b", "b"), r.Value.Equal(new ColumnExpression("b", "table_a_id")));
+            r.Join(JoinType.Inner, new TableSource("table_b", "b"), r.Values["table_a_id"].Equal(new ColumnExpression("b", "table_a_id")));
         });
 
         var actual = queryNode.ToSql();
@@ -41,15 +41,37 @@ public class FromModifierTests(ITestOutputHelper output)
         // Act
         output.WriteLine(queryNode.ToSql());
 
-        queryNode.When("table_a_id", r =>
+        queryNode.JoinModifier(["table_a_id"], r =>
         {
-            r.FromModifier.InnerJoin("table_b", "b");
+            r.InnerJoin("table_b", "b");
         });
 
         var actual = queryNode.ToSql();
         output.WriteLine(actual);
 
         var expected = "select a.table_a_id, a.value from table_a as a inner join table_b as b on a.table_a_id = b.table_a_id";
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void InnerJoinTest_CompositeKey()
+    {
+        // Arrange
+        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+        var queryNode = QueryNodeFactory.Create(query);
+
+        // Act
+        output.WriteLine(queryNode.ToSql());
+
+        queryNode.JoinModifier(["table_a_id", "value"], r =>
+        {
+            r.InnerJoin("table_b", "b");
+        });
+
+        var actual = queryNode.ToSql();
+        output.WriteLine(actual);
+
+        var expected = "select a.table_a_id, a.value from table_a as a inner join table_b as b on a.table_a_id = b.table_a_id and a.value = b.value";
         Assert.Equal(expected, actual);
     }
 
@@ -63,9 +85,9 @@ public class FromModifierTests(ITestOutputHelper output)
         // Act
         output.WriteLine(queryNode.ToSql());
 
-        queryNode.When("table_a_id", r =>
+        queryNode.JoinModifier(["table_a_id"], r =>
         {
-            var modifier = r.FromModifier.InnerJoin("table_b", "b");
+            var modifier = r.InnerJoin("table_b", "b");
             modifier.AddColumn("amount", "quantity").Coalesce(0);
             modifier.AddColumn("name");
         });
@@ -89,9 +111,9 @@ public class FromModifierTests(ITestOutputHelper output)
         // Act
         output.WriteLine(queryNode.ToSql());
 
-        queryNode.When("table_a_id", r =>
+        queryNode.JoinModifier(["table_a_id"], r =>
         {
-            var modifier = r.FromModifier.InnerJoin("table_b", "b");
+            var modifier = r.InnerJoin("table_b", "b");
             modifier.Filter("amount").Equal(10);
             modifier.Filter("name").Equal("test");
         });

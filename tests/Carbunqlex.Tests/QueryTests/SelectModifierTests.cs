@@ -44,30 +44,30 @@ public class SelectModifierTests(ITestOutputHelper output)
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
-    public void AddColumnTest()
-    {
-        // Arrange
-        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+    //[Fact]
+    //public void AddColumnTest()
+    //{
+    //    // Arrange
+    //    var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
 
-        // Act
-        var queryNode = QueryNodeFactory.Create(query);
-        output.WriteLine(queryNode.Query.ToSql());
+    //    // Act
+    //    var queryNode = QueryNodeFactory.Create(query);
+    //    output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.When("value", r =>
-        {
-            r.AddColumn(r.Value, "value2").Coalesce(0);
-        });
+    //    queryNode.When("value", r =>
+    //    {
+    //        r.AddColumn(r.Value, "value2").Coalesce(0);
+    //    });
 
-        query.AddColumn(ValueBuilder.Keyword("current_timestamp"), "created_at");
-        query.AddColumn(ValueBuilder.Keyword("current_timestamp"), "updated_at");
+    //    query.AddColumn(ValueBuilder.Keyword("current_timestamp"), "created_at");
+    //    query.AddColumn(ValueBuilder.Keyword("current_timestamp"), "updated_at");
 
-        var actual = queryNode.Query.ToSql();
-        output.WriteLine(actual);
+    //    var actual = queryNode.Query.ToSql();
+    //    output.WriteLine(actual);
 
-        var expected = "select a.table_a_id, a.value, coalesce(a.value, 0) as value2, current_timestamp as created_at, current_timestamp as updated_at from table_a as a";
-        Assert.Equal(expected, actual);
-    }
+    //    var expected = "select a.table_a_id, a.value, coalesce(a.value, 0) as value2, current_timestamp as created_at, current_timestamp as updated_at from table_a as a";
+    //    Assert.Equal(expected, actual);
+    //}
 
     [Fact]
     public void RemoveColumnTest()

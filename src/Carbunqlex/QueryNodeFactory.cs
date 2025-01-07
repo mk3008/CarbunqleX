@@ -35,7 +35,7 @@ public class QueryNodeFactory
                 else
                 {
                     // If the datasource cannot retrieve columns due to a wildcard, use the columns from the child datasource
-                    var selectedColumns = child.DatasourceNodes.SelectMany(static node => node.Value.Columns.Select(static column => column.Value)).Distinct();
+                    var selectedColumns = child.DatasourceNodeMap.SelectMany(static node => node.Value.Columns.Select(static column => column.Value)).Distinct();
                     var datasourceNode = new DatasourceNode(datasource, DatasourceType.SubQuery, selectedColumns, childQueryNodes);
                     datasourceNodes.Add(datasourceNode);
                 }

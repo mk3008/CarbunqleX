@@ -17,20 +17,20 @@ public class QueryNode : ISelectQuery
     /// <summary>
     /// The column names selected by the query.
     /// </summary>
-    private ReadOnlyDictionary<string, SelectExpression> SelectExpressions { get; set; }
+    private ReadOnlyDictionary<string, SelectExpression> SelectExpressionMap { get; set; }
 
     private bool MustRefresh { get; set; }
 
     /// <summary>
     /// The datasource nodes that make up the query.
     /// </summary>
-    internal ReadOnlyDictionary<string, DatasourceNode> DatasourceNodes { get; private set; }
+    internal ReadOnlyDictionary<string, DatasourceNode> DatasourceNodeMap { get; private set; }
 
     public QueryNode(ISelectQuery query, IEnumerable<DatasourceNode> datasourceNodes)
     {
         Query = query;
-        SelectExpressions = query.GetSelectExpressions().ToDictionary(static expr => expr.Alias.ToLowerInvariant(), expr => expr).AsReadOnly();
-        DatasourceNodes = datasourceNodes.ToDictionary(static ds => ds.Name.ToLowerInvariant(), static ds => ds).AsReadOnly();
+        SelectExpressionMap = query.GetSelectExpressions().ToDictionary(static expr => expr.Alias.ToLowerInvariant(), expr => expr).AsReadOnly();
+        DatasourceNodeMap = datasourceNodes.ToDictionary(static ds => ds.Name.ToLowerInvariant(), static ds => ds).AsReadOnly();
         MustRefresh = false;
     }
 
@@ -53,12 +53,12 @@ public class QueryNode : ISelectQuery
         sb.AppendLine($"{indent}*Query");
         sb.AppendLine($"{indent} Type: {Query.GetType().Name}");
         sb.AppendLine($"{indent} Current: {Query.ToSqlWithoutCte()}");
-        sb.AppendLine($"{indent} SelectedColumns: {string.Join(", ", SelectExpressions.Select(x => x.Key))}");
+        sb.AppendLine($"{indent} SelectedColumns: {string.Join(", ", SelectExpressionMap.Select(x => x.Key))}");
 
         indentLevel++;
         indent = new string(' ', indentLevel * 2);
 
-        foreach (var datasourceNode in DatasourceNodes)
+        foreach (var datasourceNode in DatasourceNodeMap)
         {
             sb.AppendLine($"{indent}*Datasource");
             sb.AppendLine($"{indent} Type: {datasourceNode.Value.DatasourceType}");
@@ -77,7 +77,7 @@ public class QueryNode : ISelectQuery
     {
         if (MustRefresh) Refresh();
 
-        var result = GetColumnModifiers(columnName);
+        var result = GetColumnModifiers(columnName, isSelectableOnly: true);
 
         foreach (var columnModifier in result)
         {
@@ -94,7 +94,7 @@ public class QueryNode : ISelectQuery
     {
         if (MustRefresh) Refresh();
 
-        var result = GetColumnModifiers(columnName);
+        var result = GetColumnModifiers(columnName, isSelectableOnly: false);
 
         foreach (var columnModifier in result)
         {
@@ -107,11 +107,33 @@ public class QueryNode : ISelectQuery
         return this;
     }
 
-    private List<ColumnModifier> GetColumnModifiers(string columnName)
+    public QueryNode JoinModifier(IEnumerable<string> columnNames, Action<JoinModifier> action)
     {
-        var column = columnName.ToLowerInvariant();
+        if (MustRefresh) Refresh();
+
+        var result = GetJoinModifiers(columnNames);
+
+        foreach (var joinModifier in result)
+        {
+            action(joinModifier);
+        }
+
+        if (result.Any()) MustRefresh = true;
+
+        return this;
+    }
+
+    private List<ColumnModifier> GetColumnModifiers(string columnName, bool isSelectableOnly)
+    {
         var result = new List<ColumnModifier>();
-        WhenRecursive(this, column, result);
+        WhenRecursive(this, columnName.ToLowerInvariant(), isSelectableOnly, result);
+        return result;
+    }
+
+    private List<JoinModifier> GetJoinModifiers(IEnumerable<string> columnNames)
+    {
+        var result = new List<JoinModifier>();
+        WhenRecursive(this, columnNames.Select(c => c.ToLowerInvariant()).ToList(), result);
         return result;
     }
 
@@ -121,14 +143,14 @@ public class QueryNode : ISelectQuery
     /// <param name="predicate"></param>
     /// <param name="action"></param>
     /// <returns></returns>
-    public QueryNode When(string columnName, Action<ColumnModifier> action)
+    public QueryNode When(string columnName, bool isSelectableOnly, Action<ColumnModifier> action)
     {
         if (MustRefresh) Refresh();
 
         var column = columnName.ToLowerInvariant();
 
         var result = new List<ColumnModifier>();
-        WhenRecursive(this, column, result);
+        WhenRecursive(this, column, isSelectableOnly, result);
         foreach (var item in result)
         {
             action(item);
@@ -139,14 +161,14 @@ public class QueryNode : ISelectQuery
         return this;
     }
 
-    private void WhenRecursive(QueryNode node, string columnName, List<ColumnModifier> result)
+    private void WhenRecursive(QueryNode node, string columnName, bool isSelectableOnly, List<ColumnModifier> result)
     {
         // Search child nodes first
-        foreach (var datasourceNode in node.DatasourceNodes.Values)
+        foreach (var datasourceNode in node.DatasourceNodeMap.Values)
         {
             foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
             {
-                WhenRecursive(childQueryNode, columnName, result);
+                WhenRecursive(childQueryNode, columnName, isSelectableOnly, result);
             }
         }
 
@@ -156,20 +178,68 @@ public class QueryNode : ISelectQuery
         }
 
         // query で使用されている列名を検索
-        if (node.SelectExpressions.ContainsKey(columnName))
+        if (node.SelectExpressionMap.ContainsKey(columnName))
         {
-            result.Add(new(node.Query, node.SelectExpressions[columnName].Value));
+            result.Add(new(node.Query, node.SelectExpressionMap[columnName].Value));
+            return;
+        }
+
+        if (isSelectableOnly)
+        {
             return;
         }
 
         // datasource で定義されている列名を検索
-        var column = node.DatasourceNodes.Values.Where(ds => ds.Columns.ContainsKey(columnName)).FirstOrDefault();
+        var column = node.DatasourceNodeMap.Values.Where(ds => ds.Columns.ContainsKey(columnName)).FirstOrDefault();
         if (column != null)
         {
             var expr = new ColumnExpression(column.Name, column.Columns[columnName]);
             result.Add(new(node.Query, expr));
             return;
         }
+    }
+
+
+    private void WhenRecursive(QueryNode node, IList<string> columnNames, List<JoinModifier> result)
+    {
+        // Search child nodes first
+        foreach (var datasourceNode in node.DatasourceNodeMap.Values)
+        {
+            foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+            {
+                WhenRecursive(childQueryNode, columnNames, result);
+            }
+        }
+
+        if (result.Any())
+        {
+            return;
+        }
+
+        var values = new Dictionary<string, IValueExpression>();
+
+        // query で使用されているか検索
+        foreach (var columnName in columnNames)
+        {
+            if (node.SelectExpressionMap.ContainsKey(columnName))
+            {
+                values.Add(columnName.ToLowerInvariant(), node.SelectExpressionMap[columnName].Value);
+
+            }
+            else if (node.DatasourceNodeMap.Values.Where(ds => ds.Columns.ContainsKey(columnName)).Any())
+            {
+                var datasource = node.DatasourceNodeMap.Values.Where(ds => ds.Columns.ContainsKey(columnName)).First();
+                values.Add(columnName.ToLowerInvariant(), new ColumnExpression(datasource.Name, datasource.Columns[columnName]));
+            }
+            else
+            {
+                // 1つでも見つからなかったら終了
+                return;
+            }
+        }
+
+        // 全ての列が見つかったら結果に追加
+        result.Add(new(node.Query, values));
     }
 
     public IEnumerable<SelectExpression> GetSelectExpressions()
@@ -256,8 +326,8 @@ public class QueryNode : ISelectQuery
     {
         var node = QueryNodeFactory.Create(Query);
         Query = node.Query;
-        SelectExpressions = node.SelectExpressions;
-        DatasourceNodes = node.DatasourceNodes;
+        SelectExpressionMap = node.SelectExpressionMap;
+        DatasourceNodeMap = node.DatasourceNodeMap;
 
         MustRefresh = false;
     }
