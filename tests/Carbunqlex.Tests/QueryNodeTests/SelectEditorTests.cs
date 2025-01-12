@@ -1,8 +1,8 @@
 ﻿using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests.QueryTests;
+namespace Carbunqlex.Tests.QueryNodeTests;
 
-public class SelectModifierTests(ITestOutputHelper output)
+public class SelectEditorTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
 
@@ -16,7 +16,7 @@ public class SelectModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.SelectModifier("value", static r => r.Greatest(1).Least(10));
+        queryNode.Select("value", static value => value.Greatest(1).Least(10));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -35,7 +35,7 @@ public class SelectModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.SelectModifier("value", static r => r.Coalesce(1, 2, 3));
+        queryNode.Select("value", static value => value.Coalesce(1, 2, 3));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -79,7 +79,7 @@ public class SelectModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.SelectModifier("value", static r => r.Remove());
+        queryNode.Remove("value");
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);

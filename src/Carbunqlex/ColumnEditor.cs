@@ -4,7 +4,7 @@ using Carbunqlex.ValueExpressions;
 
 namespace Carbunqlex;
 
-public class ColumnModifier(ISelectQuery query, IValueExpression expression, SelectExpression? selectExpression = null)
+public class ColumnEditor(ISelectQuery query, IValueExpression expression, SelectExpression? selectExpression = null)
 {
     public ISelectQuery Query { get; } = query;
 
@@ -13,14 +13,14 @@ public class ColumnModifier(ISelectQuery query, IValueExpression expression, Sel
     private SelectExpression? _selectExpression = selectExpression;
     public SelectExpression? SelectExpression => _selectExpression ??= Query.GetSelectExpressions().Where(e => e.Value == Value).FirstOrDefault();
 
-    private SelectModifier? _selectModifier;
-    public SelectModifier SelectModifier => _selectModifier ??= new(this);
+    private SelectEditor? _selectModifier;
+    public SelectEditor SelectModifier => _selectModifier ??= new(this);
 
-    private WhereModifier? _whereModifier;
-    public WhereModifier WhereModifier => _whereModifier ??= new(this);
+    private WhereEditor? _whereModifier;
+    public WhereEditor WhereModifier => _whereModifier ??= new(this);
 
-    private JoinModifier? _fromModifier;
-    public JoinModifier FromModifier => _fromModifier ??= new(Query, new Dictionary<string, IValueExpression>() { { Value.DefaultName.ToLowerInvariant(), Value } });
+    private FromEditor? _fromModifier;
+    public FromEditor FromModifier => _fromModifier ??= new(Query, new Dictionary<string, IValueExpression>() { { Value.DefaultName.ToLowerInvariant(), Value } });
 
     public override string ToString()
     {
@@ -45,22 +45,22 @@ public class ColumnModifier(ISelectQuery query, IValueExpression expression, Sel
         return Query.AddParameter(name, value);
     }
 
-    public SelectModifier AddColumn(SelectExpression expr)
+    public SelectEditor AddColumn(SelectExpression expr)
     {
         Query.AddColumn(expr);
-        return new SelectModifier(new ColumnModifier(Query, expr.Value, expr));
+        return new SelectEditor(new ColumnEditor(Query, expr.Value, expr));
     }
 
-    public SelectModifier AddColumn(IValueExpression value)
+    public SelectEditor AddColumn(IValueExpression value)
     {
         return AddColumn(value, value.DefaultName);
     }
 
-    public SelectModifier AddColumn(IValueExpression value, string alias)
+    public SelectEditor AddColumn(IValueExpression value, string alias)
     {
         var expr = new SelectExpression(value, alias);
         Query.AddColumn(expr);
-        return new SelectModifier(new ColumnModifier(Query, expr.Value, expr));
+        return new SelectEditor(new ColumnEditor(Query, expr.Value, expr));
     }
 
     internal static IValueExpression ToValueExpression(object value)
@@ -83,27 +83,32 @@ public class DatasourceModifier
         DatasourceAlias = datasourceAlias;
     }
 
-    public SelectModifier AddColumn(string columnName)
+    public void Edit(Action<DatasourceModifier> action)
     {
-        return AddColumn(columnName, columnName);
+        action(this);
     }
 
-    public SelectModifier AddColumn(string columnName, string columnAlias)
+    public SelectEditor Select(string columnName)
+    {
+        return Select(columnName, columnName);
+    }
+
+    public SelectEditor Select(string columnName, string columnAlias)
     {
         var expr = new SelectExpression(new ColumnExpression(DatasourceAlias, columnName), columnAlias);
         Query.AddColumn(expr);
-        return new SelectModifier(new ColumnModifier(Query, expr.Value, expr));
+        return new SelectEditor(new ColumnEditor(Query, expr.Value, expr));
     }
 
-    public WhereModifier Filter(string columnName)
+    public WhereEditor Where(string columnName)
     {
-        return new WhereModifier(new ColumnModifier(Query, new ColumnExpression(DatasourceAlias, columnName)));
+        return new WhereEditor(new ColumnEditor(Query, new ColumnExpression(DatasourceAlias, columnName)));
     }
 }
 
-public class JoinModifier(ISelectQuery query, IReadOnlyDictionary<string, IValueExpression> keyValues)
+public class FromEditor(ISelectQuery query, IReadOnlyDictionary<string, IValueExpression> keyValues)
 {
-    public readonly IReadOnlyDictionary<string, IValueExpression> Values = keyValues;
+    public readonly IReadOnlyDictionary<string, IValueExpression> ValueMap = keyValues;
 
     private readonly ISelectQuery Query = query;
 
@@ -126,7 +131,7 @@ public class JoinModifier(ISelectQuery query, IReadOnlyDictionary<string, IValue
     private IValueExpression? BuildJoinCondition(string alias)
     {
         IValueExpression? condition = null;
-        foreach (var (key, value) in Values)
+        foreach (var (key, value) in ValueMap)
         {
             if (condition == null)
             {

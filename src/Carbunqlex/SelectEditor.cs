@@ -3,14 +3,14 @@ using Carbunqlex.ValueExpressions;
 
 namespace Carbunqlex;
 
-public class SelectModifier
+public class SelectEditor
 {
     private IValueExpression Value { get; set; }
 
     private readonly ISelectQuery Query;
     private readonly SelectExpression? SelectExpression;
 
-    public SelectModifier(ColumnModifier queryAccessor)
+    public SelectEditor(ColumnEditor queryAccessor)
     {
         Query = queryAccessor.Query;
         Value = queryAccessor.Value;
@@ -22,7 +22,7 @@ public class SelectModifier
         return Query.AddParameter(name, value);
     }
 
-    public SelectModifier Greatest(params object[] values)
+    public SelectEditor Greatest(params object[] values)
     {
         if (SelectExpression != null)
         {
@@ -33,7 +33,7 @@ public class SelectModifier
         return this;
     }
 
-    public SelectModifier Greatest(IEnumerable<object> values)
+    public SelectEditor Greatest(IEnumerable<object> values)
     {
         if (SelectExpression != null)
         {
@@ -44,7 +44,7 @@ public class SelectModifier
         return this;
     }
 
-    public SelectModifier Least(params object[] values)
+    public SelectEditor Least(params object[] values)
     {
         if (SelectExpression != null)
         {
@@ -55,7 +55,7 @@ public class SelectModifier
         return this;
     }
 
-    public SelectModifier Least(IEnumerable<object> values)
+    public SelectEditor Least(IEnumerable<object> values)
     {
         if (SelectExpression != null)
         {
@@ -66,7 +66,7 @@ public class SelectModifier
         return this;
     }
 
-    public SelectModifier Coalesce(params object[] values)
+    public SelectEditor Coalesce(params object[] values)
     {
         if (SelectExpression != null)
         {
@@ -77,7 +77,7 @@ public class SelectModifier
         return this;
     }
 
-    public SelectModifier Coalesce(IEnumerable<object> values)
+    public SelectEditor Coalesce(IEnumerable<object> values)
     {
         if (SelectExpression != null)
         {

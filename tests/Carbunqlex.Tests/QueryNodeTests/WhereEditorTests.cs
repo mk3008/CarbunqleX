@@ -1,8 +1,8 @@
 ﻿using Xunit.Abstractions;
 
-namespace Carbunqlex.Tests.QueryTests;
+namespace Carbunqlex.Tests.QueryNodeTests;
 
-public class WhereModifierTests(ITestOutputHelper output)
+public class WhereEditorTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
 
@@ -16,7 +16,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.WhereModifier("table_a_id", r => r.Equal(100).NotEqual(-100));
+        queryNode.Where("table_a_id", static value => value.Equal(100).NotEqual(-100));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -35,7 +35,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.WhereModifier("table_a_id", r => r.GreaterThan(50).GreaterThanOrEqual(30));
+        queryNode.Where("table_a_id", static value => value.GreaterThan(50).GreaterThanOrEqual(30));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -54,7 +54,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.WhereModifier("table_a_id", r => r.LessThan(200).LessThanOrEqual(300));
+        queryNode.Where("table_a_id", static value => value.LessThan(200).LessThanOrEqual(300));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -73,7 +73,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.WhereModifier("table_a_id", r => r.In(1, 2, 3).NotIn(4, 5, 6));
+        queryNode.Where("table_a_id", static value => value.In(1, 2, 3).NotIn(4, 5, 6));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -91,7 +91,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         // Act
         var queryNode = QueryNodeFactory.Create(query);
 
-        queryNode.WhereModifier("table_a_id", r => r.Like("%a%").NotLike("%b%"));
+        queryNode.Where("table_a_id", static r => r.Like("%a%").NotLike("%b%"));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -110,7 +110,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.WhereModifier("table_a_id",
+        queryNode.Where("table_a_id",
             static r => r.Any(1, 2, 3).Any(r.AddParameter(":prm", new int[] { 1, 2, 3 })));
 
         var actual = queryNode.Query.ToSql();
@@ -130,7 +130,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.WhereModifier("table_a_id", r => r.IsNull().IsNotNull());
+        queryNode.Where("table_a_id", static value => value.IsNull().IsNotNull());
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -149,7 +149,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.WhereModifier("table_a_id", r => r.Between(1, 10).NotBetween(20, 30));
+        queryNode.Where("table_a_id", static value => value.Between(1, 10).NotBetween(20, 30));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -168,7 +168,7 @@ public class WhereModifierTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.WhereModifier("table_a_id", r => r.Coalesce(0).GreaterThanOrEqual(0));
+        queryNode.Where("table_a_id", static value => value.Coalesce(0).GreaterThanOrEqual(0));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);

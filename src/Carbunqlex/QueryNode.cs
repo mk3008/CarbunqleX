@@ -1,13 +1,11 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex;
 
-public class QueryNode : ISelectQuery
+public class QueryNode : ISqlComponent
 {
     /// <summary>
     /// The query.
@@ -73,16 +71,16 @@ public class QueryNode : ISelectQuery
         }
     }
 
-    public QueryNode SelectModifier(string columnName, Action<SelectModifier> action)
+    public QueryNode Select(string columnName, Action<SelectEditor> action)
     {
         if (MustRefresh) Refresh();
 
-        var result = GetColumnModifiers(columnName, isSelectableOnly: true);
+        var result = GetColumnEditors(columnName, isSelectableOnly: true);
 
         foreach (var columnModifier in result)
         {
-            var selectModifier = new SelectModifier(columnModifier);
-            action(selectModifier);
+            var editor = new SelectEditor(columnModifier);
+            action(editor);
         }
 
         if (result.Any()) MustRefresh = true;
@@ -90,32 +88,32 @@ public class QueryNode : ISelectQuery
         return this;
     }
 
-    public QueryNode WhereModifier(string columnName, Action<WhereModifier> action)
+    public QueryNode Remove(string columnName)
     {
         if (MustRefresh) Refresh();
 
-        var result = GetColumnModifiers(columnName, isSelectableOnly: false);
+        var result = GetColumnEditors(columnName, isSelectableOnly: true);
 
         foreach (var columnModifier in result)
         {
-            var whereModifier = new WhereModifier(columnModifier);
-            action(whereModifier);
+            var editor = new SelectEditor(columnModifier);
+            editor.Remove();
         }
 
         if (result.Any()) MustRefresh = true;
-
         return this;
     }
 
-    public QueryNode JoinModifier(IEnumerable<string> columnNames, Action<JoinModifier> action)
+    public QueryNode Where(string columnName, Action<WhereEditor> action)
     {
         if (MustRefresh) Refresh();
 
-        var result = GetJoinModifiers(columnNames);
+        var result = GetColumnEditors(columnName, isSelectableOnly: false);
 
-        foreach (var joinModifier in result)
+        foreach (var columnModifier in result)
         {
-            action(joinModifier);
+            var editor = new WhereEditor(columnModifier);
+            action(editor);
         }
 
         if (result.Any()) MustRefresh = true;
@@ -123,16 +121,32 @@ public class QueryNode : ISelectQuery
         return this;
     }
 
-    private List<ColumnModifier> GetColumnModifiers(string columnName, bool isSelectableOnly)
+    public QueryNode From(IEnumerable<string> columnNames, Action<FromEditor> action)
     {
-        var result = new List<ColumnModifier>();
+        if (MustRefresh) Refresh();
+
+        var result = GetFromEditors(columnNames);
+
+        foreach (var editor in result)
+        {
+            action(editor);
+        }
+
+        if (result.Any()) MustRefresh = true;
+
+        return this;
+    }
+
+    private List<ColumnEditor> GetColumnEditors(string columnName, bool isSelectableOnly)
+    {
+        var result = new List<ColumnEditor>();
         WhenRecursive(this, columnName.ToLowerInvariant(), isSelectableOnly, result);
         return result;
     }
 
-    private List<JoinModifier> GetJoinModifiers(IEnumerable<string> columnNames)
+    private List<FromEditor> GetFromEditors(IEnumerable<string> columnNames)
     {
-        var result = new List<JoinModifier>();
+        var result = new List<FromEditor>();
         WhenRecursive(this, columnNames.Select(c => c.ToLowerInvariant()).ToList(), result);
         return result;
     }
@@ -143,13 +157,13 @@ public class QueryNode : ISelectQuery
     /// <param name="predicate"></param>
     /// <param name="action"></param>
     /// <returns></returns>
-    public QueryNode When(string columnName, bool isSelectableOnly, Action<ColumnModifier> action)
+    public QueryNode When(string columnName, bool isSelectableOnly, Action<ColumnEditor> action)
     {
         if (MustRefresh) Refresh();
 
         var column = columnName.ToLowerInvariant();
 
-        var result = new List<ColumnModifier>();
+        var result = new List<ColumnEditor>();
         WhenRecursive(this, column, isSelectableOnly, result);
         foreach (var item in result)
         {
@@ -161,7 +175,7 @@ public class QueryNode : ISelectQuery
         return this;
     }
 
-    private void WhenRecursive(QueryNode node, string columnName, bool isSelectableOnly, List<ColumnModifier> result)
+    private void WhenRecursive(QueryNode node, string columnName, bool isSelectableOnly, List<ColumnEditor> result)
     {
         // Search child nodes first
         foreach (var datasourceNode in node.DatasourceNodeMap.Values)
@@ -200,7 +214,7 @@ public class QueryNode : ISelectQuery
     }
 
 
-    private void WhenRecursive(QueryNode node, IList<string> columnNames, List<JoinModifier> result)
+    private void WhenRecursive(QueryNode node, IList<string> columnNames, List<FromEditor> result)
     {
         // Search child nodes first
         foreach (var datasourceNode in node.DatasourceNodeMap.Values)
@@ -242,40 +256,40 @@ public class QueryNode : ISelectQuery
         result.Add(new(node.Query, values));
     }
 
-    public IEnumerable<SelectExpression> GetSelectExpressions()
-    {
-        return Query.GetSelectExpressions();
-    }
+    //public IEnumerable<SelectExpression> GetSelectExpressions()
+    //{
+    //    return Query.GetSelectExpressions();
+    //}
 
-    public IEnumerable<IDatasource> GetDatasources()
-    {
-        return Query.GetDatasources();
-    }
+    //public IEnumerable<IDatasource> GetDatasources()
+    //{
+    //    return Query.GetDatasources();
+    //}
 
-    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
-    {
-        return Query.ExtractColumnExpressions();
-    }
+    //public IEnumerable<ColumnExpression> ExtractColumnExpressions()
+    //{
+    //    return Query.ExtractColumnExpressions();
+    //}
 
-    public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
-    {
-        return Query.TryGetWhereClause(out whereClause);
-    }
+    //public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
+    //{
+    //    return Query.TryGetWhereClause(out whereClause);
+    //}
 
-    public void AddColumn(SelectExpression expr)
-    {
-        Query.AddColumn(expr);
-    }
+    //public void AddColumn(SelectExpression expr)
+    //{
+    //    Query.AddColumn(expr);
+    //}
 
-    public void AddColumn(IValueExpression value, string alias)
-    {
-        Query.AddColumn(value, alias);
-    }
+    //public void AddColumn(IValueExpression value, string alias)
+    //{
+    //    Query.AddColumn(value, alias);
+    //}
 
-    public void RemoveColumn(SelectExpression expr)
-    {
-        Query.RemoveColumn(expr);
-    }
+    //public void RemoveColumn(SelectExpression expr)
+    //{
+    //    Query.RemoveColumn(expr);
+    //}
 
     public string ToSql()
     {
