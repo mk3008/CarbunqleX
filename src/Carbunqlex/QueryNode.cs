@@ -191,7 +191,7 @@ public class QueryNode : ISqlComponent
             return;
         }
 
-        // query で使用されている列名を検索
+        // Search for column names used in the query
         if (node.SelectExpressionMap.ContainsKey(columnName))
         {
             result.Add(new(node.Query, node.SelectExpressionMap[columnName].Value));
@@ -203,7 +203,7 @@ public class QueryNode : ISqlComponent
             return;
         }
 
-        // datasource で定義されている列名を検索
+        // Search for column names defined in the datasource
         var column = node.DatasourceNodeMap.Values.Where(ds => ds.Columns.ContainsKey(columnName)).FirstOrDefault();
         if (column != null)
         {
@@ -212,7 +212,6 @@ public class QueryNode : ISqlComponent
             return;
         }
     }
-
 
     private void WhenRecursive(QueryNode node, IList<string> columnNames, List<FromEditor> result)
     {
@@ -232,7 +231,7 @@ public class QueryNode : ISqlComponent
 
         var values = new Dictionary<string, IValueExpression>();
 
-        // query で使用されているか検索
+        // Search for columns used in the query
         foreach (var columnName in columnNames)
         {
             if (node.SelectExpressionMap.ContainsKey(columnName))
@@ -247,50 +246,14 @@ public class QueryNode : ISqlComponent
             }
             else
             {
-                // 1つでも見つからなかったら終了
+                // Exit if any column is not found
                 return;
             }
         }
 
-        // 全ての列が見つかったら結果に追加
+        // Add to result if all columns are found
         result.Add(new(node.Query, values));
     }
-
-    //public IEnumerable<SelectExpression> GetSelectExpressions()
-    //{
-    //    return Query.GetSelectExpressions();
-    //}
-
-    //public IEnumerable<IDatasource> GetDatasources()
-    //{
-    //    return Query.GetDatasources();
-    //}
-
-    //public IEnumerable<ColumnExpression> ExtractColumnExpressions()
-    //{
-    //    return Query.ExtractColumnExpressions();
-    //}
-
-    //public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
-    //{
-    //    return Query.TryGetWhereClause(out whereClause);
-    //}
-
-    //public void AddColumn(SelectExpression expr)
-    //{
-    //    Query.AddColumn(expr);
-    //}
-
-    //public void AddColumn(IValueExpression value, string alias)
-    //{
-    //    Query.AddColumn(value, alias);
-    //}
-
-    //public void RemoveColumn(SelectExpression expr)
-    //{
-    //    Query.RemoveColumn(expr);
-    //}
-
     public string ToSql()
     {
         return Query.ToSql();
