@@ -1,9 +1,17 @@
 ﻿using Carbunqlex.Parsing;
+using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ParsingTests;
 
 public class ReadOnlyMemoryExtensionsTests
 {
+    public ReadOnlyMemoryExtensionsTests(ITestOutputHelper output)
+    {
+        Output = output;
+    }
+
+    private ITestOutputHelper Output { get; }
+
     [Fact]
     public void ReadLexeme_Comma_ReturnsCommaToken()
     {
@@ -247,5 +255,16 @@ public class ReadOnlyMemoryExtensionsTests
         var memory = new ReadOnlyMemory<char>("Inner/*comment*/Test".ToCharArray());
         var exception = Assert.Throws<NotSupportedException>(() => memory.ReadLexeme(0, out int end));
         Assert.Equal("Unsupported keyword 'Inner Test' found at position 0.", exception.Message);
+    }
+
+    [Fact]
+    public void DisplayAllSqlKeywords()
+    {
+        var keywords = SqlKeyword.AllKeywords.Values;
+
+        foreach (var keyword in keywords)
+        {
+            Output.WriteLine(keyword.ToTreeString());
+        }
     }
 }
