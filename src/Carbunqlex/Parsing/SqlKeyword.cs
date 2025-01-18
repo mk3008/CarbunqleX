@@ -143,12 +143,12 @@ public static class SqlKeyword
             "FOR UPDATE NOWAIT",
             "NOWAIT",
             "SKIP LOCKED",
-            //定数
+            //constants
             "NULL",
             "TRUE",
             "FALSE",
             "UNKNOWN",
-            //演算子
+            //operators
             "AND",
             "OR",
             "NOT",
