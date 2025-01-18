@@ -134,7 +134,7 @@ public static class ReadOnlyMemoryExtensions
 
             var normalized = lexeme.ToLower();
 
-            // キーワード辞書にあるかどうかをチェックする
+            // Check if it exists in the keyword dictionary
             if (!SqlKeyword.AllKeywords.ContainsKey(normalized))
             {
                 memory.SkipWhiteSpacesAndComments(ref p);
@@ -154,11 +154,11 @@ public static class ReadOnlyMemoryExtensions
                     return new Token(TokenType.Keyword, lexeme, raw, string.Empty);
                 }
 
-                // 読み込んだ lexeme が子ノードに存在しない場合
+                // If the read lexeme does not exist in the child node
                 if (!node.Children.ContainsKey(tmplexeme.ToLower()))
                 {
-                    // 自身が終端ノードになることを許可しているなら
-                    // 前回までに読み込んだキャッシュを返却する 
+                    // If it allows itself to be a terminal node
+                    // Return the cache read up to the previous time
                     if (node.IsTerminal)
                     {
                         var raw = memory.Slice(start, p - start).ToString();
@@ -166,11 +166,12 @@ public static class ReadOnlyMemoryExtensions
                         return new Token(TokenType.Keyword, lexeme, raw, lexeme);
                     }
 
-                    // 辞書化されていないキーワードエラー
-                    throw new NotSupportedException($"Invalid keyword at position {p}, keyword:{lexeme}");
+                    // Keyword error not dictionary-ized
+                    lexeme += " " + tmplexeme;
+                    throw new NotSupportedException($"Unsupported keyword '{lexeme}' found at position {start}.");
                 }
 
-                // lexemeの座標を記録し、後続する不要な文字をスキップする
+                // Record the coordinates of the lexeme and skip unnecessary characters that follow
                 p = tmpPosition;
                 memory.SkipWhiteSpacesAndComments(ref p);
 
@@ -178,22 +179,20 @@ public static class ReadOnlyMemoryExtensions
                 lexeme += " " + tmplexeme;
                 node = node.Children[tmplexeme.ToLower()];
 
-                //　子ノードがない場合、終端ノードであることが明白なので、トークンを返す
+                // If there are no child nodes, it is clear that it is a terminal node, so return the token
                 if (node.Children.Count == 0)
                 {
                     var raw = memory.Slice(start, p - start).ToString();
                     end = p;
                     return new Token(TokenType.Keyword, lexeme, raw, lexeme);
                 }
-
-
             }
         }
 
         throw new InvalidOperationException($"Invalid lexeme at position {p}");
     }
 
-    public static bool TrySkipWhiteSpaces(this ReadOnlyMemory<char> memory, ref int position)
+    private static bool TrySkipWhiteSpaces(this ReadOnlyMemory<char> memory, ref int position)
     {
         if (position < memory.Span.Length && memory.Span[position].IsWhiteSpace())
         {
@@ -207,7 +206,7 @@ public static class ReadOnlyMemoryExtensions
         return false;
     }
 
-    public static bool TrySkipBlockComment(this ReadOnlyMemory<char> memory, ref int position)
+    private static bool TrySkipBlockComment(this ReadOnlyMemory<char> memory, ref int position)
     {
         if (position + 1 < memory.Length && memory.Span[position] == '/' && memory.Span[position + 1] == '*')
         {
@@ -226,7 +225,7 @@ public static class ReadOnlyMemoryExtensions
         return false;
     }
 
-    public static bool TrySkipLineComment(this ReadOnlyMemory<char> memory, ref int position)
+    private static bool TrySkipLineComment(this ReadOnlyMemory<char> memory, ref int position)
     {
         if (position + 1 < memory.Length && memory.Span[position] == '-' && memory.Span[position + 1] == '-')
         {
@@ -240,7 +239,7 @@ public static class ReadOnlyMemoryExtensions
         return false;
     }
 
-    public static void SkipWhiteSpacesAndComments(this ReadOnlyMemory<char> memory, ref int position)
+    private static void SkipWhiteSpacesAndComments(this ReadOnlyMemory<char> memory, ref int position)
     {
         while (position < memory.Length)
         {
@@ -260,7 +259,7 @@ public static class ReadOnlyMemoryExtensions
         }
     }
 
-    public static bool StartWith(this ReadOnlyMemory<char> memory, string value, int start, out int endPosition, bool ignoreCase = false)
+    private static bool StartWith(this ReadOnlyMemory<char> memory, string value, int start, out int endPosition, bool ignoreCase = false)
     {
         endPosition = start;
 
@@ -291,7 +290,7 @@ public static class ReadOnlyMemoryExtensions
         return false;
     }
 
-    public static bool TryReadSingleQuoteLexeme(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string lexeme)
+    private static bool TryReadSingleQuoteLexeme(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string lexeme)
     {
         endPosition = start;
         var p = start;
@@ -328,7 +327,7 @@ public static class ReadOnlyMemoryExtensions
         return true;
     }
 
-    public static bool TryReadDigit(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string lexeme)
+    private static bool TryReadDigit(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string lexeme)
     {
         endPosition = start;
         var p = start;
@@ -361,7 +360,7 @@ public static class ReadOnlyMemoryExtensions
         return true;
     }
 
-    public static bool TryReadSymbol(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string lexeme)
+    private static bool TryReadSymbol(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string lexeme)
     {
         endPosition = start;
         var p = start;
@@ -380,7 +379,7 @@ public static class ReadOnlyMemoryExtensions
         return true;
     }
 
-    public static bool TryReadEnclosedLexeme(this ReadOnlyMemory<char> memory, int start, char startChar, char endChar, out int endPosition, out string lexeme)
+    private static bool TryReadEnclosedLexeme(this ReadOnlyMemory<char> memory, int start, char startChar, char endChar, out int endPosition, out string lexeme)
     {
         endPosition = start;
         var p = start;
@@ -407,7 +406,7 @@ public static class ReadOnlyMemoryExtensions
         return true;
     }
 
-    public static bool TryReadWord(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string word)
+    private static bool TryReadWord(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string word)
     {
         endPosition = start;
         var p = start;
@@ -426,44 +425,5 @@ public static class ReadOnlyMemoryExtensions
         word = memory.Slice(start, p - start).ToString();
         endPosition = p;
         return true;
-    }
-
-    public static bool ReadUntil(this ReadOnlyMemory<char> memory, int start, string endLexeme, out int endPosition)
-    {
-        endPosition = start;
-        var p = start;
-
-        while (p < memory.Length)
-        {
-            if (memory.StartWith(endLexeme, p, out var end))
-            {
-                endPosition = end;
-                return true;
-            }
-            p++;
-        }
-
-        return false;
-    }
-
-    public static bool ReadWhileSymbol(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string symbols)
-    {
-        endPosition = start;
-        var p = start;
-
-        while (p < memory.Length && memory.Span[p].IsSymbols())
-        {
-            p++;
-        }
-
-        if (start != p)
-        {
-            symbols = memory.Slice(start, p - start).ToString();
-            endPosition = p;
-            return true;
-        }
-
-        symbols = string.Empty;
-        return false;
     }
 }

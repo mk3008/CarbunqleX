@@ -240,4 +240,12 @@ public class ReadOnlyMemoryExtensionsTests
         Assert.Equal("select distinct on", token.Identifier);
         Assert.Equal(38, end);
     }
+
+    [Fact]
+    public void ReadLexeme_NotSupportedException()
+    {
+        var memory = new ReadOnlyMemory<char>("Inner/*comment*/Test".ToCharArray());
+        var exception = Assert.Throws<NotSupportedException>(() => memory.ReadLexeme(0, out int end));
+        Assert.Equal("Unsupported keyword 'Inner Test' found at position 0.", exception.Message);
+    }
 }

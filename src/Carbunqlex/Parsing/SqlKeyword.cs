@@ -31,9 +31,10 @@ public static class SqlKeyword
     private static IReadOnlyDictionary<string, SqlKeywordNode> GetKeywords()
     {
         //GetSelectKeywordNode を辞書化して返却する
-        return new[] { GetSelectKeywordNode() }
-            .ToDictionary(node => node.Keyword, node => node);
-
+        return new[] {
+            GetSelectKeywordNode(),
+            GetInnerJoinKeywordNode()
+        }.ToDictionary(node => node.Keyword, node => node);
     }
 
     private static SqlKeywordNode GetSelectKeywordNode()
@@ -50,6 +51,16 @@ public static class SqlKeyword
                     children:[
                         new SqlKeywordNode("on")
                     ])
+            ]);
+    }
+
+    private static SqlKeywordNode GetInnerJoinKeywordNode()
+    {
+        return new SqlKeywordNode(
+            keyword: "inner",
+            isTerminal: false,
+            children: [
+                new SqlKeywordNode("join")
             ]);
     }
 }
