@@ -27,15 +27,15 @@ public class WhenThenPair : IValueExpression
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, "when");
-        foreach (var lexeme in When.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.Keyword, "when");
+        foreach (var lexeme in When.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Lexeme(LexType.Keyword, "then");
-        foreach (var lexeme in Then.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.Keyword, "then");
+        foreach (var lexeme in Then.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }

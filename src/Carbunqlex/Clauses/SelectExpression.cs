@@ -29,15 +29,15 @@ public class SelectExpression : ISqlComponent
         return $"{sql} as {Alias}";
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>(Value.GenerateLexemesWithoutCte());
+        var tokens = new List<Token>(Value.GenerateTokensWithoutCte());
         if (!string.IsNullOrEmpty(Alias) && Alias != Value.DefaultName)
         {
-            lexemes.Add(new Lexeme(LexType.Keyword, "as"));
-            lexemes.Add(new Lexeme(LexType.Identifier, Alias));
+            tokens.Add(new Token(TokenType.Keyword, "as"));
+            tokens.Add(new Token(TokenType.Identifier, Alias));
         }
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

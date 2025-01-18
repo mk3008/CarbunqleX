@@ -67,15 +67,15 @@ public class WindowFunction : IWindowFunction
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>();
+        var tokens = new List<Token>();
 
-        lexemes.AddRange(PartitionBy.GenerateLexemesWithoutCte());
-        lexemes.AddRange(OrderBy.GenerateLexemesWithoutCte());
-        lexemes.AddRange(WindowFrame.GenerateLexemesWithoutCte());
+        tokens.AddRange(PartitionBy.GenerateTokensWithoutCte());
+        tokens.AddRange(OrderBy.GenerateTokensWithoutCte());
+        tokens.AddRange(WindowFrame.GenerateTokensWithoutCte());
 
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

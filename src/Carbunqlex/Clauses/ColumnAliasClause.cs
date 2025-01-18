@@ -27,29 +27,29 @@ public class ColumnAliasClause : IColumnAliasClause
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
         if (!ColumnAliases.Any())
         {
-            return Enumerable.Empty<Lexeme>();
+            return Enumerable.Empty<Token>();
         }
 
-        var lexemes = new List<Lexeme>(ColumnAliases.Count * 2 + 2)
+        var tokens = new List<Token>(ColumnAliases.Count * 2 + 2)
         {
-            new Lexeme(LexType.OpenParen, "(")
+            new Token(TokenType.OpenParen, "(")
         };
 
         for (int i = 0; i < ColumnAliases.Count; i++)
         {
-            lexemes.Add(new Lexeme(LexType.Identifier, ColumnAliases[i]));
+            tokens.Add(new Token(TokenType.Identifier, ColumnAliases[i]));
             if (i < ColumnAliases.Count - 1)
             {
-                lexemes.Add(new Lexeme(LexType.Comma, ","));
+                tokens.Add(new Token(TokenType.Comma, ","));
             }
         }
 
-        lexemes.Add(new Lexeme(LexType.CloseParen, ")"));
-        return lexemes;
+        tokens.Add(new Token(TokenType.CloseParen, ")"));
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

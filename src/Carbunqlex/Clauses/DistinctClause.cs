@@ -9,9 +9,9 @@ public class DistinctClause : IDistinctClause
         return "distinct";
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, "distinct");
+        yield return new Token(TokenType.Keyword, "distinct");
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

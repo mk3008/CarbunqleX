@@ -42,46 +42,46 @@ public class WithClause : ISqlComponent
         return string.Empty;
     }
 
-    public IEnumerable<Lexeme> GenerateLexemes()
+    public IEnumerable<Token> Generatetokens()
     {
         if (CommonTableClauses.Count == 0)
         {
-            return Enumerable.Empty<Lexeme>();
+            return Enumerable.Empty<Token>();
         }
 
-        var lexemes = new List<Lexeme>();
+        var tokens = new List<Token>();
 
         if (IsRecursive)
         {
-            lexemes.Add(new Lexeme(LexType.StartClause, "with recursive", "with"));
+            tokens.Add(new Token(TokenType.StartClause, "with recursive", "with"));
         }
         else
         {
-            lexemes.Add(new Lexeme(LexType.StartClause, "with", "with"));
+            tokens.Add(new Token(TokenType.StartClause, "with", "with"));
         }
 
         var orderedCtes = GetOrderedCtes();
 
         foreach (var cte in orderedCtes)
         {
-            lexemes.AddRange(cte.GenerateLexemesWithoutCte());
-            lexemes.Add(Lexeme.Comma);
+            tokens.AddRange(cte.GenerateTokensWithoutCte());
+            tokens.Add(Token.Comma);
         }
 
-        if (lexemes.Count > 1)
+        if (tokens.Count > 1)
         {
             // Remove the last comma
-            lexemes.RemoveAt(lexemes.Count - 1);
+            tokens.RemoveAt(tokens.Count - 1);
         }
 
-        lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "with"));
+        tokens.Add(new Token(TokenType.EndClause, string.Empty, "with"));
 
-        return lexemes;
+        return tokens;
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        return Enumerable.Empty<Lexeme>();
+        return Enumerable.Empty<Token>();
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

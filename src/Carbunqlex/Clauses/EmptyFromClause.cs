@@ -17,9 +17,9 @@ public class EmptyFromClause : IFromClause
         return string.Empty;
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        return Enumerable.Empty<Lexeme>();
+        return Enumerable.Empty<Token>();
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

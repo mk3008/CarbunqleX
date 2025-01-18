@@ -13,9 +13,9 @@ public class ConstantExpression : IValueExpression
 
     public bool MightHaveQueries => false;
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Constant, Value.ToString()!);
+        yield return new Token(TokenType.Constant, Value.ToString()!);
     }
 
     public string ToSqlWithoutCte()

@@ -35,19 +35,19 @@ public class FunctionExpression : IValueExpression
 
     public bool MightHaveQueries => Arguments.MightHaveQueries || (OverClause?.MightHaveCommonTableClauses ?? false);
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, FunctionName);
-        yield return new Lexeme(LexType.OpenParen, "(");
-        foreach (var lexeme in Arguments.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.Keyword, FunctionName);
+        yield return new Token(TokenType.OpenParen, "(");
+        foreach (var lexeme in Arguments.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Lexeme(LexType.CloseParen, ")");
+        yield return new Token(TokenType.CloseParen, ")");
 
         if (OverClause != null)
         {
-            foreach (var lexeme in OverClause.GenerateLexemesWithoutCte())
+            foreach (var lexeme in OverClause.GenerateTokensWithoutCte())
             {
                 yield return lexeme;
             }

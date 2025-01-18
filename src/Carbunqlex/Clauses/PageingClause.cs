@@ -25,24 +25,24 @@ public class PagingClause : IPagingClause
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        // Initial capacity is set to 6 to accommodate the following lexemes:
+        // Initial capacity is set to 6 to accommodate the following tokens:
         // 1 for "offset", 1 for "rows", 1 for "fetch next", 1 for "rows only",
-        // and 2 lexemes for the Offset and Fetch expressions.
+        // and 2 tokens for the Offset and Fetch expressions.
         // e.g. "offset 5 rows fetch next 10 rows only"
-        var lexemes = new List<Lexeme>(6)
+        var tokens = new List<Token>(6)
         {
-            new Lexeme(LexType.Keyword, "offset")
+            new Token(TokenType.Keyword, "offset")
         };
 
-        lexemes.AddRange(Offset.GenerateLexemesWithoutCte());
-        lexemes.Add(new Lexeme(LexType.Keyword, "rows"));
-        lexemes.Add(new Lexeme(LexType.Keyword, "fetch next"));
-        lexemes.AddRange(Fetch.GenerateLexemesWithoutCte());
-        lexemes.Add(new Lexeme(LexType.Keyword, "rows only"));
+        tokens.AddRange(Offset.GenerateTokensWithoutCte());
+        tokens.Add(new Token(TokenType.Keyword, "rows"));
+        tokens.Add(new Token(TokenType.Keyword, "fetch next"));
+        tokens.AddRange(Fetch.GenerateTokensWithoutCte());
+        tokens.Add(new Token(TokenType.Keyword, "rows only"));
 
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

@@ -28,20 +28,20 @@ public class WindowExpression : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>
+        var tokens = new List<Token>
             {
-                new Lexeme(LexType.Identifier, Alias),
-                new Lexeme(LexType.Keyword, "as"),
-                new Lexeme(LexType.OpenParen, "(", "window")
+                new Token(TokenType.Identifier, Alias),
+                new Token(TokenType.Keyword, "as"),
+                new Token(TokenType.OpenParen, "(", "window")
             };
 
-        lexemes.AddRange(WindowFunction.GenerateLexemesWithoutCte());
+        tokens.AddRange(WindowFunction.GenerateTokensWithoutCte());
 
-        lexemes.Add(new Lexeme(LexType.CloseParen, ")", "window"));
+        tokens.Add(new Token(TokenType.CloseParen, ")", "window"));
 
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

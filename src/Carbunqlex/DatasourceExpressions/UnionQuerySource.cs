@@ -24,9 +24,9 @@ public class UnionQuerySource : IDatasource
         return Query.ToSqlWithoutCte();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        return Query.GenerateLexemesWithoutCte();
+        return Query.GenerateTokensWithoutCte();
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

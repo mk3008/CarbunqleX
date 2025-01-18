@@ -30,19 +30,19 @@ public class WhereClause : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
         if (Condition == null)
         {
-            return Enumerable.Empty<Lexeme>();
+            return Enumerable.Empty<Token>();
         }
 
-        var lexemes = new List<Lexeme> {
-            new Lexeme(LexType.StartClause, "where", "where")
+        var tokens = new List<Token> {
+            new Token(TokenType.StartClause, "where", "where")
         };
-        lexemes.AddRange(Condition.GenerateLexemesWithoutCte());
-        lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "where"));
-        return lexemes;
+        tokens.AddRange(Condition.GenerateTokensWithoutCte());
+        tokens.Add(new Token(TokenType.EndClause, string.Empty, "where"));
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

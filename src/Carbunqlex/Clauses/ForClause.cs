@@ -43,13 +43,13 @@ public class ForClause : IForClause
         return $"for {LockType.ToSqlString()}";
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        return new List<Lexeme>
+        return new List<Token>
             {
-                new Lexeme(LexType.StartClause, "for", "for"),
-                new Lexeme(LexType.Keyword, LockType.ToSqlString()),
-                new Lexeme(LexType.EndClause, string.Empty, "for")
+                new Token(TokenType.StartClause, "for", "for"),
+                new Token(TokenType.Keyword, LockType.ToSqlString()),
+                new Token(TokenType.EndClause, string.Empty, "for")
             };
     }
 

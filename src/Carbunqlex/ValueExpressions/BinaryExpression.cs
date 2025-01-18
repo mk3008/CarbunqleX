@@ -23,14 +23,14 @@ public class BinaryExpression : IValueExpression
 
     public bool MightHaveQueries => Left.MightHaveQueries || Right.MightHaveQueries;
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        foreach (var lexeme in Left.GenerateLexemesWithoutCte())
+        foreach (var lexeme in Left.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Lexeme(LexType.Operator, Operator);
-        foreach (var lexeme in Right.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.Operator, Operator);
+        foreach (var lexeme in Right.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }

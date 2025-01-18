@@ -28,12 +28,12 @@ public class FrameBoundaryExpression : IWindowFrameBoundaryExpression
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>(Value.GenerateLexemesWithoutCte().Count() + 1);
-        lexemes.AddRange(Value.GenerateLexemesWithoutCte());
-        lexemes.Add(new Lexeme(LexType.Keyword, BoundaryKeyword));
-        return lexemes;
+        var tokens = new List<Token>(Value.GenerateTokensWithoutCte().Count() + 1);
+        tokens.AddRange(Value.GenerateTokensWithoutCte());
+        tokens.Add(new Token(TokenType.Keyword, BoundaryKeyword));
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

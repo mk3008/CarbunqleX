@@ -23,17 +23,17 @@ public class CastExpression : IValueExpression
         return $"CAST({Expression.ToSqlWithoutCte()} AS {TargetType})";
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, "CAST");
-        yield return new Lexeme(LexType.OpenParen, "(");
-        foreach (var lexeme in Expression.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.Keyword, "CAST");
+        yield return new Token(TokenType.OpenParen, "(");
+        foreach (var lexeme in Expression.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Lexeme(LexType.Keyword, "AS");
-        yield return new Lexeme(LexType.Identifier, TargetType);
-        yield return new Lexeme(LexType.CloseParen, ")");
+        yield return new Token(TokenType.Keyword, "AS");
+        yield return new Token(TokenType.Identifier, TargetType);
+        yield return new Token(TokenType.CloseParen, ")");
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

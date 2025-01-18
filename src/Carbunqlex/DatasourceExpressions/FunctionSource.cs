@@ -57,16 +57,16 @@ public class FunctionSource : IDatasource
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>
+        var tokens = new List<Token>
         {
-            new Lexeme(LexType.Keyword, FunctionName),
-            new Lexeme(LexType.Identifier, Alias)
+            new Token(TokenType.Keyword, FunctionName),
+            new Token(TokenType.Identifier, Alias)
         };
-        lexemes.AddRange(Arguments.SelectMany(arg => arg.GenerateLexemesWithoutCte()));
-        lexemes.AddRange(ColumnAliasClause.GenerateLexemesWithoutCte());
-        return lexemes;
+        tokens.AddRange(Arguments.SelectMany(arg => arg.GenerateTokensWithoutCte()));
+        tokens.AddRange(ColumnAliasClause.GenerateTokensWithoutCte());
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

@@ -45,26 +45,26 @@ public class ValuesQuery : ISelectQuery
         return ToSql();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemes()
+    public IEnumerable<Token> Generatetokens()
     {
         int capacity = Rows.Sum(row => row.Capacity) + (Rows.Count - 1) + 1;
 
-        var lexemes = new List<Lexeme>(capacity) { new Lexeme(LexType.Keyword, "VALUES") };
+        var tokens = new List<Token>(capacity) { new Token(TokenType.Keyword, "VALUES") };
 
         for (int i = 0; i < Rows.Count; i++)
         {
-            lexemes.AddRange(Rows[i].GenerateLexemesWithoutCte());
+            tokens.AddRange(Rows[i].GenerateTokensWithoutCte());
             if (i < Rows.Count - 1)
             {
-                lexemes.Add(new Lexeme(LexType.Comma, ","));
+                tokens.Add(new Token(TokenType.Comma, ","));
             }
         }
-        return lexemes;
+        return tokens;
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        return GenerateLexemes();
+        return Generatetokens();
     }
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()

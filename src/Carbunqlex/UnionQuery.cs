@@ -69,17 +69,17 @@ public class UnionQuery : ISelectQuery
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemes()
+    public IEnumerable<Token> Generatetokens()
     {
-        var leftLexemes = Left.GenerateLexemes().ToList();
-        var rightLexemes = Right.GenerateLexemes().ToList();
+        var lefttokens = Left.Generatetokens().ToList();
+        var righttokens = Right.Generatetokens().ToList();
 
-        // Initial capacity is set to accommodate the lexemes from Left, Right, and the UnionType keyword.
-        var lexemes = new List<Lexeme>(leftLexemes.Count + rightLexemes.Count + 1);
-        lexemes.AddRange(leftLexemes);
-        lexemes.Add(new Lexeme(LexType.Keyword, UnionType.ToSqlString()));
-        lexemes.AddRange(rightLexemes);
-        return lexemes;
+        // Initial capacity is set to accommodate the tokens from Left, Right, and the UnionType keyword.
+        var tokens = new List<Token>(lefttokens.Count + righttokens.Count + 1);
+        tokens.AddRange(lefttokens);
+        tokens.Add(new Token(TokenType.Keyword, UnionType.ToSqlString()));
+        tokens.AddRange(righttokens);
+        return tokens;
     }
 
     public string ToSqlWithoutCte()
@@ -87,17 +87,17 @@ public class UnionQuery : ISelectQuery
         return $"{Left.ToSqlWithoutCte()} {UnionType.ToSqlString()} {Right.ToSqlWithoutCte()}";
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var leftLexemes = Left.GenerateLexemesWithoutCte().ToList();
-        var rightLexemes = Right.GenerateLexemesWithoutCte().ToList();
+        var lefttokens = Left.GenerateTokensWithoutCte().ToList();
+        var righttokens = Right.GenerateTokensWithoutCte().ToList();
 
-        // Initial capacity is set to accommodate the lexemes from Left, Right, and the UnionType keyword.
-        var lexemes = new List<Lexeme>(leftLexemes.Count + rightLexemes.Count + 1);
-        lexemes.AddRange(leftLexemes);
-        lexemes.Add(new Lexeme(LexType.Keyword, UnionType.ToSqlString()));
-        lexemes.AddRange(rightLexemes);
-        return lexemes;
+        // Initial capacity is set to accommodate the tokens from Left, Right, and the UnionType keyword.
+        var tokens = new List<Token>(lefttokens.Count + righttokens.Count + 1);
+        tokens.AddRange(lefttokens);
+        tokens.Add(new Token(TokenType.Keyword, UnionType.ToSqlString()));
+        tokens.AddRange(righttokens);
+        return tokens;
     }
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()

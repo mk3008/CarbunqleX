@@ -39,18 +39,18 @@ public class SubQuerySource : IDatasource
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>
+        var tokens = new List<Token>
         {
-            new Lexeme(LexType.OpenParen, "(")
+            new Token(TokenType.OpenParen, "(")
         };
-        lexemes.AddRange(Query.GenerateLexemesWithoutCte());
-        lexemes.Add(new Lexeme(LexType.CloseParen, ")"));
-        lexemes.Add(new Lexeme(LexType.Keyword, "as"));
-        lexemes.Add(new Lexeme(LexType.Identifier, Alias));
-        lexemes.AddRange(ColumnAliasClause.GenerateLexemesWithoutCte());
-        return lexemes;
+        tokens.AddRange(Query.GenerateTokensWithoutCte());
+        tokens.Add(new Token(TokenType.CloseParen, ")"));
+        tokens.Add(new Token(TokenType.Keyword, "as"));
+        tokens.Add(new Token(TokenType.Identifier, Alias));
+        tokens.AddRange(ColumnAliasClause.GenerateTokensWithoutCte());
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

@@ -61,26 +61,26 @@ public class JoinClause : ISqlComponent
         return $"{joinTypeString} {Datasource.ToSqlWithoutCte()} on {conditionString}";
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
         var clause = GetClauseText();
 
-        var lexemes = new List<Lexeme>
+        var tokens = new List<Token>
         {
-            new Lexeme(LexType.StartClause, clause, "join")
+            new Token(TokenType.StartClause, clause, "join")
         };
 
-        lexemes.AddRange(Datasource.GenerateLexemesWithoutCte());
+        tokens.AddRange(Datasource.GenerateTokensWithoutCte());
 
         if (Condition != null)
         {
-            lexemes.Add(new Lexeme(LexType.Keyword, "on"));
-            lexemes.AddRange(Condition.GenerateLexemesWithoutCte());
+            tokens.Add(new Token(TokenType.Keyword, "on"));
+            tokens.AddRange(Condition.GenerateTokensWithoutCte());
         }
 
-        lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "join"));
+        tokens.Add(new Token(TokenType.EndClause, string.Empty, "join"));
 
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

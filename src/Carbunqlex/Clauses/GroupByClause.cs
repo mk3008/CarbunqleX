@@ -25,38 +25,38 @@ public class GroupByClause : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
         if (GroupByColumns.Count == 0)
         {
-            return Enumerable.Empty<Lexeme>();
+            return Enumerable.Empty<Token>();
         }
 
-        // Estimate the initial capacity for the lexemes list.
-        // Each column can return multiple lexemes, so we add a buffer.
-        // For example, a column like "a.value" can return up to 4 lexemes:
+        // Estimate the initial capacity for the tokens list.
+        // Each column can return multiple tokens, so we add a buffer.
+        // For example, a column like "a.value" can return up to 4 tokens:
         // "a", ".", "value"
         // Additionally, we add space for commas and the "group by" keyword.
         int initialCapacity = GroupByColumns.Count * 5 + 1;
-        var lexemes = new List<Lexeme>(initialCapacity)
+        var tokens = new List<Token>(initialCapacity)
         {
-            new Lexeme(LexType.StartClause, "group by", "group by")
+            new Token(TokenType.StartClause, "group by", "group by")
         };
 
         foreach (var column in GroupByColumns)
         {
-            lexemes.AddRange(column.GenerateLexemesWithoutCte());
-            lexemes.Add(new Lexeme(LexType.Comma, ",", "group by"));
+            tokens.AddRange(column.GenerateTokensWithoutCte());
+            tokens.Add(new Token(TokenType.Comma, ",", "group by"));
         }
 
-        if (lexemes.Count > 1)
+        if (tokens.Count > 1)
         {
             // Remove the last comma
-            lexemes.RemoveAt(lexemes.Count - 1);
+            tokens.RemoveAt(tokens.Count - 1);
         }
 
-        lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "group by"));
-        return lexemes;
+        tokens.Add(new Token(TokenType.EndClause, string.Empty, "group by"));
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

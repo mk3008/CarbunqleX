@@ -15,11 +15,11 @@ public class ParameterExpression : IValueExpression, IArgumentExpression
         return Name;
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        return new List<Lexeme>
+        return new List<Token>
         {
-            new Lexeme(LexType.Parameter, Name)
+            new Token(TokenType.Parameter, Name)
         };
     }
 

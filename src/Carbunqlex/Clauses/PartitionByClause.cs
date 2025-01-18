@@ -26,38 +26,38 @@ public class PartitionByClause : IPartitionByClause
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
         if (PartitionByColumns.Count == 0)
         {
-            return Enumerable.Empty<Lexeme>();
+            return Enumerable.Empty<Token>();
         }
 
-        // Estimate the initial capacity for the lexemes list.
+        // Estimate the initial capacity for the tokens list.
         // Each column can return up to 1 lexeme, so we add a buffer.
         // For example, a column like "a.value" can return up to 1 lexeme:
         // "a.value"
         // Additionally, we add space for commas and the "partition by" keyword.
         int initialCapacity = PartitionByColumns.Count * 2 + 2;
-        var lexemes = new List<Lexeme>(initialCapacity)
+        var tokens = new List<Token>(initialCapacity)
             {
-                new Lexeme(LexType.StartClause, "partition by", "partition by")
+                new Token(TokenType.StartClause, "partition by", "partition by")
             };
 
         foreach (var column in PartitionByColumns)
         {
-            lexemes.AddRange(column.GenerateLexemesWithoutCte());
-            lexemes.Add(new Lexeme(LexType.Comma, ",", "partition by"));
+            tokens.AddRange(column.GenerateTokensWithoutCte());
+            tokens.Add(new Token(TokenType.Comma, ",", "partition by"));
         }
 
-        if (lexemes.Count > 1)
+        if (tokens.Count > 1)
         {
             // Remove the last comma
-            lexemes.RemoveAt(lexemes.Count - 1);
+            tokens.RemoveAt(tokens.Count - 1);
         }
 
-        lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "partition by"));
-        return lexemes;
+        tokens.Add(new Token(TokenType.EndClause, string.Empty, "partition by"));
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

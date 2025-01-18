@@ -64,32 +64,32 @@ public class SelectClause : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        // Estimate the initial capacity for the lexemes list.
-        // Each SelectExpression can return up to 3 lexemes (column name, AS, alias).
+        // Estimate the initial capacity for the tokens list.
+        // Each SelectExpression can return up to 3 tokens (column name, AS, alias).
         // Adding 2 for the "select" keyword and potential "distinct" clause.
         int initialCapacity = Expressions.Count * 3 + 2;
-        var lexemes = new List<Lexeme>(initialCapacity)
+        var tokens = new List<Token>(initialCapacity)
         {
-            new Lexeme(LexType.Keyword, "select")
+            new Token(TokenType.Keyword, "select")
         };
 
-        lexemes.AddRange(DistinctClause.GenerateLexemesWithoutCte());
+        tokens.AddRange(DistinctClause.GenerateTokensWithoutCte());
 
         if (Expressions.Count == 0)
         {
-            lexemes.Add(new Lexeme(LexType.Identifier, "*"));
+            tokens.Add(new Token(TokenType.Identifier, "*"));
         }
         else
         {
             foreach (var column in Expressions)
             {
-                lexemes.AddRange(column.GenerateLexemesWithoutCte());
+                tokens.AddRange(column.GenerateTokensWithoutCte());
             }
         }
 
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

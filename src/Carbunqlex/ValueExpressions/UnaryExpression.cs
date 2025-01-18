@@ -17,10 +17,10 @@ public class UnaryExpression : IValueExpression
 
     public bool MightHaveQueries => Operand.MightHaveQueries;
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Operator, Operator);
-        foreach (var lexeme in Operand.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.Operator, Operator);
+        foreach (var lexeme in Operand.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }

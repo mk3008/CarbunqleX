@@ -15,14 +15,14 @@ public class ParenthesizedExpression : IValueExpression
 
     public bool MightHaveQueries => InnerExpression.MightHaveQueries;
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.OpenParen, "(");
-        foreach (var lexeme in InnerExpression.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.OpenParen, "(");
+        foreach (var lexeme in InnerExpression.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Lexeme(LexType.CloseParen, ")");
+        yield return new Token(TokenType.CloseParen, ")");
     }
 
     public string ToSqlWithoutCte()

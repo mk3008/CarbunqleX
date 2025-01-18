@@ -23,36 +23,36 @@ public class WindowClause : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
         if (WindowExpressions.Count == 0)
         {
-            return Enumerable.Empty<Lexeme>();
+            return Enumerable.Empty<Token>();
         }
 
-        // Estimate the initial capacity for the lexemes list.
-        // Each window expression can return multiple lexemes, so we add a buffer.
+        // Estimate the initial capacity for the tokens list.
+        // Each window expression can return multiple tokens, so we add a buffer.
         // Additionally, we add space for commas and the "window" keyword.
         int initialCapacity = WindowExpressions.Count * 6 + 1;
-        var lexemes = new List<Lexeme>(initialCapacity)
+        var tokens = new List<Token>(initialCapacity)
         {
-            new Lexeme(LexType.StartClause, "window", "window")
+            new Token(TokenType.StartClause, "window", "window")
         };
 
         foreach (var windowExpression in WindowExpressions)
         {
-            lexemes.AddRange(windowExpression.GenerateLexemesWithoutCte());
-            lexemes.Add(new Lexeme(LexType.Comma, ",", "window"));
+            tokens.AddRange(windowExpression.GenerateTokensWithoutCte());
+            tokens.Add(new Token(TokenType.Comma, ",", "window"));
         }
 
-        if (lexemes.Count > 1)
+        if (tokens.Count > 1)
         {
             // Remove the last comma
-            lexemes.RemoveAt(lexemes.Count - 1);
+            tokens.RemoveAt(tokens.Count - 1);
         }
 
-        lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "window"));
-        return lexemes;
+        tokens.Add(new Token(TokenType.EndClause, string.Empty, "window"));
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

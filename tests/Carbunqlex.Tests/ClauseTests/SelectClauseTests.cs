@@ -104,21 +104,21 @@ public class SelectClauseTests(ITestOutputHelper output)
     }
 
     [Fact]
-    public void GetLexemes_ShouldReturnWildcard_WhenExpressionsAreEmpty()
+    public void GenerateTokens_ShouldReturnWildcard_WhenExpressionsAreEmpty()
     {
         // Arrange
         var selectClause = new SelectClause();
 
         // Act
-        var lexemes = selectClause.GenerateLexemesWithoutCte();
-        output.WriteLine(string.Join(", ", lexemes.Select(l => l.Value)));
+        var tokens = selectClause.GenerateTokensWithoutCte();
+        output.WriteLine(string.Join(", ", tokens.Select(l => l.Value)));
 
         // Assert
-        var expectedLexemes = new List<Lexeme>
+        var expected = new List<Token>
         {
-            new Lexeme(LexType.Keyword, "select"),
-            new Lexeme(LexType.Identifier, "*")
+            new Token(TokenType.Keyword, "select"),
+            new Token(TokenType.Identifier, "*")
         };
-        Assert.Equal(expectedLexemes, lexemes);
+        Assert.Equal(expected, tokens);
     }
 }

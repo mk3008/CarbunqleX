@@ -15,11 +15,11 @@ public interface IQuery : ISqlComponent
     string ToSql();
 
     /// <summary>
-    /// Generates the lexemes for the query.
+    /// Generates the tokens for the query.
     /// This can include the WITH clause if the query is at the root level.
     /// </summary>
-    /// <returns>The lexemes representing the query.</returns>
-    IEnumerable<Lexeme> GenerateLexemes();
+    /// <returns>The tokens representing the query.</returns>
+    IEnumerable<Token> Generatetokens();
 
     /// <summary>
     /// Retrieves the common table clauses (CTEs) associated with the component.
@@ -44,7 +44,7 @@ public interface IQuery : ISqlComponent
 }
 
 /// <summary>
-/// Represents a SQL query that can generate SQL strings and lexemes, with or without CTEs.
+/// Represents a SQL query that can generate SQL strings and tokens, with or without CTEs.
 /// </summary>
 public interface ISelectQuery : IQuery
 {

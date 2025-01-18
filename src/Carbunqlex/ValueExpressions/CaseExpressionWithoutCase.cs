@@ -18,25 +18,25 @@ public class CaseExpressionWithoutCase : IValueExpression
     public bool MightHaveQueries => WhenThenPairs.Any(pair => pair.When.MightHaveQueries || pair.Then.MightHaveQueries) ||
                                     Else.MightHaveQueries;
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, "case");
+        yield return new Token(TokenType.Keyword, "case");
 
         foreach (var pair in WhenThenPairs)
         {
-            foreach (var lexeme in pair.GenerateLexemesWithoutCte())
+            foreach (var lexeme in pair.GenerateTokensWithoutCte())
             {
                 yield return lexeme;
             }
         }
 
-        yield return new Lexeme(LexType.Keyword, "else");
-        foreach (var lexeme in Else.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.Keyword, "else");
+        foreach (var lexeme in Else.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
 
-        yield return new Lexeme(LexType.Keyword, "end");
+        yield return new Token(TokenType.Keyword, "end");
     }
 
     public string ToSqlWithoutCte()

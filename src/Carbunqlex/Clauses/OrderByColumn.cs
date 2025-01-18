@@ -25,15 +25,15 @@ public class OrderByColumn : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>();
-        lexemes.AddRange(Column.GenerateLexemesWithoutCte());
+        var tokens = new List<Token>();
+        tokens.AddRange(Column.GenerateTokensWithoutCte());
         if (!Ascending)
         {
-            lexemes.Add(new Lexeme(LexType.Keyword, "desc"));
+            tokens.Add(new Token(TokenType.Keyword, "desc"));
         }
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

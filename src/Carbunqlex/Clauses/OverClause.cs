@@ -26,19 +26,19 @@ public class OverClause : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>
+        var tokens = new List<Token>
         {
-            new Lexeme(LexType.StartClause, "over", "over"),
-            new Lexeme(LexType.OpenParen, "(", "over")
+            new Token(TokenType.StartClause, "over", "over"),
+            new Token(TokenType.OpenParen, "(", "over")
         };
 
-        lexemes.AddRange(WindowFunction.GenerateLexemesWithoutCte());
+        tokens.AddRange(WindowFunction.GenerateTokensWithoutCte());
 
-        lexemes.Add(new Lexeme(LexType.CloseParen, ")", "over"));
-        lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "over"));
-        return lexemes;
+        tokens.Add(new Token(TokenType.CloseParen, ")", "over"));
+        tokens.Add(new Token(TokenType.EndClause, string.Empty, "over"));
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

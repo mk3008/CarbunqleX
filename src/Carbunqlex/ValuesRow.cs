@@ -31,26 +31,26 @@ public class ValuesRow : ISqlComponent
     }
 
     /// <summary>
-    /// The number of lexemes required to represent this row.
+    /// The number of tokens required to represent this row.
     /// </summary>
     internal int Capacity => Columns.Count * 2 - 1 + 2;
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>(Capacity) { new Lexeme(LexType.OpenParen, "(") };
+        var tokens = new List<Token>(Capacity) { new Token(TokenType.OpenParen, "(") };
 
         for (int i = 0; i < Columns.Count; i++)
         {
-            lexemes.AddRange(Columns[i].GenerateLexemesWithoutCte());
+            tokens.AddRange(Columns[i].GenerateTokensWithoutCte());
 
             if (i < Columns.Count - 1)
             {
-                lexemes.Add(new Lexeme(LexType.Comma, ","));
+                tokens.Add(new Token(TokenType.Comma, ","));
             }
         }
 
-        lexemes.Add(new Lexeme(LexType.CloseParen, ")"));
-        return lexemes;
+        tokens.Add(new Token(TokenType.CloseParen, ")"));
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

@@ -70,33 +70,33 @@ public class CommonTableClause : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>
+        var tokens = new List<Token>
         {
-            new Lexeme(LexType.Identifier, Alias)
+            new Token(TokenType.Identifier, Alias)
         };
 
         if (ColumnAliasClause != null && ColumnAliasClause.ColumnAliases.Any())
         {
-            lexemes.AddRange(ColumnAliasClause.GenerateLexemesWithoutCte());
+            tokens.AddRange(ColumnAliasClause.GenerateTokensWithoutCte());
         }
 
-        lexemes.Add(Lexeme.AsKeyword);
+        tokens.Add(Token.AsKeyword);
 
         var materializationSql = Materialization.ToSqlString();
         if (!string.IsNullOrEmpty(materializationSql))
         {
-            lexemes.Add(new Lexeme(LexType.Keyword, materializationSql));
+            tokens.Add(new Token(TokenType.Keyword, materializationSql));
         }
 
-        lexemes.Add(new Lexeme(LexType.OpenParen, "("));
+        tokens.Add(new Token(TokenType.OpenParen, "("));
 
-        lexemes.AddRange(Query.GenerateLexemesWithoutCte());
+        tokens.AddRange(Query.GenerateTokensWithoutCte());
 
-        lexemes.Add(new Lexeme(LexType.CloseParen, ")"));
+        tokens.Add(new Token(TokenType.CloseParen, ")"));
 
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

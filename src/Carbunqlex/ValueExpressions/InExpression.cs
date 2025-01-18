@@ -20,21 +20,21 @@ public class InExpression : IValueExpression
 
     public bool MightHaveQueries => Left.MightHaveQueries || Right.MightHaveQueries;
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        foreach (var lexeme in Left.GenerateLexemesWithoutCte())
+        foreach (var lexeme in Left.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Lexeme(LexType.Operator, IsNegated ? "not in" : "in");
-        yield return new Lexeme(LexType.OpenParen, "(");
+        yield return new Token(TokenType.Operator, IsNegated ? "not in" : "in");
+        yield return new Token(TokenType.OpenParen, "(");
 
-        foreach (var lexeme in Right.GenerateLexemesWithoutCte())
+        foreach (var lexeme in Right.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
 
-        yield return new Lexeme(LexType.CloseParen, ")");
+        yield return new Token(TokenType.CloseParen, ")");
     }
 
     public string ToSqlWithoutCte()
@@ -98,11 +98,11 @@ public class ValueSet : IArgumentExpression
         return string.Join(", ", Values.Select(v => v.ToSqlWithoutCte()));
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
         foreach (var value in Values)
         {
-            foreach (var lexeme in value.GenerateLexemesWithoutCte())
+            foreach (var lexeme in value.GenerateTokensWithoutCte())
             {
                 yield return lexeme;
             }
@@ -149,11 +149,11 @@ public class ScalarSubquery : IArgumentExpression
         return Query.ToSqlWithoutCte();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>();
-        lexemes.AddRange(Query.GenerateLexemesWithoutCte());
-        return lexemes;
+        var tokens = new List<Token>();
+        tokens.AddRange(Query.GenerateTokensWithoutCte());
+        return tokens;
     }
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()

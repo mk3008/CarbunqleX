@@ -27,21 +27,21 @@ public class FromClause : IFromClause
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme> {
-            new Lexeme(LexType.StartClause,"from", "from")
+        var tokens = new List<Token> {
+            new Token(TokenType.StartClause,"from", "from")
         };
-        lexemes.AddRange(RootDatasource.GenerateLexemesWithoutCte());
+        tokens.AddRange(RootDatasource.GenerateTokensWithoutCte());
 
         foreach (var joinClause in JoinClauses)
         {
-            lexemes.AddRange(joinClause.GenerateLexemesWithoutCte());
+            tokens.AddRange(joinClause.GenerateTokensWithoutCte());
         }
 
-        lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "from"));
+        tokens.Add(new Token(TokenType.EndClause, string.Empty, "from"));
 
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

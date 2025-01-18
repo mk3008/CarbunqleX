@@ -22,9 +22,9 @@ public class KeywordExpression : IValueExpression
         return Keyword;
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, Keyword);
+        yield return new Token(TokenType.Keyword, Keyword);
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

@@ -19,18 +19,18 @@ public class InlineQuery : IValueExpression
         return $"({Query.ToSqlWithoutCte()})";
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>
+        var tokens = new List<Token>
         {
-            new Lexeme(LexType.OpenParen, "(", "inline_query")
+            new Token(TokenType.OpenParen, "(", "inline_query")
         };
 
-        lexemes.AddRange(Query.GenerateLexemesWithoutCte());
+        tokens.AddRange(Query.GenerateTokensWithoutCte());
 
-        lexemes.Add(new Lexeme(LexType.CloseParen, ")", "inline_query"));
+        tokens.Add(new Token(TokenType.CloseParen, ")", "inline_query"));
 
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()

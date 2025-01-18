@@ -23,16 +23,16 @@ public class WindowFrame : IWindowFrame
         FrameType = frameType;
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>
+        var tokens = new List<Token>
         {
-            new Lexeme(LexType.Keyword, FrameType == FrameType.Rows ? "rows between" : "range between"),
+            new Token(TokenType.Keyword, FrameType == FrameType.Rows ? "rows between" : "range between"),
         };
-        lexemes.AddRange(Start.GenerateLexemesWithoutCte());
-        lexemes.Add(new Lexeme(LexType.Keyword, "and"));
-        lexemes.AddRange(End.GenerateLexemesWithoutCte());
-        return lexemes;
+        tokens.AddRange(Start.GenerateTokensWithoutCte());
+        tokens.Add(new Token(TokenType.Keyword, "and"));
+        tokens.AddRange(End.GenerateTokensWithoutCte());
+        return tokens;
     }
 
     public string ToSqlWithoutCte()

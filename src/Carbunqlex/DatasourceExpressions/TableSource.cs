@@ -65,28 +65,28 @@ public class TableSource : IDatasource
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>();
+        var tokens = new List<Token>();
 
         if (Namespaces.Any())
         {
             foreach (var ns in Namespaces)
             {
-                lexemes.Add(new Lexeme(LexType.Identifier, ns));
-                lexemes.Add(new Lexeme(LexType.Dot, "."));
+                tokens.Add(new Token(TokenType.Identifier, ns));
+                tokens.Add(new Token(TokenType.Dot, "."));
             }
         }
 
-        lexemes.Add(new Lexeme(LexType.Identifier, TableName));
+        tokens.Add(new Token(TokenType.Identifier, TableName));
 
         if (!string.IsNullOrEmpty(Alias) && Alias != TableName)
         {
-            lexemes.Add(new Lexeme(LexType.Keyword, "as"));
-            lexemes.Add(new Lexeme(LexType.Identifier, Alias));
+            tokens.Add(new Token(TokenType.Keyword, "as"));
+            tokens.Add(new Token(TokenType.Identifier, Alias));
         }
 
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

@@ -1,7 +1,7 @@
 ﻿namespace Carbunqlex;
 
 /// <summary>
-/// Represents a SQL component that can generate SQL strings and lexemes.
+/// Represents a SQL component that can generate SQL strings and tokens.
 /// </summary>
 public interface ISqlComponent
 {
@@ -14,12 +14,12 @@ public interface ISqlComponent
     string ToSqlWithoutCte();
 
     /// <summary>
-    /// Generates the lexemes for the component, excluding the WITH clause.
+    /// Generates the tokens for the component, excluding the WITH clause.
     /// This is used to control the inclusion of common table expressions (CTEs) at the root level of the query.
     /// Note: SQL components do not include the WITH clause.
     /// </summary>
-    /// <returns>The lexemes representing the component without the WITH clause.</returns>
-    IEnumerable<Lexeme> GenerateLexemesWithoutCte();
+    /// <returns>The tokens representing the component without the WITH clause.</returns>
+    IEnumerable<Token> GenerateTokensWithoutCte();
 
     /// <summary>
     /// Retrieves the queries used internally, including itself.

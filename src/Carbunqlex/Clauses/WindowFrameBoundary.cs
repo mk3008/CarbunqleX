@@ -27,9 +27,9 @@ public class WindowFrameBoundary : ISqlComponent
         return Boundary.ToSqlWithoutCte();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        return Boundary.GenerateLexemesWithoutCte();
+        return Boundary.GenerateTokensWithoutCte();
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

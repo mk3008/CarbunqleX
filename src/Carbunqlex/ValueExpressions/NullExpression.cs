@@ -12,9 +12,9 @@ public class NullExpression : IValueExpression
 
     public string DefaultName => string.Empty;
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, IsNegated ? "not null" : "null");
+        yield return new Token(TokenType.Keyword, IsNegated ? "not null" : "null");
     }
 
     public string ToSqlWithoutCte()

@@ -259,9 +259,9 @@ public class QueryNode : ISqlComponent
         return Query.ToSql();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemes()
+    public IEnumerable<Token> Generatetokens()
     {
-        return Query.GenerateLexemes();
+        return Query.Generatetokens();
     }
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()
@@ -284,9 +284,9 @@ public class QueryNode : ISqlComponent
         return Query.ToSqlWithoutCte();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        return Query.GenerateLexemesWithoutCte();
+        return Query.GenerateTokensWithoutCte();
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

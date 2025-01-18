@@ -22,10 +22,10 @@ public class ModifierExpression : IValueExpression
         return $"{Modifier} {Value.ToSqlWithoutCte()}";
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, Modifier);
-        foreach (var lexeme in Value.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.Keyword, Modifier);
+        foreach (var lexeme in Value.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }

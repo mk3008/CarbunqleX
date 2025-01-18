@@ -21,19 +21,19 @@ public class BetweenExpression : IValueExpression
 
     public bool MightHaveQueries => Left.MightHaveQueries || Start.MightHaveQueries || End.MightHaveQueries;
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        foreach (var lexeme in Left.GenerateLexemesWithoutCte())
+        foreach (var lexeme in Left.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Lexeme(LexType.Operator, IsNegated ? "not between" : "between");
-        foreach (var lexeme in Start.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.Operator, IsNegated ? "not between" : "between");
+        foreach (var lexeme in Start.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Lexeme(LexType.Operator, "and");
-        foreach (var lexeme in End.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.Operator, "and");
+        foreach (var lexeme in End.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }

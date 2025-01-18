@@ -28,22 +28,22 @@ public class ArrayExpression : IValueExpression, IArgumentExpression
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, "array");
-        yield return new Lexeme(LexType.OpenBracket, "[");
+        yield return new Token(TokenType.Keyword, "array");
+        yield return new Token(TokenType.OpenBracket, "[");
         for (int i = 0; i < Elements.Count(); i++)
         {
-            foreach (var lexeme in Elements.ElementAt(i).GenerateLexemesWithoutCte())
+            foreach (var lexeme in Elements.ElementAt(i).GenerateTokensWithoutCte())
             {
                 yield return lexeme;
             }
             if (i < Elements.Count() - 1)
             {
-                yield return Lexeme.Comma;
+                yield return Token.Comma;
             }
         }
-        yield return new Lexeme(LexType.CloseBracket, "]");
+        yield return new Token(TokenType.CloseBracket, "]");
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

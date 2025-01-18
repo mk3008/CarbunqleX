@@ -20,9 +20,9 @@ public class FrameBoundaryKeyword : IWindowFrameBoundaryExpression
         return BoundaryKeyword;
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        return new List<Lexeme> { new Lexeme(LexType.Keyword, BoundaryKeyword) };
+        return new List<Token> { new Token(TokenType.Keyword, BoundaryKeyword) };
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

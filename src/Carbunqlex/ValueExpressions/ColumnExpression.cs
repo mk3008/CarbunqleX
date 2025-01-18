@@ -31,11 +31,11 @@ public class ColumnExpression : IValueExpression
 
     public bool MightHaveQueries => false;
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
         // ColumnExpression does not directly use CTEs, so return a single lexeme
         // e.g. "table.column"
-        yield return new Lexeme(LexType.Identifier, ToSqlWithoutCte());
+        yield return new Token(TokenType.Identifier, ToSqlWithoutCte());
     }
 
     public string ToSqlWithoutCte()

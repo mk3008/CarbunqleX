@@ -104,31 +104,31 @@ public class SelectQuery : ISelectQuery
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemes()
+    public IEnumerable<Token> Generatetokens()
     {
-        var lexemes = new List<Lexeme>();
+        var tokens = new List<Token>();
 
-        lexemes.AddRange(WithClause.GenerateLexemes());
-        lexemes.AddRange(GenerateLexemesWithoutCte());
+        tokens.AddRange(WithClause.Generatetokens());
+        tokens.AddRange(GenerateTokensWithoutCte());
 
-        return lexemes;
+        return tokens;
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lexemes = new List<Lexeme>();
+        var tokens = new List<Token>();
 
-        lexemes.AddRange(SelectClause.GenerateLexemesWithoutCte());
-        lexemes.AddRange(FromClause.GenerateLexemesWithoutCte());
-        lexemes.AddRange(WhereClause.GenerateLexemesWithoutCte());
-        lexemes.AddRange(GroupByClause.GenerateLexemesWithoutCte());
-        lexemes.AddRange(HavingClause.GenerateLexemesWithoutCte());
-        lexemes.AddRange(OrderByClause.GenerateLexemesWithoutCte());
-        lexemes.AddRange(WindowClause.GenerateLexemesWithoutCte());
-        lexemes.AddRange(ForClause.GenerateLexemesWithoutCte());
-        lexemes.AddRange(PagingClause.GenerateLexemesWithoutCte());
+        tokens.AddRange(SelectClause.GenerateTokensWithoutCte());
+        tokens.AddRange(FromClause.GenerateTokensWithoutCte());
+        tokens.AddRange(WhereClause.GenerateTokensWithoutCte());
+        tokens.AddRange(GroupByClause.GenerateTokensWithoutCte());
+        tokens.AddRange(HavingClause.GenerateTokensWithoutCte());
+        tokens.AddRange(OrderByClause.GenerateTokensWithoutCte());
+        tokens.AddRange(WindowClause.GenerateTokensWithoutCte());
+        tokens.AddRange(ForClause.GenerateTokensWithoutCte());
+        tokens.AddRange(PagingClause.GenerateTokensWithoutCte());
 
-        return lexemes;
+        return tokens;
     }
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()

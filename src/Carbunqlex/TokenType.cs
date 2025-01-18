@@ -1,6 +1,6 @@
 ﻿namespace Carbunqlex;
 
-public enum LexType : byte
+public enum TokenType : byte
 {
     Unknown,
     Constant,
@@ -17,4 +17,5 @@ public enum LexType : byte
     Parameter,
     OpenBracket,
     CloseBracket,
+    Comment,
 }

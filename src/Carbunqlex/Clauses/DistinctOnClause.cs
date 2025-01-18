@@ -17,18 +17,18 @@ public class DistinctOnClause : IDistinctClause
         return $"distinct on ({string.Join(", ", DistinctOnColumns.Select(c => c.ToSqlWithoutCte()))})";
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Lexeme(LexType.Keyword, "distinct");
-        yield return new Lexeme(LexType.Keyword, "on");
-        yield return new Lexeme(LexType.OpenParen, "(");
+        yield return new Token(TokenType.Keyword, "distinct");
+        yield return new Token(TokenType.Keyword, "on");
+        yield return new Token(TokenType.OpenParen, "(");
 
-        foreach (var lexeme in DistinctOnColumns.SelectMany(c => c.GenerateLexemesWithoutCte()))
+        foreach (var lexeme in DistinctOnColumns.SelectMany(c => c.GenerateTokensWithoutCte()))
         {
             yield return lexeme;
         }
 
-        yield return new Lexeme(LexType.CloseParen, ")");
+        yield return new Token(TokenType.CloseParen, ")");
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

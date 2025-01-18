@@ -21,21 +21,21 @@ public class LikeExpression : IValueExpression
 
     public bool MightHaveQueries => Left.MightHaveQueries || Right.MightHaveQueries;
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        foreach (var lexeme in Left.GenerateLexemesWithoutCte())
+        foreach (var lexeme in Left.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Lexeme(LexType.Operator, IsNegated ? "not like" : "like");
-        foreach (var lexeme in Right.GenerateLexemesWithoutCte())
+        yield return new Token(TokenType.Operator, IsNegated ? "not like" : "like");
+        foreach (var lexeme in Right.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
         if (EscapeCharacter.HasValue)
         {
-            yield return new Lexeme(LexType.Keyword, "escape");
-            yield return new Lexeme(LexType.Value, $"'{EscapeCharacter}'");
+            yield return new Token(TokenType.Keyword, "escape");
+            yield return new Token(TokenType.Value, $"'{EscapeCharacter}'");
         }
     }
 

@@ -24,32 +24,32 @@ public class HavingClause : ISqlComponent
         return sb.ToString();
     }
 
-    public IEnumerable<Lexeme> GenerateLexemesWithoutCte()
+    public IEnumerable<Token> GenerateTokensWithoutCte()
     {
         if (Conditions.Count == 0)
         {
-            return Enumerable.Empty<Lexeme>();
+            return Enumerable.Empty<Token>();
         }
 
         int initialCapacity = Conditions.Count * 5 + 1;
-        var lexemes = new List<Lexeme>(initialCapacity)
+        var tokens = new List<Token>(initialCapacity)
         {
-            new Lexeme(LexType.StartClause, "having", "having")
+            new Token(TokenType.StartClause, "having", "having")
         };
 
         foreach (var condition in Conditions)
         {
-            lexemes.AddRange(condition.GenerateLexemesWithoutCte());
-            lexemes.Add(new Lexeme(LexType.Comma, ",", "having"));
+            tokens.AddRange(condition.GenerateTokensWithoutCte());
+            tokens.Add(new Token(TokenType.Comma, ",", "having"));
         }
 
-        if (lexemes.Count > 1)
+        if (tokens.Count > 1)
         {
-            lexemes.RemoveAt(lexemes.Count - 1);
+            tokens.RemoveAt(tokens.Count - 1);
         }
 
-        lexemes.Add(new Lexeme(LexType.EndClause, string.Empty, "having"));
-        return lexemes;
+        tokens.Add(new Token(TokenType.EndClause, string.Empty, "having"));
+        return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()
