@@ -43,7 +43,7 @@ public static class SqlKeyword
 
     private static IReadOnlyDictionary<string, SqlKeywordNode> GetKeywords()
     {
-        //GetSelectKeywordNode を辞書化して返却する
+        // Convert GetSelectKeywordNode to a dictionary and return
         return GetSelectKeywordNode().ToDictionary(node => node.Keyword, node => node);
     }
 
