@@ -33,14 +33,14 @@ public class PagingClause : IPagingClause
         // e.g. "offset 5 rows fetch next 10 rows only"
         var tokens = new List<Token>(6)
         {
-            new Token(TokenType.Keyword, "offset")
+            new Token(TokenType.Command, "offset")
         };
 
         tokens.AddRange(Offset.GenerateTokensWithoutCte());
-        tokens.Add(new Token(TokenType.Keyword, "rows"));
-        tokens.Add(new Token(TokenType.Keyword, "fetch next"));
+        tokens.Add(new Token(TokenType.Command, "rows"));
+        tokens.Add(new Token(TokenType.Command, "fetch next"));
         tokens.AddRange(Fetch.GenerateTokensWithoutCte());
-        tokens.Add(new Token(TokenType.Keyword, "rows only"));
+        tokens.Add(new Token(TokenType.Command, "rows only"));
 
         return tokens;
     }

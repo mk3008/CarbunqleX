@@ -24,7 +24,7 @@ public class KeywordExpression : IValueExpression
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Keyword, Keyword);
+        yield return new Token(TokenType.Command, Keyword);
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

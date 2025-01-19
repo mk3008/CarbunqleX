@@ -74,7 +74,7 @@ public class JoinClause : ISqlComponent
 
         if (Condition != null)
         {
-            tokens.Add(new Token(TokenType.Keyword, "on"));
+            tokens.Add(new Token(TokenType.Command, "on"));
             tokens.AddRange(Condition.GenerateTokensWithoutCte());
         }
 

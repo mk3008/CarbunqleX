@@ -167,7 +167,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("select 1".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Keyword, token.Type);
+        Assert.Equal(TokenType.Command, token.Type);
         Assert.Equal("select", token.Value);
         Assert.Equal(7, end);
 
@@ -182,7 +182,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("select distinct 1".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Keyword, token.Type);
+        Assert.Equal(TokenType.Command, token.Type);
         Assert.Equal("select distinct", token.Value);
         Assert.Equal("select distinct ", token.RawValue);
         Assert.Equal(16, end);
@@ -198,7 +198,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("select distinct on ()".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Keyword, token.Type);
+        Assert.Equal(TokenType.Command, token.Type);
         Assert.Equal("select distinct on", token.Value);
         Assert.Equal("select distinct on ", token.RawValue);
         Assert.Equal(19, end);
@@ -209,7 +209,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("select\tdistinct\non ()".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Keyword, token.Type);
+        Assert.Equal(TokenType.Command, token.Type);
         Assert.Equal("select distinct on", token.Value);
         Assert.Equal("select\tdistinct\non ", token.RawValue);
         Assert.Equal(19, end);
@@ -220,7 +220,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("select/*comment*/distinct--comment\non ()".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Keyword, token.Type);
+        Assert.Equal(TokenType.Command, token.Type);
         Assert.Equal("select distinct on", token.Value);
         Assert.Equal("select/*comment*/distinct--comment\non ", token.RawValue);
         Assert.Equal(38, end);
@@ -231,7 +231,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("select/*+ hint */ 1".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Keyword, token.Type);
+        Assert.Equal(TokenType.Command, token.Type);
         Assert.Equal("select", token.Value);
         Assert.Equal("select/*+ hint */ ", token.RawValue);
         Assert.Equal(18, end);
@@ -242,7 +242,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("SELECT/*comment*/DISTINCT--comment\nON ()".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Keyword, token.Type);
+        Assert.Equal(TokenType.Command, token.Type);
         Assert.Equal("SELECT DISTINCT ON", token.Value);
         Assert.Equal("SELECT/*comment*/DISTINCT--comment\nON ", token.RawValue);
         Assert.Equal("select distinct on", token.Identifier);
@@ -252,15 +252,15 @@ public class ReadOnlyMemoryExtensionsTests
     [Fact]
     public void ReadLexeme_NotSupportedException()
     {
-        var memory = new ReadOnlyMemory<char>("Inner/*comment*/Test".ToCharArray());
+        var memory = new ReadOnlyMemory<char>("Inner/*comment*/Test ".ToCharArray());
         var exception = Assert.Throws<NotSupportedException>(() => memory.ReadLexeme(0, out int end));
-        Assert.Equal("Unsupported keyword 'Inner Test' found at position 0.", exception.Message);
+        Assert.Equal("Unsupported keyword 'Inner Test' of type 'Command' found between positions 0 and 20.", exception.Message);
     }
 
     [Fact]
     public void DisplayAllSqlKeywords()
     {
-        var keywords = SqlKeyword.AllKeywords.Values;
+        var keywords = SqlKeyword.CommandKeywords.Values;
 
         foreach (var keyword in keywords)
         {

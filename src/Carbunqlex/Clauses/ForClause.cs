@@ -48,7 +48,7 @@ public class ForClause : IForClause
         return new List<Token>
             {
                 new Token(TokenType.StartClause, "for", "for"),
-                new Token(TokenType.Keyword, LockType.ToSqlString()),
+                new Token(TokenType.Command, LockType.ToSqlString()),
                 new Token(TokenType.EndClause, string.Empty, "for")
             };
     }

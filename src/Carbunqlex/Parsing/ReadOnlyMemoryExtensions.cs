@@ -134,62 +134,76 @@ public static class ReadOnlyMemoryExtensions
 
             var normalized = lexeme.ToLower();
 
-            // Check if it exists in the keyword dictionary
-            if (!SqlKeyword.AllKeywords.ContainsKey(normalized))
+            // Prioritize constant determination
+            if (SqlKeyword.ConstantValueKeywords.ContainsKey(normalized))
+            {
+                var node = SqlKeyword.ConstantValueKeywords[normalized];
+                return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Constant, node, out end);
+            }
+            // If not a constant or command, treat as an identifier
+            else if (!SqlKeyword.CommandKeywords.ContainsKey(normalized))
             {
                 memory.SkipWhiteSpacesAndComments(ref p);
                 var raw = memory.Slice(start, p - start).ToString();
                 end = p;
                 return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
             }
-
-            var node = SqlKeyword.AllKeywords[normalized];
-
-            while (true)
+            else
             {
-                if (!memory.TryReadWord(p, out var tmpPosition, out var tmplexeme))
-                {
-                    var raw = memory.Slice(start, p - start).ToString();
-                    end = p;
-                    return new Token(TokenType.Keyword, lexeme, raw, string.Empty);
-                }
-
-                // If the read lexeme does not exist in the child node
-                if (!node.Children.ContainsKey(tmplexeme.ToLower()))
-                {
-                    // If it allows itself to be a terminal node
-                    // Return the cache read up to the previous time
-                    if (node.IsTerminal)
-                    {
-                        var raw = memory.Slice(start, p - start).ToString();
-                        end = p;
-                        return new Token(TokenType.Keyword, lexeme, raw, lexeme);
-                    }
-
-                    // Keyword error not dictionary-ized
-                    lexeme += " " + tmplexeme;
-                    throw new NotSupportedException($"Unsupported keyword '{lexeme}' found at position {start}.");
-                }
-
-                // Record the coordinates of the lexeme and skip unnecessary characters that follow
-                p = tmpPosition;
-                memory.SkipWhiteSpacesAndComments(ref p);
-
-                // concat lexeme
-                lexeme += " " + tmplexeme;
-                node = node.Children[tmplexeme.ToLower()];
-
-                // If there are no child nodes, it is clear that it is a terminal node, so return the token
-                if (node.Children.Count == 0)
-                {
-                    var raw = memory.Slice(start, p - start).ToString();
-                    end = p;
-                    return new Token(TokenType.Keyword, lexeme, raw, lexeme);
-                }
+                // Check if the command consists of multiple words
+                var node = SqlKeyword.CommandKeywords[normalized];
+                return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Command, node, out end);
             }
         }
 
         throw new InvalidOperationException($"Invalid lexeme at position {p}");
+    }
+
+    public static Token ParseKeywordLexeme(this ReadOnlyMemory<char> memory, int start, int currentPosition, string lexemeBuffer, TokenType tokenType, SqlKeywordNode node, out int end)
+    {
+        while (true)
+        {
+            if (!memory.TryReadWord(currentPosition, out var nextPosition, out var nextLexeme))
+            {
+                var raw = memory.Slice(start, currentPosition - start).ToString();
+                end = currentPosition;
+                return new Token(tokenType, lexemeBuffer, raw, string.Empty);
+            }
+
+            // If the read lexeme does not exist in the child node
+            if (!node.Children.ContainsKey(nextLexeme.ToLower()))
+            {
+                // If it allows itself to be a terminal node
+                // Return the cache read up to the previous time
+                if (node.IsTerminal)
+                {
+                    var raw = memory.Slice(start, currentPosition - start).ToString();
+                    end = currentPosition;
+                    return new Token(tokenType, lexemeBuffer, raw, lexemeBuffer);
+                }
+
+                // If it does not allow itself to be a terminal node
+                lexemeBuffer += " " + nextLexeme;
+                throw new NotSupportedException($"Unsupported keyword '{lexemeBuffer}' of type '{tokenType}' found between positions {start} and {nextPosition}.");
+            }
+
+            // Record the coordinates of the lexeme and skip unnecessary characters that follow
+            currentPosition = nextPosition;
+            memory.SkipWhiteSpacesAndComments(ref currentPosition);
+
+            // concat lexeme
+            lexemeBuffer += " " + nextLexeme;
+            node = node.Children[nextLexeme.ToLower()];
+
+            // If there are no child nodes, it is clear that it is a terminal node, so return the token
+            if (node.Children.Count == 0)
+            {
+                var raw = memory.Slice(start, currentPosition - start).ToString();
+                end = currentPosition;
+                return new Token(tokenType, lexemeBuffer, raw, lexemeBuffer);
+            }
+        }
+        throw new NotSupportedException($"Unsupported keyword '{lexemeBuffer}' of type '{tokenType}' found at position {start}.");
     }
 
     private static bool TrySkipWhiteSpaces(this ReadOnlyMemory<char> memory, ref int position)
@@ -410,6 +424,12 @@ public static class ReadOnlyMemoryExtensions
     {
         endPosition = start;
         var p = start;
+
+        if (p >= memory.Length)
+        {
+            word = string.Empty;
+            return false;
+        }
 
         if (memory.Span[p].IsWhiteSpace() || memory.Span[p].IsSymbols())
         {

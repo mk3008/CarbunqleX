@@ -22,7 +22,7 @@ public class FrameBoundaryKeyword : IWindowFrameBoundaryExpression
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        return new List<Token> { new Token(TokenType.Keyword, BoundaryKeyword) };
+        return new List<Token> { new Token(TokenType.Command, BoundaryKeyword) };
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

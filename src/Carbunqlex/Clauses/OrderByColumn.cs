@@ -31,7 +31,7 @@ public class OrderByColumn : ISqlComponent
         tokens.AddRange(Column.GenerateTokensWithoutCte());
         if (!Ascending)
         {
-            tokens.Add(new Token(TokenType.Keyword, "desc"));
+            tokens.Add(new Token(TokenType.Command, "desc"));
         }
         return tokens;
     }

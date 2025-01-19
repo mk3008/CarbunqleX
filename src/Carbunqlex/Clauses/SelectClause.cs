@@ -72,7 +72,7 @@ public class SelectClause : ISqlComponent
         int initialCapacity = Expressions.Count * 3 + 2;
         var tokens = new List<Token>(initialCapacity)
         {
-            new Token(TokenType.Keyword, "select")
+            new Token(TokenType.Command, "select")
         };
 
         tokens.AddRange(DistinctClause.GenerateTokensWithoutCte());

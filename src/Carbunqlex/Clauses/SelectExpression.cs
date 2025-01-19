@@ -34,7 +34,7 @@ public class SelectExpression : ISqlComponent
         var tokens = new List<Token>(Value.GenerateTokensWithoutCte());
         if (!string.IsNullOrEmpty(Alias) && Alias != Value.DefaultName)
         {
-            tokens.Add(new Token(TokenType.Keyword, "as"));
+            tokens.Add(new Token(TokenType.Command, "as"));
             tokens.Add(new Token(TokenType.Identifier, Alias));
         }
         return tokens;

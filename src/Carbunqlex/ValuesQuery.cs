@@ -49,7 +49,7 @@ public class ValuesQuery : ISelectQuery
     {
         int capacity = Rows.Sum(row => row.Capacity) + (Rows.Count - 1) + 1;
 
-        var tokens = new List<Token>(capacity) { new Token(TokenType.Keyword, "VALUES") };
+        var tokens = new List<Token>(capacity) { new Token(TokenType.Command, "VALUES") };
 
         for (int i = 0; i < Rows.Count; i++)
         {

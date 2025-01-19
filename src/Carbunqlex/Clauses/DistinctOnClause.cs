@@ -19,8 +19,8 @@ public class DistinctOnClause : IDistinctClause
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Keyword, "distinct");
-        yield return new Token(TokenType.Keyword, "on");
+        yield return new Token(TokenType.Command, "distinct");
+        yield return new Token(TokenType.Command, "on");
         yield return new Token(TokenType.OpenParen, "(");
 
         foreach (var lexeme in DistinctOnColumns.SelectMany(c => c.GenerateTokensWithoutCte()))

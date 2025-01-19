@@ -10,7 +10,7 @@ public enum TokenType : byte
     Comma,
     Dot,
     Identifier,
-    Keyword,
+    Command,
     Value,
     StartClause,
     EndClause,

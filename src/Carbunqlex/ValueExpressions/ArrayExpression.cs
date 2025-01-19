@@ -30,7 +30,7 @@ public class ArrayExpression : IValueExpression, IArgumentExpression
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Keyword, "array");
+        yield return new Token(TokenType.Command, "array");
         yield return new Token(TokenType.OpenBracket, "[");
         for (int i = 0; i < Elements.Count(); i++)
         {

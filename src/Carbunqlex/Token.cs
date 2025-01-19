@@ -4,7 +4,7 @@ public readonly struct Token
 {
     public static readonly Token Empty = new Token(TokenType.Unknown, string.Empty, string.Empty);
     public static readonly Token Comma = new Token(TokenType.Comma, ",");
-    public static readonly Token AsKeyword = new Token(TokenType.Keyword, "as");
+    public static readonly Token AsKeyword = new Token(TokenType.Command, "as");
 
     public Token(TokenType type, string value, string rawValue, string identifier)
     {

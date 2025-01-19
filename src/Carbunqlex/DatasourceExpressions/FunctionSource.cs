@@ -61,7 +61,7 @@ public class FunctionSource : IDatasource
     {
         var tokens = new List<Token>
         {
-            new Token(TokenType.Keyword, FunctionName),
+            new Token(TokenType.Command, FunctionName),
             new Token(TokenType.Identifier, Alias)
         };
         tokens.AddRange(Arguments.SelectMany(arg => arg.GenerateTokensWithoutCte()));

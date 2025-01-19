@@ -33,7 +33,7 @@ public class WindowExpression : ISqlComponent
         var tokens = new List<Token>
             {
                 new Token(TokenType.Identifier, Alias),
-                new Token(TokenType.Keyword, "as"),
+                new Token(TokenType.Command, "as"),
                 new Token(TokenType.OpenParen, "(", "window")
             };
 

@@ -77,7 +77,7 @@ public class UnionQuery : ISelectQuery
         // Initial capacity is set to accommodate the tokens from Left, Right, and the UnionType keyword.
         var tokens = new List<Token>(lefttokens.Count + righttokens.Count + 1);
         tokens.AddRange(lefttokens);
-        tokens.Add(new Token(TokenType.Keyword, UnionType.ToSqlString()));
+        tokens.Add(new Token(TokenType.Command, UnionType.ToSqlString()));
         tokens.AddRange(righttokens);
         return tokens;
     }
@@ -95,7 +95,7 @@ public class UnionQuery : ISelectQuery
         // Initial capacity is set to accommodate the tokens from Left, Right, and the UnionType keyword.
         var tokens = new List<Token>(lefttokens.Count + righttokens.Count + 1);
         tokens.AddRange(lefttokens);
-        tokens.Add(new Token(TokenType.Keyword, UnionType.ToSqlString()));
+        tokens.Add(new Token(TokenType.Command, UnionType.ToSqlString()));
         tokens.AddRange(righttokens);
         return tokens;
     }

@@ -47,7 +47,7 @@ public class SubQuerySource : IDatasource
         };
         tokens.AddRange(Query.GenerateTokensWithoutCte());
         tokens.Add(new Token(TokenType.CloseParen, ")"));
-        tokens.Add(new Token(TokenType.Keyword, "as"));
+        tokens.Add(new Token(TokenType.Command, "as"));
         tokens.Add(new Token(TokenType.Identifier, Alias));
         tokens.AddRange(ColumnAliasClause.GenerateTokensWithoutCte());
         return tokens;

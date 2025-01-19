@@ -87,7 +87,7 @@ public class CommonTableClause : ISqlComponent
         var materializationSql = Materialization.ToSqlString();
         if (!string.IsNullOrEmpty(materializationSql))
         {
-            tokens.Add(new Token(TokenType.Keyword, materializationSql));
+            tokens.Add(new Token(TokenType.Command, materializationSql));
         }
 
         tokens.Add(new Token(TokenType.OpenParen, "("));

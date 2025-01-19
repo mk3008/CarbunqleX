@@ -11,7 +11,7 @@ public class DistinctClause : IDistinctClause
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Keyword, "distinct");
+        yield return new Token(TokenType.Command, "distinct");
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

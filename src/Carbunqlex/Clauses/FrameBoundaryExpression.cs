@@ -32,7 +32,7 @@ public class FrameBoundaryExpression : IWindowFrameBoundaryExpression
     {
         var tokens = new List<Token>(Value.GenerateTokensWithoutCte().Count() + 1);
         tokens.AddRange(Value.GenerateTokensWithoutCte());
-        tokens.Add(new Token(TokenType.Keyword, BoundaryKeyword));
+        tokens.Add(new Token(TokenType.Command, BoundaryKeyword));
         return tokens;
     }
 

@@ -23,7 +23,7 @@ public class CaseExpressionWithCase : IValueExpression
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Keyword, "case");
+        yield return new Token(TokenType.Command, "case");
 
         foreach (var lexeme in Case.GenerateTokensWithoutCte())
         {
@@ -38,13 +38,13 @@ public class CaseExpressionWithCase : IValueExpression
             }
         }
 
-        yield return new Token(TokenType.Keyword, "else");
+        yield return new Token(TokenType.Command, "else");
         foreach (var lexeme in Else.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
 
-        yield return new Token(TokenType.Keyword, "end");
+        yield return new Token(TokenType.Command, "end");
     }
 
     public string ToSqlWithoutCte()

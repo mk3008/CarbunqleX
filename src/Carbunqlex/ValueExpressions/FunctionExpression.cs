@@ -37,7 +37,7 @@ public class FunctionExpression : IValueExpression
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Keyword, FunctionName);
+        yield return new Token(TokenType.Command, FunctionName);
         yield return new Token(TokenType.OpenParen, "(");
         foreach (var lexeme in Arguments.GenerateTokensWithoutCte())
         {

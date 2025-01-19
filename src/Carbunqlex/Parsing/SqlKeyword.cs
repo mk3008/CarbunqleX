@@ -39,15 +39,34 @@ public readonly struct SqlKeywordNode
 
 public static class SqlKeyword
 {
-    public static IReadOnlyDictionary<string, SqlKeywordNode> AllKeywords = GetKeywords();
+    public static IReadOnlyDictionary<string, SqlKeywordNode> CommandKeywords = GetCommandKeywords().ToDictionary(node => node.Keyword, node => node);
 
-    private static IReadOnlyDictionary<string, SqlKeywordNode> GetKeywords()
+    public static IReadOnlyDictionary<string, SqlKeywordNode> ConstantValueKeywords = GetConstantValueKeywordNodes().ToDictionary(node => node.Keyword, node => node);
+
+    private static List<SqlKeywordNode> GetConstantValueKeywordNodes()
     {
-        // Convert GetSelectKeywordNode to a dictionary and return
-        return GetSelectKeywordNode().ToDictionary(node => node.Keyword, node => node);
+        return SqlKeywordBuilder.Build(new[] {
+            "NULL",
+            "TRUE",
+            "FALSE",
+            "UNKNOWN",
+            "EPOCH",
+            "INFINITY",
+            "-INFINITY",
+            "NOW",
+            "TODAY",
+            "YESTERDAY",
+            "TOMORROW",
+            "ALLBALLS",
+            "CURRENT_DATE",
+            "CURRENT_TIME",
+            "CURRENT_TIMESTAMP",
+            "LOCALTIME",
+            "LOCALTIMESTAMP",
+        }.Select(x => x.ToLowerInvariant()).ToHashSet());
     }
 
-    private static List<SqlKeywordNode> GetSelectKeywordNode()
+    private static List<SqlKeywordNode> GetCommandKeywords()
     {
         return SqlKeywordBuilder.Build(new[] {
             //common
@@ -143,11 +162,6 @@ public static class SqlKeyword
             "FOR UPDATE NOWAIT",
             "NOWAIT",
             "SKIP LOCKED",
-            //constants
-            "NULL",
-            "TRUE",
-            "FALSE",
-            "UNKNOWN",
             //operators
             "AND",
             "OR",
@@ -172,21 +186,8 @@ public static class SqlKeyword
             "ANY",
             "ALL",
             //date
-            "CURRENT_DATE",
-            "CURRENT_TIME",
-            "CURRENT_TIMESTAMP",
-            "LOCALTIME",
-            "LOCALTIMESTAMP",
             "AT TIME ZONE",
             "INTERVAL",
-            "EPOCH",
-            "INFINITY",
-            "-INFINITY",
-            "NOW",
-            "TODAY",
-            "YESTERDAY",
-            "TOMORROW",
-            "ALLBALLS",
             "YEAR",
             "MONTH",
             "DAY",

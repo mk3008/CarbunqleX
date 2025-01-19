@@ -27,10 +27,10 @@ public class WindowFrame : IWindowFrame
     {
         var tokens = new List<Token>
         {
-            new Token(TokenType.Keyword, FrameType == FrameType.Rows ? "rows between" : "range between"),
+            new Token(TokenType.Command, FrameType == FrameType.Rows ? "rows between" : "range between"),
         };
         tokens.AddRange(Start.GenerateTokensWithoutCte());
-        tokens.Add(new Token(TokenType.Keyword, "and"));
+        tokens.Add(new Token(TokenType.Command, "and"));
         tokens.AddRange(End.GenerateTokensWithoutCte());
         return tokens;
     }

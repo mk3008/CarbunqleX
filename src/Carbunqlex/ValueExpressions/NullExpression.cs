@@ -14,7 +14,7 @@ public class NullExpression : IValueExpression
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Keyword, IsNegated ? "not null" : "null");
+        yield return new Token(TokenType.Command, IsNegated ? "not null" : "null");
     }
 
     public string ToSqlWithoutCte()

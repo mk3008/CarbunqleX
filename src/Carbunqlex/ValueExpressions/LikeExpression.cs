@@ -34,7 +34,7 @@ public class LikeExpression : IValueExpression
         }
         if (EscapeCharacter.HasValue)
         {
-            yield return new Token(TokenType.Keyword, "escape");
+            yield return new Token(TokenType.Command, "escape");
             yield return new Token(TokenType.Value, $"'{EscapeCharacter}'");
         }
     }

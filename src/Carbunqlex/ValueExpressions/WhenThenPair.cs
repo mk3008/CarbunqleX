@@ -29,12 +29,12 @@ public class WhenThenPair : IValueExpression
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Keyword, "when");
+        yield return new Token(TokenType.Command, "when");
         foreach (var lexeme in When.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Token(TokenType.Keyword, "then");
+        yield return new Token(TokenType.Command, "then");
         foreach (var lexeme in Then.GenerateTokensWithoutCte())
         {
             yield return lexeme;

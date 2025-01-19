@@ -24,7 +24,7 @@ public class ModifierExpression : IValueExpression
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Keyword, Modifier);
+        yield return new Token(TokenType.Command, Modifier);
         foreach (var lexeme in Value.GenerateTokensWithoutCte())
         {
             yield return lexeme;

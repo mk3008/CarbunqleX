@@ -82,7 +82,7 @@ public class TableSource : IDatasource
 
         if (!string.IsNullOrEmpty(Alias) && Alias != TableName)
         {
-            tokens.Add(new Token(TokenType.Keyword, "as"));
+            tokens.Add(new Token(TokenType.Command, "as"));
             tokens.Add(new Token(TokenType.Identifier, Alias));
         }
 

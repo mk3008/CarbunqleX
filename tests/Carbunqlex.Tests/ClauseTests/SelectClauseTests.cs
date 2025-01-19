@@ -116,7 +116,7 @@ public class SelectClauseTests(ITestOutputHelper output)
         // Assert
         var expected = new List<Token>
         {
-            new Token(TokenType.Keyword, "select"),
+            new Token(TokenType.Command, "select"),
             new Token(TokenType.Identifier, "*")
         };
         Assert.Equal(expected, tokens);

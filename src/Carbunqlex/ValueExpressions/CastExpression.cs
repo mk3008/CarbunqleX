@@ -25,13 +25,13 @@ public class CastExpression : IValueExpression
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Keyword, "CAST");
+        yield return new Token(TokenType.Command, "CAST");
         yield return new Token(TokenType.OpenParen, "(");
         foreach (var lexeme in Expression.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Token(TokenType.Keyword, "AS");
+        yield return new Token(TokenType.Command, "AS");
         yield return new Token(TokenType.Identifier, TargetType);
         yield return new Token(TokenType.CloseParen, ")");
     }
