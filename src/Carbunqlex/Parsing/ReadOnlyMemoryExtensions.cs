@@ -2,7 +2,7 @@
 
 public static class ReadOnlyMemoryExtensions
 {
-    public static Token ReadLexeme(this ReadOnlyMemory<char> memory, int start, out int end)
+    public static Token ReadLexeme(this ReadOnlyMemory<char> memory, string previousIdentifier, int start, out int end)
     {
         end = start;
         var p = start;
@@ -54,8 +54,8 @@ public static class ReadOnlyMemoryExtensions
             return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
         }
 
-        // square brackets
-        if (memory.TryReadEnclosedLexeme(p, '[', ']', out p, out lexeme))
+        // square brackets (for SQL Server)
+        if (previousIdentifier != "array" && memory.TryReadEnclosedLexeme(p, '[', ']', out p, out lexeme))
         {
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
@@ -77,6 +77,22 @@ public static class ReadOnlyMemoryExtensions
             memory.SkipWhiteSpacesAndComments(ref p);
             end = p;
             return new Token(TokenType.CloseParen, ")", string.Empty);
+        }
+
+        // open bracket
+        if (memory.StartWith("[", p, out p))
+        {
+            memory.SkipWhiteSpacesAndComments(ref p);
+            end = p;
+            return new Token(TokenType.OpenBracket, "[", string.Empty);
+        }
+
+        // close bracket
+        if (memory.StartWith("]", p, out p))
+        {
+            memory.SkipWhiteSpacesAndComments(ref p);
+            end = p;
+            return new Token(TokenType.CloseBracket, "]", string.Empty);
         }
 
         // parameter @

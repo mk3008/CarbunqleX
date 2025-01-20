@@ -16,21 +16,7 @@ public static class InExpressionParser
             _ => throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(ParserName, "'in' or 'not in'", tokenizer, token)
         };
 
-        tokenizer.Read(ParserName, TokenType.OpenParen);
-
-        var args = new List<IValueExpression>();
-
-        while (true)
-        {
-            args.Add(ValueExpressionParser.Parse(tokenizer));
-
-            token = tokenizer.Read(ParserName, TokenType.CloseParen, TokenType.Comma);
-            if (token.Type == TokenType.CloseParen)
-            {
-                break;
-            }
-            continue;
-        }
+        var args = ValueExpressionParser.ParseArguments(tokenizer, TokenType.OpenParen, TokenType.CloseParen);
 
         return new InExpression(isnNegated, left, new ValueArguments(args));
     }

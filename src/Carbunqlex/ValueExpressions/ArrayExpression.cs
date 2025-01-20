@@ -8,22 +8,22 @@ namespace Carbunqlex.ValueExpressions;
 /// </summary>
 public class ArrayExpression : IValueExpression, IArgumentExpression
 {
-    public IEnumerable<IValueExpression> Elements { get; }
+    public IArgumentExpression Arguments { get; }
 
-    public ArrayExpression(IEnumerable<IValueExpression> elements)
+    public ArrayExpression(IArgumentExpression arguments)
     {
-        Elements = elements;
+        Arguments = arguments;
     }
 
     public string DefaultName => string.Empty;
 
-    public bool MightHaveQueries => Elements.Any(element => element.MightHaveQueries);
+    public bool MightHaveQueries => Arguments.MightHaveQueries;
 
     public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         sb.Append("array[");
-        sb.Append(string.Join(", ", Elements.Select(element => element.ToSqlWithoutCte())));
+        sb.Append(Arguments.ToSqlWithoutCte());
         sb.Append("]");
         return sb.ToString();
     }
@@ -32,35 +32,20 @@ public class ArrayExpression : IValueExpression, IArgumentExpression
     {
         yield return new Token(TokenType.Command, "array");
         yield return new Token(TokenType.OpenBracket, "[");
-        for (int i = 0; i < Elements.Count(); i++)
+        foreach (var lexeme in Arguments.GenerateTokensWithoutCte())
         {
-            foreach (var lexeme in Elements.ElementAt(i).GenerateTokensWithoutCte())
-            {
-                yield return lexeme;
-            }
-            if (i < Elements.Count() - 1)
-            {
-                yield return Token.Comma;
-            }
+            yield return lexeme;
         }
         yield return new Token(TokenType.CloseBracket, "]");
     }
 
     public IEnumerable<ISelectQuery> GetQueries()
     {
-        var queries = new List<ISelectQuery>();
-        foreach (var element in Elements)
-        {
-            if (element.MightHaveQueries)
-            {
-                queries.AddRange(element.GetQueries());
-            }
-        }
-        return queries;
+        return Arguments.GetQueries();
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()
     {
-        return Elements.SelectMany(element => element.ExtractColumnExpressions());
+        return Arguments.ExtractColumnExpressions();
     }
 }

@@ -116,7 +116,7 @@ public static class ValueBuilder
     public static ArrayExpression Array(params object[] values)
     {
         var expressions = values.ToList().Select(static v => v is IValueExpression expr ? expr : Constant(v));
-        return new ArrayExpression(expressions);
+        return new ArrayExpression(new ValueArguments(expressions));
     }
 
     public static FunctionExpression Greatest(IEnumerable<object> values)

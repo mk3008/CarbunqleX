@@ -18,6 +18,8 @@ public class SqlTokenizer
 
     public bool IsEnd => Position >= Memory.Length;
 
+    public string PreviousIdentifier { get; private set; }
+
     public void CommitPeek()
     {
         if (PeekPosition == 0)
@@ -44,7 +46,7 @@ public class SqlTokenizer
         return true;
     }
 
-    public Token Peek(out int position) => Memory.ReadLexeme(Position, out position);
+    public Token Peek(out int position) => Memory.ReadLexeme(PreviousIdentifier, Position, out position);
 
     public bool TryRead(out Token token)
     {
@@ -57,7 +59,7 @@ public class SqlTokenizer
         return true;
     }
 
-    public Token Read()
+    private Token ReadCore()
     {
         // If we have a peeked token, return it and commit the peek
         if (PeekToken != null)
@@ -67,8 +69,15 @@ public class SqlTokenizer
             return cache;
         }
 
-        var token = Memory.ReadLexeme(Position, out var p);
+        var token = Memory.ReadLexeme(PreviousIdentifier, Position, out var p);
         Position = p;
+        return token;
+    }
+
+    public Token Read()
+    {
+        var token = ReadCore();
+        PreviousIdentifier = token.Identifier;
         return token;
     }
 
