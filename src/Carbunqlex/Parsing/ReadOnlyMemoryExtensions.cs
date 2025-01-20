@@ -33,7 +33,7 @@ public static class ReadOnlyMemoryExtensions
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
             end = p;
-            return new Token(TokenType.Value, lexeme, raw, string.Empty);
+            return new Token(TokenType.Constant, lexeme, raw, string.Empty);
         }
 
         // double quote
@@ -42,7 +42,7 @@ public static class ReadOnlyMemoryExtensions
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
             end = p;
-            return new Token(TokenType.Value, lexeme, raw, string.Empty);
+            return new Token(TokenType.Constant, lexeme, raw, string.Empty);
         }
 
         // back quote
@@ -51,7 +51,7 @@ public static class ReadOnlyMemoryExtensions
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
             end = p;
-            return new Token(TokenType.Value, lexeme, raw, string.Empty);
+            return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
         }
 
         // square brackets
@@ -60,7 +60,7 @@ public static class ReadOnlyMemoryExtensions
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
             end = p;
-            return new Token(TokenType.Value, lexeme, raw, string.Empty);
+            return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
         }
 
         // open parenthesis
@@ -115,7 +115,7 @@ public static class ReadOnlyMemoryExtensions
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
             end = p;
-            return new Token(TokenType.Value, lexeme, raw, string.Empty);
+            return new Token(TokenType.Operator, lexeme, raw, string.Empty);
         }
 
         // digit
@@ -167,7 +167,7 @@ public static class ReadOnlyMemoryExtensions
             {
                 var raw = memory.Slice(start, currentPosition - start).ToString();
                 end = currentPosition;
-                return new Token(tokenType, lexemeBuffer, raw, string.Empty);
+                return new Token(tokenType, lexemeBuffer, raw, lexemeBuffer);
             }
 
             // If the read lexeme does not exist in the child node

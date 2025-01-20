@@ -77,18 +77,23 @@ public interface IArgumentExpression : ISqlComponent
     IEnumerable<ColumnExpression> ExtractColumnExpressions();
 }
 
-public class ValueSet : IArgumentExpression
+public class ValueArguments : IArgumentExpression
 {
-    public List<IValueExpression> Values { get; set; }
+    public List<IValueExpression> Values { get; }
 
-    public ValueSet(params IValueExpression[] values)
+    public ValueArguments(params IValueExpression[] values)
     {
         Values = values.ToList();
     }
 
-    public ValueSet(IEnumerable<IValueExpression> values)
+    public ValueArguments(IEnumerable<IValueExpression> values)
     {
         Values = values.ToList();
+    }
+
+    public ValueArguments(List<IValueExpression> values)
+    {
+        Values = values;
     }
 
     public bool MightHaveQueries => Values.Any(v => v.MightHaveQueries);

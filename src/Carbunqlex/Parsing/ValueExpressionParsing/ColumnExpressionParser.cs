@@ -4,7 +4,7 @@ namespace Carbunqlex.Parsing.ValueExpressionParsing;
 
 public static class ColumnExpressionParser
 {
-    private static string Name => nameof(ColumnExpressionParser);
+    private static string ParserName => nameof(ColumnExpressionParser);
 
     public static ColumnExpression Parse(SqlTokenizer tokenizer)
     {
@@ -12,25 +12,16 @@ public static class ColumnExpressionParser
 
         while (true)
         {
-            if (!tokenizer.TryPeek(out var token))
-            {
-                throw SqlParsingExceptionBuilder.EndOfInput(Name, tokenizer);
-            }
-
-            if (token.Type != TokenType.Identifier)
-            {
-                throw SqlParsingExceptionBuilder.UnexpectedTokenType(Name, TokenType.Identifier, tokenizer, token);
-            }
-
+            var token = tokenizer.Read(ParserName, TokenType.Identifier);
             values.Add(token.Value);
-            tokenizer.CommitPosition();
+            tokenizer.CommitPeek();
 
-            if (!tokenizer.TryPeek(out var nextToken) || nextToken.Type != TokenType.Dot)
+            if (tokenizer.TryPeek(out var nextToken) && nextToken.Type == TokenType.Dot)
             {
-                break;
+                tokenizer.CommitPeek();
+                continue;
             }
-
-            tokenizer.CommitPosition();
+            break;
         }
 
         if (values.Count == 1)

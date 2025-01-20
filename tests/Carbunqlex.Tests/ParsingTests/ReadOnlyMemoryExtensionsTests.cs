@@ -37,7 +37,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("'test'".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Value, token.Type);
+        Assert.Equal(TokenType.Constant, token.Type);
         Assert.Equal("'test'", token.Value);
         Assert.Equal(6, end);
     }
@@ -47,7 +47,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("\"test\"".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Value, token.Type);
+        Assert.Equal(TokenType.Constant, token.Type);
         Assert.Equal("\"test\"", token.Value);
         Assert.Equal(6, end);
     }
@@ -57,7 +57,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("`test`".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Value, token.Type);
+        Assert.Equal(TokenType.Identifier, token.Type);
         Assert.Equal("`test`", token.Value);
         Assert.Equal(6, end);
     }
@@ -67,7 +67,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("[test]".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Value, token.Type);
+        Assert.Equal(TokenType.Identifier, token.Type);
         Assert.Equal("[test]", token.Value);
         Assert.Equal(6, end);
     }
@@ -127,7 +127,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("!@#".ToCharArray());
         var token = memory.ReadLexeme(0, out int end);
-        Assert.Equal(TokenType.Value, token.Type);
+        Assert.Equal(TokenType.Operator, token.Type);
         Assert.Equal("!@#", token.Value);
         Assert.Equal(3, end);
     }

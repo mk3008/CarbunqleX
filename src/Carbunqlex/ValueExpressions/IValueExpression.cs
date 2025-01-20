@@ -131,7 +131,7 @@ public static class IValueExpressionExtensions
     }
 
     public static FunctionExpression Greatest(this IValueExpression left, params IValueExpression[] values) =>
-        Greatest(left, new ValueSet(values));
+        Greatest(left, new ValueArguments(values));
 
     public static FunctionExpression Least(this IValueExpression left, params object[] values)
     {
@@ -139,5 +139,5 @@ public static class IValueExpressionExtensions
     }
 
     public static FunctionExpression Least(this IValueExpression left, params IValueExpression[] values) =>
-        Least(left, new ValueSet(values));
+        Least(left, new ValueArguments(values));
 }

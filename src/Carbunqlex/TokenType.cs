@@ -11,7 +11,7 @@ public enum TokenType : byte
     Dot,
     Identifier,
     Command,
-    Value,
+    //Value,
     StartClause,
     EndClause,
     Parameter,

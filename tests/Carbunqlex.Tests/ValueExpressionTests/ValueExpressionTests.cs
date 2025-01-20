@@ -97,7 +97,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var left = new ColumnExpression("TableName", "ColumnName");
         var right1 = new ConstantExpression(1);
         var right2 = new ConstantExpression(2);
-        var inExpression = ValueBuilder.In(left, new ValueSet(right1, right2));
+        var inExpression = ValueBuilder.In(left, new ValueArguments(right1, right2));
         var sql = inExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("TableName.ColumnName in (1, 2)", sql);
@@ -109,7 +109,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var left = new ColumnExpression("TableName", "ColumnName");
         var right1 = new ConstantExpression(1);
         var right2 = new ConstantExpression(2);
-        var inExpression = ValueBuilder.NotIn(left, new ValueSet(right1, right2));
+        var inExpression = ValueBuilder.NotIn(left, new ValueArguments(right1, right2));
         var sql = inExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("TableName.ColumnName not in (1, 2)", sql);
