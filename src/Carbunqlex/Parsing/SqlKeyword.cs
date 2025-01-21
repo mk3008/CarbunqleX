@@ -202,8 +202,8 @@ public static class SqlKeyword
             "HOUR TO SECOND",
             "MINUTE TO SECOND",
             // case
-            "CASE",
-            "CASE WHEN",
+            "CASE", // 'case when' is not a keyword. 'case' and 'when' are managed separately.
+            "WHEN",
             "THEN",
             "ELSE",
             "END",

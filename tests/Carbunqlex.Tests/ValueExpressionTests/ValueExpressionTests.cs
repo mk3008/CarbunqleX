@@ -171,11 +171,11 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var then2 = ValueBuilder.Constant("Two");
         var elseExpr = ValueBuilder.Constant("Other");
 
-        var caseExpression = new CaseExpressionWithoutCase(
-            new List<WhenThenPair>
+        var caseExpression = new CaseWhenExpression(
+            new List<WhenClause>
             {
-                new WhenThenPair(when1, then1),
-                new WhenThenPair(when2, then2)
+                new WhenClause(when1, then1),
+                new WhenClause(when2, then2)
             },
             elseExpr
         );
@@ -195,12 +195,12 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var then2 = ValueBuilder.Constant("Two");
         var elseExpr = ValueBuilder.Constant("Other");
 
-        var caseExpression = new CaseExpressionWithCase(
+        var caseExpression = new CaseExpression(
             caseExpr,
-            new List<WhenThenPair>
+            new List<WhenClause>
             {
-                new WhenThenPair(when1, then1),
-                new WhenThenPair(when2, then2)
+                new WhenClause(when1, then1),
+                new WhenClause(when2, then2)
             },
             elseExpr
         );

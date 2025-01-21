@@ -2,40 +2,40 @@
 
 namespace Carbunqlex.ValueExpressions;
 
-public class WhenThenPair : IValueExpression
+public class WhenClause : IValueExpression
 {
-    public IValueExpression When { get; }
-    public IValueExpression Then { get; }
+    public IValueExpression WhenValue { get; }
+    public IValueExpression ThenValue { get; }
 
-    public WhenThenPair(IValueExpression when, IValueExpression then)
+    public WhenClause(IValueExpression when, IValueExpression then)
     {
-        When = when;
-        Then = then;
+        WhenValue = when;
+        ThenValue = then;
     }
 
     public string DefaultName => string.Empty;
 
-    public bool MightHaveQueries => When.MightHaveQueries || Then.MightHaveQueries;
+    public bool MightHaveQueries => WhenValue.MightHaveQueries || ThenValue.MightHaveQueries;
 
     public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         sb.Append("when ");
-        sb.Append(When.ToSqlWithoutCte());
+        sb.Append(WhenValue.ToSqlWithoutCte());
         sb.Append(" then ");
-        sb.Append(Then.ToSqlWithoutCte());
+        sb.Append(ThenValue.ToSqlWithoutCte());
         return sb.ToString();
     }
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
         yield return new Token(TokenType.Command, "when");
-        foreach (var lexeme in When.GenerateTokensWithoutCte())
+        foreach (var lexeme in WhenValue.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
         yield return new Token(TokenType.Command, "then");
-        foreach (var lexeme in Then.GenerateTokensWithoutCte())
+        foreach (var lexeme in ThenValue.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
@@ -45,13 +45,13 @@ public class WhenThenPair : IValueExpression
     {
         var queries = new List<ISelectQuery>();
 
-        if (When.MightHaveQueries)
+        if (WhenValue.MightHaveQueries)
         {
-            queries.AddRange(When.GetQueries());
+            queries.AddRange(WhenValue.GetQueries());
         }
-        if (Then.MightHaveQueries)
+        if (ThenValue.MightHaveQueries)
         {
-            queries.AddRange(Then.GetQueries());
+            queries.AddRange(ThenValue.GetQueries());
         }
 
         return queries;
@@ -61,8 +61,8 @@ public class WhenThenPair : IValueExpression
     {
         var columns = new List<ColumnExpression>();
 
-        columns.AddRange(When.ExtractColumnExpressions());
-        columns.AddRange(Then.ExtractColumnExpressions());
+        columns.AddRange(WhenValue.ExtractColumnExpressions());
+        columns.AddRange(ThenValue.ExtractColumnExpressions());
 
         return columns;
     }
