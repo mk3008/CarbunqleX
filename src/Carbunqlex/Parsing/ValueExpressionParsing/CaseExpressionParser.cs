@@ -1,4 +1,5 @@
-﻿using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Clauses;
+using Carbunqlex.ValueExpressions;
 
 namespace Carbunqlex.Parsing.ValueExpressionParsing;
 
@@ -10,14 +11,10 @@ public static class CaseExpressionParser
     {
         tokenizer.Read(ParserName, "case");
 
-        if (!tokenizer.TryPeek(out var expression))
+        var caseValue = tokenizer.Peek(token =>
         {
-            throw SqlParsingExceptionBuilder.EndOfInput(ParserName, tokenizer);
-        }
-
-        var caseValue = expression.Identifier == "when"
-            ? null
-            : ValueExpressionParser.Parse(tokenizer);
+            return token.Identifier == "when" ? null : ValueExpressionParser.Parse(tokenizer);
+        }, null);
 
         var whenClauses = ParseWhenThenPair(tokenizer).ToList();
 

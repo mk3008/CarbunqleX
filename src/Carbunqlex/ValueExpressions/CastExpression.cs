@@ -20,18 +20,18 @@ public class CastExpression : IValueExpression
 
     public string ToSqlWithoutCte()
     {
-        return $"CAST({Expression.ToSqlWithoutCte()} AS {TargetType})";
+        return $"cast({Expression.ToSqlWithoutCte()} as {TargetType})";
     }
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Command, "CAST");
+        yield return new Token(TokenType.Command, "cast");
         yield return new Token(TokenType.OpenParen, "(");
         foreach (var lexeme in Expression.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-        yield return new Token(TokenType.Command, "AS");
+        yield return new Token(TokenType.Command, "as");
         yield return new Token(TokenType.Identifier, TargetType);
         yield return new Token(TokenType.CloseParen, ")");
     }
@@ -39,11 +39,6 @@ public class CastExpression : IValueExpression
     public IEnumerable<ISelectQuery> GetQueries()
     {
         return Expression.GetQueries();
-    }
-
-    public override string ToString()
-    {
-        return $"CAST({Expression} AS {TargetType})";
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()

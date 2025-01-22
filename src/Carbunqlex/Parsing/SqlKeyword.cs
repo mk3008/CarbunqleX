@@ -123,6 +123,9 @@ public static class SqlKeyword
             "GROUP BY DISTINCT",
             "HAVING",
             "WINDOW",
+            "OVER",
+            "FILTER",
+            "WITHIN GROUP",
             //set
             "UNION",
             "UNION ALL",
@@ -201,6 +204,8 @@ public static class SqlKeyword
             "HOUR TO MINUTE",
             "HOUR TO SECOND",
             "MINUTE TO SECOND",
+            // cast
+            "CAST",
             // case
             "CASE", // 'case when' is not a keyword. 'case' and 'when' are managed separately.
             "WHEN",

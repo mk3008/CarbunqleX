@@ -5,13 +5,20 @@
         /// <summary>
         /// Defines a set of characters considered as symbols that terminate an identifier.
         /// </summary>
+        private static readonly HashSet<char> CharacterSymbols = new HashSet<char>
+        {
+            '(', ')', '[', ']', '{', '}', // Brackets and braces
+            '`', '"', '\'' // Quotation marks
+        };
+
+        /// <summary>
+        /// Defines a set of characters considered as symbols that terminate an identifier.
+        /// </summary>
         private static readonly HashSet<char> Symbols = new HashSet<char>
         {
             '+', '-', '*', '/', '%', // Arithmetic operators
-            '(', ')', '[', ']', '{', '}', // Brackets and braces
             '~', '@', '#', '$', '^', '&', // Special symbols
             '!', '?', ':', ';', ',', '.', '<', '>', '=', '|', '\\', // Other symbols
-            '`', '"', '\'' // Quotation marks
         };
 
         private static readonly HashSet<char> WhiteSpaces = new HashSet<char>
@@ -42,7 +49,12 @@
             return WhiteSpaces.Contains(c);
         }
 
-        public static bool IsSymbols(this char c)
+        public static bool IsSingleSymbols(this char c)
+        {
+            return CharacterSymbols.Contains(c);
+        }
+
+        public static bool IsMultipleSymbols(this char c)
         {
             return Symbols.Contains(c);
         }

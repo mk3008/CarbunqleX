@@ -29,8 +29,13 @@ public static class SqlParsingExceptionBuilder
         return new SqlParsingException($"Unexpected token identifier encountered. Expected: {expectedIdentifier}, Actual: {actualToken.Identifier}, Position: {tokenizer.Position}", parser, tokenizer.Position, actualToken);
     }
 
-    internal static Exception UnexpectedTokenType(string sender, TokenType[] expectedTokenTypes, SqlTokenizer sqlTokenizer, Token token)
+    public static Exception UnexpectedTokenType(string sender, TokenType[] expectedTokenTypes, SqlTokenizer sqlTokenizer, Token token)
     {
         return new SqlParsingException($"Unexpected token type encountered. Expected: {string.Join(" or ", expectedTokenTypes)}, Actual: {token.Type}, Position: {sqlTokenizer.Position}", sender, sqlTokenizer.Position, token);
+    }
+
+    public static Exception UnexpectedToken(string sender, string[] expectedTokens, SqlTokenizer sqlTokenizer, Token token)
+    {
+        return new SqlParsingException($"Unexpected token encountered. Expected: {string.Join(" or ", expectedTokens)}, Actual: {token.Type}, Position: {sqlTokenizer.Position}", sender, sqlTokenizer.Position, token);
     }
 }

@@ -81,6 +81,8 @@ public class ValueArguments : IArgumentExpression
 {
     public List<IValueExpression> Values { get; }
 
+    public OrderByClause? OrderByClause { get; set; }
+
     public ValueArguments(params IValueExpression[] values)
     {
         Values = values.ToList();
@@ -100,7 +102,13 @@ public class ValueArguments : IArgumentExpression
 
     public string ToSqlWithoutCte()
     {
-        return string.Join(", ", Values.Select(v => v.ToSqlWithoutCte()));
+        var sb = new StringBuilder();
+        sb.Append(string.Join(", ", Values.Select(v => v.ToSqlWithoutCte())));
+        if (OrderByClause != null)
+        {
+            sb.Append(" ").Append(OrderByClause.ToSqlWithoutCte());
+        }
+        return sb.ToString();
     }
 
     public IEnumerable<Token> GenerateTokensWithoutCte()

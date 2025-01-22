@@ -1,6 +1,7 @@
-﻿using System.Text;
+﻿using Carbunqlex.ValueExpressions;
+using System.Text;
 
-namespace Carbunqlex.ValueExpressions;
+namespace Carbunqlex.Clauses;
 
 public class WhenClause : IValueExpression
 {

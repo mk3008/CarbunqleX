@@ -6,23 +6,10 @@ public static class ColumnExpressionParser
 {
     private static string ParserName => nameof(ColumnExpressionParser);
 
-    public static ColumnExpression Parse(SqlTokenizer tokenizer)
+    public static ColumnExpression Parse(SqlTokenizer tokenizer, Token identifier)
     {
-        var values = new List<string>();
-
-        while (true)
-        {
-            var token = tokenizer.Read(ParserName, TokenType.Identifier);
-            values.Add(token.Value);
-            tokenizer.CommitPeek();
-
-            if (tokenizer.TryPeek(out var nextToken) && nextToken.Type == TokenType.Dot)
-            {
-                tokenizer.CommitPeek();
-                continue;
-            }
-            break;
-        }
+        var values = new List<string>() { identifier.Value };
+        values.AddRange(ReadValues(tokenizer));
 
         if (values.Count == 1)
         {
@@ -34,5 +21,15 @@ public static class ColumnExpressionParser
         var columnName = values[^1];
         var namespaces = values.GetRange(0, values.Count - 1);
         return new ColumnExpression(namespaces, columnName);
+    }
+
+    private static IEnumerable<string> ReadValues(SqlTokenizer tokenizer)
+    {
+        while (tokenizer.TryPeek(out var nextToken) && nextToken.Type == TokenType.Dot)
+        {
+            tokenizer.CommitPeek();
+            var token = tokenizer.Read(ParserName, TokenType.Identifier);
+            yield return token.Value;
+        }
     }
 }

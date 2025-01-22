@@ -7,6 +7,7 @@ public class SqlTokenizer
     public SqlTokenizer(string sql)
     {
         Memory = sql.AsMemory();
+        PreviousIdentifier = string.Empty;
     }
 
     private ReadOnlyMemory<char> Memory { get; }
@@ -44,6 +45,24 @@ public class SqlTokenizer
         }
         token = PeekToken.Value;
         return true;
+    }
+
+    public T Peek<T>(Func<Token, T> action)
+    {
+        if (TryPeek(out var token))
+        {
+            return action(token);
+        }
+        throw SqlParsingExceptionBuilder.EndOfInput(nameof(SqlTokenizer), this);
+    }
+
+    public T Peek<T>(Func<Token, T> action, T defaultValue)
+    {
+        if (TryPeek(out var token))
+        {
+            return action(token);
+        }
+        return defaultValue;
     }
 
     public Token Peek(out int position) => Memory.ReadLexeme(PreviousIdentifier, Position, out position);
@@ -94,6 +113,18 @@ public class SqlTokenizer
         throw SqlParsingExceptionBuilder.EndOfInput(sender, this);
     }
 
+    public T Read<T>(string sender, Func<Token, T> action)
+    {
+        var token = Read(sender);
+        return action(token);
+    }
+
+    public T Read<T>(string sender, TokenType expectedTokenType, Func<Token, T> action)
+    {
+        var token = Read(sender, expectedTokenType);
+        return action(token);
+    }
+
     public Token Read(string sender, TokenType expectedTokenType)
     {
         if (TryRead(out var token))
@@ -102,6 +133,7 @@ public class SqlTokenizer
             {
                 return token;
             }
+
             throw SqlParsingExceptionBuilder.UnexpectedTokenType(sender, expectedTokenType, this, token);
         }
         throw SqlParsingExceptionBuilder.EndOfInput(sender, this);

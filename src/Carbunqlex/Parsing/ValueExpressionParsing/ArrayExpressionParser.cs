@@ -10,8 +10,8 @@ public static class ArrayExpressionParser
     {
         var command = tokenizer.Read(ParserName, "array");
 
-        var args = ValueExpressionParser.ParseArguments(tokenizer, TokenType.OpenBracket, TokenType.CloseBracket);
+        var args = ValueArgumentsParser.Parse(tokenizer, TokenType.OpenBracket, TokenType.CloseBracket);
 
-        return new ArrayExpression(new ValueArguments(args));
+        return new ArrayExpression(args);
     }
 }

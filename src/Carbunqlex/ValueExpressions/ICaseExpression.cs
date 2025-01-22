@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Clauses;
+
+namespace Carbunqlex.ValueExpressions;
 
 public interface ICaseExpression : IValueExpression
 {

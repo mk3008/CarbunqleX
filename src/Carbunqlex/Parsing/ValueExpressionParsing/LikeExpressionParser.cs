@@ -8,15 +8,24 @@ public static class LikeExpressionParser
 
     public static LikeExpression Parse(SqlTokenizer tokenizer, IValueExpression left)
     {
-        var token = tokenizer.Read(ParserName, TokenType.Command);
-        var isnNegated = token.Identifier switch
+        var isnNegated = tokenizer.Read(ParserName, TokenType.Command, token =>
         {
-            "like" => false,
-            "not like" => true,
-            _ => throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(ParserName, "'like' or 'not like'", tokenizer, token)
-        };
+            return token.Identifier switch
+            {
+                "like" => false,
+                "not like" => true,
+                _ => throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(ParserName, "'like' or 'not like'", tokenizer, token)
+            };
+        });
 
         var right = ValueExpressionParser.Parse(tokenizer);
+
+        if (tokenizer.Peek(t => t.Identifier == "escape" ? true : false, false))
+        {
+            tokenizer.CommitPeek();
+            var escapeOption = tokenizer.Read(ParserName, TokenType.Constant).Value;
+            return new LikeExpression(isnNegated, left, right, escapeOption);
+        }
 
         return new LikeExpression(isnNegated, left, right);
     }

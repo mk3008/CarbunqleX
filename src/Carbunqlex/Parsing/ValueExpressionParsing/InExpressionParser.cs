@@ -8,16 +8,18 @@ public static class InExpressionParser
 
     public static InExpression Parse(SqlTokenizer tokenizer, IValueExpression left)
     {
-        var token = tokenizer.Read(ParserName, TokenType.Command);
-        var isnNegated = token.Identifier switch
+        var isnNegated = tokenizer.Read(ParserName, TokenType.Command, token =>
         {
-            "in" => false,
-            "not in" => true,
-            _ => throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(ParserName, "'in' or 'not in'", tokenizer, token)
-        };
+            return token.Identifier switch
+            {
+                "in" => false,
+                "not in" => true,
+                _ => throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(ParserName, "'in' or 'not in'", tokenizer, token)
+            };
+        });
 
-        var args = ValueExpressionParser.ParseArguments(tokenizer, TokenType.OpenParen, TokenType.CloseParen);
+        var args = ValueArgumentsParser.Parse(tokenizer, TokenType.OpenParen, TokenType.CloseParen);
 
-        return new InExpression(isnNegated, left, new ValueArguments(args));
+        return new InExpression(isnNegated, left, args);
     }
 }

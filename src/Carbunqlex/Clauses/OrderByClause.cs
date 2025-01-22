@@ -13,6 +13,11 @@ public class OrderByClause : IOrderByClause
         OrderByColumns = orderByColumns.ToList();
     }
 
+    public OrderByClause(List<OrderByColumn> orderByColumns)
+    {
+        OrderByColumns = orderByColumns;
+    }
+
     public string ToSqlWithoutCte()
     {
         if (OrderByColumns.Count == 0)

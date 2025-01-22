@@ -9,11 +9,6 @@ public static class ValueExpressionParser
 
     public static IValueExpression Parse(SqlTokenizer tokenizer)
     {
-        if (!tokenizer.TryPeek(out var token))
-        {
-            throw SqlParsingExceptionBuilder.EndOfInput(ParserName, tokenizer); ;
-        }
-
         var current = ParseAsCurrent(tokenizer);
 
         while (TryParseFollowingExpression(tokenizer, current, out var nextExpression))
@@ -42,9 +37,11 @@ public static class ValueExpressionParser
             {
                 return CaseExpressionParser.Parse(tokenizer); ;
             }
-
+            if (token.Identifier == "cast")
+            {
+                return CastExpressionParser.Parse(tokenizer);
+            }
             return ModifierExpressionParser.Parse(tokenizer);
-
         }
 
         // constant
@@ -53,10 +50,31 @@ public static class ValueExpressionParser
             return ConstantExpressionParser.Parse(tokenizer);
         }
 
-        // column or table identifier
         if (token.Type == TokenType.Identifier)
         {
-            return ColumnExpressionParser.Parse(tokenizer);
+            tokenizer.CommitPeek();
+
+            // function
+            if (tokenizer.TryPeek(out var nextToken) && nextToken.Type == TokenType.OpenParen)
+            {
+                return FunctionExpressionParser.Parse(tokenizer, token);
+            }
+
+            // table.column
+            if (tokenizer.TryPeek(out var nextToken2) && nextToken2.Type == TokenType.Dot)
+            {
+                return ColumnExpressionParser.Parse(tokenizer, token);
+            }
+
+            // column
+            return ColumnExpressionParser.Parse(tokenizer, token);
+        }
+
+        if (token.Type == TokenType.Operator && token.Value == "*")
+        {
+            // not operator, but wildcard
+            tokenizer.CommitPeek();
+            return ColumnExpressionParser.Parse(tokenizer, token);
         }
 
         throw SqlParsingExceptionBuilder.UnexpectedTokenType(ParserName, TokenType.Identifier, tokenizer, token);
@@ -107,6 +125,7 @@ public static class ValueExpressionParser
         return false;
     }
 
+    [Obsolete("Use ParseArguments instead.")]
     public static IEnumerable<IValueExpression> ParseArguments(SqlTokenizer tokenizer, TokenType openTokenType, TokenType closeTokenType)
     {
         tokenizer.Read(ParserName, openTokenType);

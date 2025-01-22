@@ -394,13 +394,22 @@ public static class ReadOnlyMemoryExtensions
     {
         endPosition = start;
         var p = start;
-        if (!memory.Span[p].IsSymbols())
+
+        if (memory.Span[p].IsSingleSymbols())
+        {
+            p++;
+            lexeme = memory.Slice(start, p - start).ToString();
+            endPosition = p;
+            return true;
+        }
+
+        if (!memory.Span[p].IsMultipleSymbols())
         {
             lexeme = string.Empty;
             return false;
         }
         p++;
-        while (p < memory.Length && memory.Span[p].IsSymbols())
+        while (p < memory.Length && memory.Span[p].IsMultipleSymbols())
         {
             p++;
         }
@@ -447,13 +456,13 @@ public static class ReadOnlyMemoryExtensions
             return false;
         }
 
-        if (memory.Span[p].IsWhiteSpace() || memory.Span[p].IsSymbols())
+        if (memory.Span[p].IsWhiteSpace() || memory.Span[p].IsSingleSymbols() || memory.Span[p].IsMultipleSymbols())
         {
             word = string.Empty;
             return false;
         }
 
-        while (p < memory.Length && !memory.Span[p].IsWhiteSpace() && !memory.Span[p].IsSymbols())
+        while (p < memory.Length && !memory.Span[p].IsWhiteSpace() && !memory.Span[p].IsSingleSymbols() && !memory.Span[p].IsMultipleSymbols())
         {
             p++;
         }

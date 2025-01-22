@@ -84,27 +84,27 @@ public static class ValueBuilder
 
     public static BinaryExpression Any(IValueExpression left, IArgumentExpression arguments)
     {
-        return new BinaryExpression("=", left, new FunctionExpression("any", arguments));
+        return new BinaryExpression("=", left, new FunctionExpression("any", string.Empty, arguments));
     }
 
     public static BinaryExpression Any(IValueExpression left, params object[] values)
     {
-        return new BinaryExpression("=", left, new FunctionExpression("any", Array(values)));
+        return new BinaryExpression("=", left, new FunctionExpression("any", string.Empty, Array(values)));
     }
 
     public static BinaryExpression Any(IValueExpression left, ISelectQuery scalarSubQuery)
     {
-        return new BinaryExpression("=", left, new FunctionExpression("any", new ScalarSubquery(scalarSubQuery)));
+        return new BinaryExpression("=", left, new FunctionExpression("any", string.Empty, new ScalarSubquery(scalarSubQuery)));
     }
 
     public static FunctionExpression Function(string functionName, IEnumerable<IValueExpression> arguments, OverClause? overClause = null)
     {
-        return new FunctionExpression(functionName, new ValueArguments(arguments), overClause);
+        return new FunctionExpression(functionName, string.Empty, new ValueArguments(arguments), overClause);
     }
 
     public static FunctionExpression Function(string functionName, params IValueExpression[] arguments)
     {
-        return new FunctionExpression(functionName, new ValueArguments(arguments));
+        return new FunctionExpression(functionName, string.Empty, new ValueArguments(arguments));
     }
 
     public static ValueArguments ConstantSet(params object[] values)
@@ -122,37 +122,37 @@ public static class ValueBuilder
     public static FunctionExpression Greatest(IEnumerable<object> values)
     {
         var expressions = values.Select(v => v is IValueExpression expr ? expr : Constant(v));
-        return new FunctionExpression("greatest", new ValueArguments(expressions));
+        return new FunctionExpression("greatest", string.Empty, new ValueArguments(expressions));
     }
 
     public static FunctionExpression Greatest(params object[] values)
     {
         var expressions = values.Select(v => v is IValueExpression expr ? expr : Constant(v));
-        return new FunctionExpression("greatest", new ValueArguments(expressions));
+        return new FunctionExpression("greatest", string.Empty, new ValueArguments(expressions));
     }
 
     public static FunctionExpression Least(IEnumerable<object> values)
     {
         var expressions = values.Select(v => v is IValueExpression expr ? expr : Constant(v));
-        return new FunctionExpression("least", new ValueArguments(expressions));
+        return new FunctionExpression("least", string.Empty, new ValueArguments(expressions));
     }
 
     public static FunctionExpression Least(params object[] values)
     {
         var expressions = values.Select(v => v is IValueExpression expr ? expr : Constant(v));
-        return new FunctionExpression("least", new ValueArguments(expressions));
+        return new FunctionExpression("least", string.Empty, new ValueArguments(expressions));
     }
 
     public static FunctionExpression Coalesce(IEnumerable<object> values)
     {
         var expressions = values.Select(v => v is IValueExpression expr ? expr : Constant(v));
-        return new FunctionExpression("coalesce", new ValueArguments(expressions));
+        return new FunctionExpression("coalesce", string.Empty, new ValueArguments(expressions));
     }
 
     public static FunctionExpression Coalesce(params object[] values)
     {
         var expressions = values.Select(v => v is IValueExpression expr ? expr : Constant(v));
-        return new FunctionExpression("coalesce", new ValueArguments(expressions));
+        return new FunctionExpression("coalesce", string.Empty, new ValueArguments(expressions));
     }
 
     public static IValueExpression Keyword(string v)

@@ -3,15 +3,90 @@ using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
+public class FilterClause : ISqlComponent
+{
+    public IValueExpression Condition { get; set; }
+
+    public FilterClause(IValueExpression condition)
+    {
+        Condition = condition;
+    }
+
+    public string ToSqlWithoutCte()
+    {
+        return $"filter (where {Condition.ToSqlWithoutCte()})";
+    }
+
+    public IEnumerable<Token> GenerateTokensWithoutCte()
+    {
+        return new[]
+        {
+            new Token(TokenType.StartClause, "filter", "filter"),
+            new Token(TokenType.OpenParen, "("),
+            new Token(TokenType.Command, "where"),
+        }.Concat(Condition.GenerateTokensWithoutCte())
+        .Append(new Token(TokenType.CloseParen, ")"))
+        .Append(new Token(TokenType.EndClause, string.Empty, "filter"));
+    }
+
+    public IEnumerable<ISelectQuery> GetQueries()
+    {
+        return Condition.MightHaveQueries ? Condition.GetQueries() : Enumerable.Empty<ISelectQuery>();
+    }
+}
+
+public class WithinGroupClause : ISqlComponent
+{
+    public IOrderByClause OrderByClause { get; set; }
+
+    public WithinGroupClause(IOrderByClause orderByClause)
+    {
+        OrderByClause = orderByClause;
+    }
+
+    public string ToSqlWithoutCte()
+    {
+        return $"within group ({OrderByClause.ToSqlWithoutCte()})";
+    }
+
+    public IEnumerable<Token> GenerateTokensWithoutCte()
+    {
+        return new[]
+        {
+            new Token(TokenType.StartClause, "within group", "within group"),
+            new Token(TokenType.OpenParen, "("),
+        }.Concat(OrderByClause.GenerateTokensWithoutCte())
+        .Append(new Token(TokenType.CloseParen, ")"))
+        .Append(new Token(TokenType.EndClause, string.Empty, "within group"));
+    }
+
+    public IEnumerable<ISelectQuery> GetQueries()
+    {
+        return OrderByClause.MightHaveQueries ? OrderByClause.GetQueries() : Enumerable.Empty<ISelectQuery>();
+    }
+}
+
 public class FunctionExpression : IValueExpression
 {
     public IArgumentExpression Arguments { get; set; }
     public string FunctionName { get; set; }
     public OverClause? OverClause { get; set; }
 
-    public FunctionExpression(string functionName, IArgumentExpression arguments, OverClause? overClause = null)
+    public FilterClause? FilterClause { get; set; }
+
+    public WithinGroupClause? WithinGroupClause { get; set; }
+
+    /// <summary>
+    /// Prefix to be added to the function name.e.g. "distinct"
+    /// </summary>
+    public string PrefixModifier { get; set; }
+
+
+
+    public FunctionExpression(string functionName, string prefixModifier, IArgumentExpression arguments, OverClause? overClause = null)
     {
         FunctionName = functionName;
+        PrefixModifier = prefixModifier;
         Arguments = arguments;
         OverClause = overClause;
     }
