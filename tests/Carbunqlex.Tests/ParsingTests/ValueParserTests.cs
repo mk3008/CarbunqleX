@@ -14,7 +14,7 @@ public class ValueParserTests
     private ITestOutputHelper Output { get; }
 
     [Fact]
-    public void Parse_BetweenExpression_ReturnsCorrectExpression()
+    public void Parse_ReturnsCorrectExpression()
     {
         // Arrange
         var tokenizer = new SqlTokenizer("'test'");
@@ -22,6 +22,31 @@ public class ValueParserTests
         // Act
         var result = ValueExpressionParser.Parse(tokenizer);
         Output.WriteLine(result.ToSqlWithoutCte());
+    }
 
+    [Fact]
+    public void Parse_HandlesIsNullExpression()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("column is null");
+
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+
+        Assert.Equal("column is null", result.ToSqlWithoutCte());
+    }
+
+    [Fact]
+    public void Parse_HandlesIsNotNullExpression()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("column is not null");
+
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+
+        Assert.Equal("column is not null", result.ToSqlWithoutCte());
     }
 }

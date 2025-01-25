@@ -32,7 +32,7 @@ public class BetweenExpression : IValueExpression
         {
             yield return lexeme;
         }
-        yield return new Token(TokenType.Operator, "and");
+        yield return new Token(TokenType.Command, "and");
         foreach (var lexeme in End.GenerateTokensWithoutCte())
         {
             yield return lexeme;

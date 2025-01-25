@@ -18,7 +18,8 @@ public static class BetweenExpressionParser
             };
         });
 
-        var start = ValueExpressionParser.Parse(tokenizer);
+        // In the case of "between", "and" should not be treated as an operator
+        var start = ValueExpressionParser.Parse(tokenizer, ["and"]);
         tokenizer.Read(ParserName, "and");
         var end = ValueExpressionParser.Parse(tokenizer);
         return new BetweenExpression(isNegated, left, start, end);

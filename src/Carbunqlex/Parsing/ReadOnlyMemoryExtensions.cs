@@ -150,13 +150,16 @@ public static class ReadOnlyMemoryExtensions
 
             var normalized = lexeme.ToLower();
 
-            // Prioritize constant determination
-            if (SqlKeyword.ConstantValueKeywords.ContainsKey(normalized))
+            if (SqlKeyword.OperatorKeywordNodes.ContainsKey(normalized))
+            {
+                var node = SqlKeyword.OperatorKeywordNodes[normalized];
+                return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Operator, node, out end);
+            }
+            else if (SqlKeyword.ConstantValueKeywords.ContainsKey(normalized))
             {
                 var node = SqlKeyword.ConstantValueKeywords[normalized];
                 return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Constant, node, out end);
             }
-            // If not a constant or command, treat as an identifier
             else if (!SqlKeyword.CommandKeywords.ContainsKey(normalized))
             {
                 memory.SkipWhiteSpacesAndComments(ref p);

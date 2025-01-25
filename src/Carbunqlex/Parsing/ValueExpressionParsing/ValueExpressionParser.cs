@@ -7,11 +7,11 @@ public static class ValueExpressionParser
 {
     private static string ParserName => nameof(ValueExpressionParser);
 
-    public static IValueExpression Parse(SqlTokenizer tokenizer)
+    public static IValueExpression Parse(SqlTokenizer tokenizer, string[]? ignoreOperators = null)
     {
         var current = ParseAsCurrent(tokenizer);
 
-        while (TryParseFollowingExpression(tokenizer, current, out var nextExpression))
+        while (TryParseFollowingExpression(tokenizer, ignoreOperators, current, out var nextExpression))
         {
             current = nextExpression;
         }
@@ -26,7 +26,7 @@ public static class ValueExpressionParser
             throw SqlParsingExceptionBuilder.EndOfInput(ParserName, tokenizer); ;
         }
 
-        // command (eg. array, modifier)
+        // command (e.g., array, modifier)
         if (token.Type == TokenType.Command)
         {
             if (token.Identifier == "array")
@@ -81,13 +81,14 @@ public static class ValueExpressionParser
     }
 
     /// <summary>
-    /// 次の式をパースし、新しい式を返します。
+    /// Try to parse the following expression.
     /// </summary>
     /// <param name="tokenizer"></param>
+    /// <param name="ignoreOperators"></param>
     /// <param name="left"></param>
     /// <param name="renewValue"></param>
     /// <returns></returns>
-    public static bool TryParseFollowingExpression(SqlTokenizer tokenizer, IValueExpression left, [NotNullWhen(true)] out IValueExpression renewValue)
+    public static bool TryParseFollowingExpression(SqlTokenizer tokenizer, string[]? ignoreOperators, IValueExpression left, [NotNullWhen(true)] out IValueExpression renewValue)
     {
         if (!tokenizer.TryPeek(out var nextToken))
         {
@@ -116,6 +117,14 @@ public static class ValueExpressionParser
 
         if (nextToken.Type == TokenType.Operator)
         {
+            // ignore operators
+            // In the case of "between", "and" is not treated as an operator, and if detected, break.
+            if (ignoreOperators != null && ignoreOperators.Contains(nextToken.Value))
+            {
+                renewValue = left;
+                return false;
+            }
+
             renewValue = BinaryExpressionParser.Parse(tokenizer, left);
             return true;
         }

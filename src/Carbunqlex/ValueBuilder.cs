@@ -6,9 +6,7 @@ namespace Carbunqlex;
 
 public static class ValueBuilder
 {
-    public static NullExpression Null = new NullExpression(false);
-
-    public static NullExpression NotNull = new NullExpression(true);
+    public static ConstantExpression Null = new ConstantExpression("null");
 
     public static ConstantExpression Constant(object value)
     {
