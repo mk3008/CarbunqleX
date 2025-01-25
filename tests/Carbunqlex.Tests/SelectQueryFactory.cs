@@ -399,10 +399,16 @@ public static class SelectQueryFactory
             new OrderByColumn(new ColumnExpression("ColumnName2"), ascending: false)
         );
 
-        var windowFunction = new WindowFunction(
+        var windowFunction = new NamelessWindowDefinition(
             new PartitionByClause(new ColumnExpression("ColumnName1")),
             new OrderByClause(new OrderByColumn(new ColumnExpression("ColumnName2"))),
-            new WindowFrame(WindowFrameBoundary.UnboundedPreceding, WindowFrameBoundary.CurrentRow, FrameType.Rows)
+            new WindowFrame(
+                "rows",
+                new BetweenWindowFrameBoundary(
+                    new WindowFrameBoundaryKeyword("unbounded preceding"),
+                    new WindowFrameBoundaryKeyword("current row")
+                    )
+                )
         );
 
         var windowClause = new WindowClause(new WindowExpression("w", windowFunction));

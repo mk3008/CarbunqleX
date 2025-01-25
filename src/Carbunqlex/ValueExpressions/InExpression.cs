@@ -86,16 +86,25 @@ public class ValueArguments : IArgumentExpression
     public ValueArguments(params IValueExpression[] values)
     {
         Values = values.ToList();
+        OrderByClause = null;
     }
 
     public ValueArguments(IEnumerable<IValueExpression> values)
     {
         Values = values.ToList();
+        OrderByClause = null;
     }
 
     public ValueArguments(List<IValueExpression> values)
     {
         Values = values;
+        OrderByClause = null;
+    }
+
+    public ValueArguments(List<IValueExpression> values, OrderByClause orderBy)
+    {
+        Values = values;
+        OrderByClause = orderBy;
     }
 
     public bool MightHaveQueries => Values.Any(v => v.MightHaveQueries);

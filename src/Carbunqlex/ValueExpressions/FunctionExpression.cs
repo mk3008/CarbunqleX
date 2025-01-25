@@ -3,92 +3,33 @@ using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
-public class FilterClause : ISqlComponent
-{
-    public IValueExpression Condition { get; set; }
-
-    public FilterClause(IValueExpression condition)
-    {
-        Condition = condition;
-    }
-
-    public string ToSqlWithoutCte()
-    {
-        return $"filter (where {Condition.ToSqlWithoutCte()})";
-    }
-
-    public IEnumerable<Token> GenerateTokensWithoutCte()
-    {
-        return new[]
-        {
-            new Token(TokenType.StartClause, "filter", "filter"),
-            new Token(TokenType.OpenParen, "("),
-            new Token(TokenType.Command, "where"),
-        }.Concat(Condition.GenerateTokensWithoutCte())
-        .Append(new Token(TokenType.CloseParen, ")"))
-        .Append(new Token(TokenType.EndClause, string.Empty, "filter"));
-    }
-
-    public IEnumerable<ISelectQuery> GetQueries()
-    {
-        return Condition.MightHaveQueries ? Condition.GetQueries() : Enumerable.Empty<ISelectQuery>();
-    }
-}
-
-public class WithinGroupClause : ISqlComponent
-{
-    public IOrderByClause OrderByClause { get; set; }
-
-    public WithinGroupClause(IOrderByClause orderByClause)
-    {
-        OrderByClause = orderByClause;
-    }
-
-    public string ToSqlWithoutCte()
-    {
-        return $"within group ({OrderByClause.ToSqlWithoutCte()})";
-    }
-
-    public IEnumerable<Token> GenerateTokensWithoutCte()
-    {
-        return new[]
-        {
-            new Token(TokenType.StartClause, "within group", "within group"),
-            new Token(TokenType.OpenParen, "("),
-        }.Concat(OrderByClause.GenerateTokensWithoutCte())
-        .Append(new Token(TokenType.CloseParen, ")"))
-        .Append(new Token(TokenType.EndClause, string.Empty, "within group"));
-    }
-
-    public IEnumerable<ISelectQuery> GetQueries()
-    {
-        return OrderByClause.MightHaveQueries ? OrderByClause.GetQueries() : Enumerable.Empty<ISelectQuery>();
-    }
-}
-
 public class FunctionExpression : IValueExpression
 {
     public IArgumentExpression Arguments { get; set; }
+
     public string FunctionName { get; set; }
-    public OverClause? OverClause { get; set; }
 
-    public FilterClause? FilterClause { get; set; }
-
-    public WithinGroupClause? WithinGroupClause { get; set; }
+    public IFunctionModifier? FunctionModifier { get; set; }
 
     /// <summary>
     /// Prefix to be added to the function name.e.g. "distinct"
     /// </summary>
     public string PrefixModifier { get; set; }
 
-
-
-    public FunctionExpression(string functionName, string prefixModifier, IArgumentExpression arguments, OverClause? overClause = null)
+    public FunctionExpression(string functionName, string prefixModifier, IArgumentExpression arguments)
     {
         FunctionName = functionName;
         PrefixModifier = prefixModifier;
         Arguments = arguments;
-        OverClause = overClause;
+        FunctionModifier = null;
+    }
+
+    public FunctionExpression(string functionName, string prefixModifier, IArgumentExpression arguments, IFunctionModifier? functionModifier)
+    {
+        FunctionName = functionName;
+        PrefixModifier = prefixModifier;
+        Arguments = arguments;
+        FunctionModifier = functionModifier;
     }
 
     public string ToSqlWithoutCte()
@@ -96,33 +37,42 @@ public class FunctionExpression : IValueExpression
         var sb = new StringBuilder();
         sb.Append(FunctionName);
         sb.Append("(");
+        if (!string.IsNullOrEmpty(PrefixModifier))
+        {
+            sb.Append(PrefixModifier).Append(" ");
+        }
         sb.Append(Arguments.ToSqlWithoutCte());
         sb.Append(")");
 
-        if (OverClause != null)
+        if (FunctionModifier != null)
         {
-            sb.Append(" ").Append(OverClause.ToSqlWithoutCte());
+            sb.Append(" ").Append(FunctionModifier.ToSqlWithoutCte());
         }
+
         return sb.ToString();
     }
 
     public string DefaultName => string.Empty;
 
-    public bool MightHaveQueries => Arguments.MightHaveQueries || (OverClause?.MightHaveCommonTableClauses ?? false);
+    public bool MightHaveQueries => Arguments.MightHaveQueries || (FunctionModifier?.MightHaveQueries ?? false);
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
         yield return new Token(TokenType.Command, FunctionName);
         yield return new Token(TokenType.OpenParen, "(");
+        if (!string.IsNullOrEmpty(PrefixModifier))
+        {
+            yield return new Token(TokenType.Command, PrefixModifier);
+        }
         foreach (var lexeme in Arguments.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
         yield return new Token(TokenType.CloseParen, ")");
 
-        if (OverClause != null)
+        if (FunctionModifier != null)
         {
-            foreach (var lexeme in OverClause.GenerateTokensWithoutCte())
+            foreach (var lexeme in FunctionModifier.GenerateTokensWithoutCte())
             {
                 yield return lexeme;
             }
@@ -138,9 +88,9 @@ public class FunctionExpression : IValueExpression
             queries.AddRange(Arguments.GetQueries());
         }
 
-        if (OverClause?.MightHaveCommonTableClauses == true)
+        if (FunctionModifier != null && FunctionModifier.MightHaveQueries)
         {
-            queries.AddRange(OverClause.GetQueries());
+            queries.AddRange(FunctionModifier.GetQueries());
         }
 
         return queries;

@@ -5,9 +5,9 @@ namespace Carbunqlex.Clauses;
 public class WindowExpression : ISqlComponent
 {
     public string Alias { get; set; }
-    public WindowFunction WindowFunction { get; }
+    public NamelessWindowDefinition WindowFunction { get; }
 
-    public WindowExpression(string alias, WindowFunction windowFunction)
+    public WindowExpression(string alias, NamelessWindowDefinition windowFunction)
     {
         Alias = alias;
         WindowFunction = windowFunction;
@@ -22,9 +22,8 @@ public class WindowExpression : ISqlComponent
 
         var sb = new StringBuilder();
         sb.Append(Alias);
-        sb.Append(" as (");
+        sb.Append(" as ");
         sb.Append(WindowFunction.ToSqlWithoutCte());
-        sb.Append(")");
         return sb.ToString();
     }
 
@@ -34,12 +33,9 @@ public class WindowExpression : ISqlComponent
             {
                 new Token(TokenType.Identifier, Alias),
                 new Token(TokenType.Command, "as"),
-                new Token(TokenType.OpenParen, "(", "window")
             };
 
         tokens.AddRange(WindowFunction.GenerateTokensWithoutCte());
-
-        tokens.Add(new Token(TokenType.CloseParen, ")", "window"));
 
         return tokens;
     }

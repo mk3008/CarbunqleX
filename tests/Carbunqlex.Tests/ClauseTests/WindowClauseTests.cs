@@ -19,12 +19,14 @@ public class WindowClauseTests(ITestOutputHelper output)
         var orderBy = new OrderByClause();
         orderBy.OrderByColumns.Add(new OrderByColumn(new ColumnExpression("a", "id")));
 
-        var windowFrame = new WindowFrame(
-            WindowFrameBoundary.UnboundedPreceding,
-            WindowFrameBoundary.CurrentRow,
-            FrameType.Rows);
+        var windowFrame = new WindowFrame("rows",
+            new BetweenWindowFrameBoundary(
+                new WindowFrameBoundaryKeyword("unbounded preceding"),
+                new WindowFrameBoundaryKeyword("current row")
+                )
+            );
 
-        var windowFunction = new WindowFunction(partitionBy, orderBy, windowFrame);
+        var windowFunction = new NamelessWindowDefinition(partitionBy, orderBy, windowFrame);
 
         var windowExpression = new WindowExpression("w", windowFunction);
         var windowClause = new WindowClause(windowExpression);
@@ -47,12 +49,11 @@ public class WindowClauseTests(ITestOutputHelper output)
         var orderBy1 = new OrderByClause();
         orderBy1.OrderByColumns.Add(new OrderByColumn(new ColumnExpression("a", "id1")));
 
-        var windowFrame1 = new WindowFrame(
-            WindowFrameBoundary.UnboundedPreceding,
-            WindowFrameBoundary.CurrentRow,
-            FrameType.Rows);
+        var windowFrame1 = new WindowFrame("rows", new BetweenWindowFrameBoundary(
+            new WindowFrameBoundaryKeyword("unbounded preceding"),
+            new WindowFrameBoundaryKeyword("current row")));
 
-        var windowFunction1 = new WindowFunction(partitionBy1, orderBy1, windowFrame1);
+        var windowFunction1 = new NamelessWindowDefinition(partitionBy1, orderBy1, windowFrame1);
         var windowExpression1 = new WindowExpression("w1", windowFunction1);
 
         var partitionBy2 = new PartitionByClause();
@@ -61,12 +62,11 @@ public class WindowClauseTests(ITestOutputHelper output)
         var orderBy2 = new OrderByClause();
         orderBy2.OrderByColumns.Add(new OrderByColumn(new ColumnExpression("b", "id2")));
 
-        var windowFrame2 = new WindowFrame(
-            WindowFrameBoundary.CurrentRow,
-            WindowFrameBoundary.UnboundedFollowing,
-            FrameType.Rows);
+        var windowFrame2 = new WindowFrame("rows", new BetweenWindowFrameBoundary(
+            new WindowFrameBoundaryKeyword("current row"),
+            new WindowFrameBoundaryKeyword("unbounded following")));
 
-        var windowFunction2 = new WindowFunction(partitionBy2, orderBy2, windowFrame2);
+        var windowFunction2 = new NamelessWindowDefinition(partitionBy2, orderBy2, windowFrame2);
         var windowExpression2 = new WindowExpression("w2", windowFunction2);
 
         var windowClause = new WindowClause(windowExpression1, windowExpression2);

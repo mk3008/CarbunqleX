@@ -1,14 +1,10 @@
 ﻿namespace Carbunqlex.Clauses;
 
-public class FrameBoundaryKeyword : IWindowFrameBoundaryExpression
+public class WindowFrameBoundaryKeyword : IWindowFrameBoundaryExpression
 {
-    public static readonly FrameBoundaryKeyword UnboundedPreceding = new FrameBoundaryKeyword("unbounded preceding");
-    public static readonly FrameBoundaryKeyword CurrentRow = new FrameBoundaryKeyword("current row");
-    public static readonly FrameBoundaryKeyword UnboundedFollowing = new FrameBoundaryKeyword("unbounded following");
-
     public string BoundaryKeyword { get; }
 
-    private FrameBoundaryKeyword(string boundaryKeyword)
+    public WindowFrameBoundaryKeyword(string boundaryKeyword)
     {
         BoundaryKeyword = boundaryKeyword;
     }

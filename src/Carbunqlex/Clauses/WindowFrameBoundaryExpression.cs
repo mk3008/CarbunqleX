@@ -3,15 +3,12 @@ using System.Text;
 
 namespace Carbunqlex.Clauses;
 
-public class FrameBoundaryExpression : IWindowFrameBoundaryExpression
+public class WindowFrameBoundaryExpression : IWindowFrameBoundaryExpression
 {
-    public static FrameBoundaryExpression Preceding(IValueExpression rows) => new FrameBoundaryExpression(rows, "preceding");
-    public static FrameBoundaryExpression Following(IValueExpression rows) => new FrameBoundaryExpression(rows, "following");
-
     public string BoundaryKeyword { get; }
     public IValueExpression Value { get; }
 
-    private FrameBoundaryExpression(IValueExpression value, string boundaryKeyword)
+    public WindowFrameBoundaryExpression(IValueExpression value, string boundaryKeyword)
     {
         BoundaryKeyword = boundaryKeyword;
         Value = value;

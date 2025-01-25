@@ -1,26 +1,72 @@
-﻿using Carbunqlex.ValueExpressions;
+﻿using System.Text;
 
 namespace Carbunqlex.Clauses;
 
-public class WindowFrameBoundary : ISqlComponent
+public interface IWindowFrameBoundary : ISqlComponent
+{
+    //bool MightHaveQueries { get; }
+
+    IEnumerable<IWindowFrameBoundaryExpression> WindowFrameBoundaries { get; }
+}
+
+public class BetweenWindowFrameBoundary : IWindowFrameBoundary
+{
+    public IWindowFrameBoundaryExpression Start { get; set; }
+    public IWindowFrameBoundaryExpression End { get; set; }
+
+    public bool MightHaveQueries => Start.MightHaveQueries || End.MightHaveQueries;
+
+    public IEnumerable<IWindowFrameBoundaryExpression> WindowFrameBoundaries => [Start, End];
+
+    public BetweenWindowFrameBoundary(IWindowFrameBoundaryExpression start, IWindowFrameBoundaryExpression end)
+    {
+        Start = start;
+        End = end;
+    }
+
+    public IEnumerable<Token> GenerateTokensWithoutCte()
+    {
+        var tokens = new List<Token>
+        {
+            new Token(TokenType.Command, "between"),
+        };
+        tokens.AddRange(Start.GenerateTokensWithoutCte());
+        tokens.Add(new Token(TokenType.Command, "and"));
+        tokens.AddRange(End.GenerateTokensWithoutCte());
+        return tokens;
+    }
+
+    public string ToSqlWithoutCte()
+    {
+        var sb = new StringBuilder();
+        sb.Append("between ");
+        sb.Append(Start.ToSqlWithoutCte());
+        sb.Append(" and ");
+        sb.Append(End.ToSqlWithoutCte());
+        return sb.ToString();
+    }
+
+    public IEnumerable<ISelectQuery> GetQueries()
+    {
+        var queries = new List<ISelectQuery>();
+        queries.AddRange(Start.GetQueries());
+        queries.AddRange(End.GetQueries());
+        return queries;
+    }
+}
+
+public class WindowFrameBoundary : IWindowFrameBoundary
 {
     public IWindowFrameBoundaryExpression Boundary { get; }
 
-    private WindowFrameBoundary(IWindowFrameBoundaryExpression boundary)
+    public IEnumerable<IWindowFrameBoundaryExpression> WindowFrameBoundaries => [Boundary];
+
+    public WindowFrameBoundary(IWindowFrameBoundaryExpression boundary)
     {
         Boundary = boundary;
     }
 
     public bool MightHaveQueries => Boundary.MightHaveQueries;
-
-    public static readonly WindowFrameBoundary UnboundedPreceding = new WindowFrameBoundary(FrameBoundaryKeyword.UnboundedPreceding);
-    public static readonly WindowFrameBoundary CurrentRow = new WindowFrameBoundary(FrameBoundaryKeyword.CurrentRow);
-    public static readonly WindowFrameBoundary UnboundedFollowing = new WindowFrameBoundary(FrameBoundaryKeyword.UnboundedFollowing);
-
-    public static WindowFrameBoundary Preceding(IValueExpression rows) => new WindowFrameBoundary(FrameBoundaryExpression.Preceding(rows));
-    public static WindowFrameBoundary Following(IValueExpression rows) => new WindowFrameBoundary(FrameBoundaryExpression.Following(rows));
-    public static WindowFrameBoundary Preceding(int rows) => new WindowFrameBoundary(FrameBoundaryExpression.Preceding(new ConstantExpression(rows)));
-    public static WindowFrameBoundary Following(int rows) => new WindowFrameBoundary(FrameBoundaryExpression.Following(new ConstantExpression(rows)));
 
     public string ToSqlWithoutCte()
     {

@@ -123,9 +123,18 @@ public static class SqlKeyword
             "GROUP BY DISTINCT",
             "HAVING",
             "WINDOW",
+            "ROWS",
+            "RANGE",
+            "GROUPS",
+            "BETWEEN", //rows between, range between, groups between
             "OVER",
             "FILTER",
             "WITHIN GROUP",
+            "UNBOUNDED",
+            "PRECEDING", //unbounded preceding, x preceding
+            "FOLLOWING", //unbounded following, x following
+            "CURRENT ROW",
+            "PARTITION BY",
             //set
             "UNION",
             "UNION ALL",

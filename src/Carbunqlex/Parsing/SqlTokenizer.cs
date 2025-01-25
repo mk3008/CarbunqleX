@@ -41,7 +41,7 @@ public class SqlTokenizer
         }
         if (!PeekToken.HasValue)
         {
-            PeekToken = Peek(out PeekPosition);
+            PeekToken = Memory.ReadLexeme(PreviousIdentifier, Position, out PeekPosition);
         }
         token = PeekToken.Value;
         return true;
@@ -56,6 +56,15 @@ public class SqlTokenizer
         throw SqlParsingExceptionBuilder.EndOfInput(nameof(SqlTokenizer), this);
     }
 
+    public T Peek<T>(Func<SqlTokenizer, Token, T> action)
+    {
+        if (TryPeek(out var token))
+        {
+            return action(this, token);
+        }
+        throw SqlParsingExceptionBuilder.EndOfInput(nameof(SqlTokenizer), this);
+    }
+
     public T Peek<T>(Func<Token, T> action, T defaultValue)
     {
         if (TryPeek(out var token))
@@ -65,7 +74,17 @@ public class SqlTokenizer
         return defaultValue;
     }
 
-    public Token Peek(out int position) => Memory.ReadLexeme(PreviousIdentifier, Position, out position);
+    //[Obsolete("Use Peek<T> instead")]
+    //public Token Peek(out int position) => Memory.ReadLexeme(PreviousIdentifier, Position, out position);
+
+    public Token Peek()
+    {
+        if (TryPeek(out var token))
+        {
+            return token;
+        }
+        throw SqlParsingExceptionBuilder.EndOfInput(nameof(SqlTokenizer), this);
+    }
 
     public bool TryRead(out Token token)
     {
@@ -113,10 +132,17 @@ public class SqlTokenizer
         throw SqlParsingExceptionBuilder.EndOfInput(sender, this);
     }
 
-    public T Read<T>(string sender, Func<Token, T> action)
+    public Token Read(string sender, params string[] expectedIdentifiers)
     {
-        var token = Read(sender);
-        return action(token);
+        if (TryRead(out var token))
+        {
+            if (expectedIdentifiers.Contains(token.Identifier))
+            {
+                return token;
+            }
+            throw SqlParsingExceptionBuilder.UnexpectedToken(sender, expectedIdentifiers, this, token);
+        }
+        throw SqlParsingExceptionBuilder.EndOfInput(sender, this);
     }
 
     public T Read<T>(string sender, TokenType expectedTokenType, Func<Token, T> action)

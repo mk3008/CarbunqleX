@@ -12,6 +12,10 @@ public class PartitionByClause : IPartitionByClause
     {
         PartitionByColumns = partitionByColumns.ToList();
     }
+    public PartitionByClause(List<IValueExpression> partitionByColumns)
+    {
+        PartitionByColumns = partitionByColumns;
+    }
 
     public string ToSqlWithoutCte()
     {

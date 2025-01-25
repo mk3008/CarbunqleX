@@ -8,12 +8,77 @@ public static class FunctionExpressionParser
 
     public static FunctionExpression Parse(SqlTokenizer tokenizer, Token function)
     {
-        // TODO: Add support for DISTINCT, ALL keyword
+        tokenizer.Read(ParserName, TokenType.OpenParen);
 
-        var args = ValueArgumentsParser.Parse(tokenizer, TokenType.OpenParen, TokenType.CloseParen);
+        // support for distinct, all keyword
+        var next = tokenizer.Peek();
+        var prefixModifier = string.Empty;
+        if (next.Value == "distinct")
+        {
+            tokenizer.Read();
+            prefixModifier = next.Value;
+        }
+        else if (next.Value == "all")
+        {
+            tokenizer.Read();
+        }
 
-        // TODO: Add support for OVER, FILTER, WITHIN GROUP clauses
+        var args = ParseArguments(tokenizer);
 
-        return new FunctionExpression(function.Value, string.Empty, args);
+        tokenizer.Read(ParserName, TokenType.CloseParen);
+
+        if (tokenizer.IsEnd)
+        {
+            return new FunctionExpression(function.Value, prefixModifier, args);
+        }
+
+        // TODO: Add support for FILTER, WITHIN GROUP, OVER clauses
+        next = tokenizer.Peek();
+
+        if (next.Identifier == "filter")
+        {
+            var filter = FilterClauseParser.Parse(tokenizer);
+            return new FunctionExpression(function.Value, prefixModifier, args, filter);
+        }
+
+        if (next.Identifier == "within group")
+        {
+            var withinGroup = WithinGroupClauseParser.Parse(tokenizer);
+            return new FunctionExpression(function.Value, prefixModifier, args, withinGroup);
+        }
+
+        if (next.Identifier == "over")
+        {
+            var over = OverClauseParser.Parse(tokenizer);
+            return new FunctionExpression(function.Value, prefixModifier, args, over);
+        }
+
+        return new FunctionExpression(function.Value, prefixModifier, args);
+    }
+
+    private static ValueArguments ParseArguments(SqlTokenizer tokenizer)
+    {
+        var args = new List<IValueExpression>();
+
+        while (true)
+        {
+            var expression = ValueExpressionParser.Parse(tokenizer);
+            args.Add(expression);
+            if (tokenizer.TryPeek(out var comma) && comma.Type == TokenType.Comma)
+            {
+                tokenizer.Read();
+                continue; ;
+            }
+            break;
+        }
+
+        var next = tokenizer.Peek();
+        if (next.Identifier == "order by")
+        {
+            var orderBy = OrderByClauseParser.Parse(tokenizer);
+            return new ValueArguments(args, orderBy);
+        }
+
+        return new ValueArguments(args);
     }
 }

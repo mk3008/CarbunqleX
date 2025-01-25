@@ -2,27 +2,35 @@
 
 namespace Carbunqlex.Clauses;
 
-public class OverClause : ISqlComponent
+public class OverClause : IFunctionModifier
 {
-    public IWindowFunction WindowFunction { get; set; }
+    public IWindowDefinition? WindowFunction { get; set; }
 
-    public bool MightHaveCommonTableClauses => WindowFunction.MightHaveCommonTableClauses;
+    public bool MightHaveCommonTableClauses => WindowFunction?.MightHaveCommonTableClauses ?? false;
 
-    public OverClause(IWindowFunction windowFunction)
+    public bool MightHaveQueries => WindowFunction != null;
+
+    public OverClause(IWindowDefinition? windowFunction)
     {
         WindowFunction = windowFunction;
     }
 
-    public OverClause() : this(EmptyWindowFunction.Instance)
+    public OverClause() : this(null)
     {
     }
 
     public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
-        sb.Append("over (");
-        sb.Append(WindowFunction.ToSqlWithoutCte());
-        sb.Append(")");
+        sb.Append("over");
+        if (WindowFunction != null)
+        {
+            sb.Append(WindowFunction.ToSqlWithoutCte());
+        }
+        else
+        {
+            sb.Append("()");
+        }
         return sb.ToString();
     }
 
@@ -31,18 +39,24 @@ public class OverClause : ISqlComponent
         var tokens = new List<Token>
         {
             new Token(TokenType.StartClause, "over", "over"),
-            new Token(TokenType.OpenParen, "(", "over")
         };
 
-        tokens.AddRange(WindowFunction.GenerateTokensWithoutCte());
+        if (WindowFunction != null)
+        {
+            tokens.AddRange(WindowFunction.GenerateTokensWithoutCte());
+        }
+        else
+        {
+            tokens.Add(new Token(TokenType.OpenParen, "("));
+            tokens.Add(new Token(TokenType.CloseParen, ")"));
+        }
 
-        tokens.Add(new Token(TokenType.CloseParen, ")", "over"));
         tokens.Add(new Token(TokenType.EndClause, string.Empty, "over"));
         return tokens;
     }
 
     public IEnumerable<ISelectQuery> GetQueries()
     {
-        return WindowFunction.GetQueries();
+        return WindowFunction?.GetQueries() ?? Enumerable.Empty<ISelectQuery>();
     }
 }

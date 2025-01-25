@@ -221,11 +221,14 @@ public class ValueExpressionTests(ITestOutputHelper output)
         orderBy.OrderByColumns.Add(new OrderByColumn(new ColumnExpression("a", "id")));
 
         var windowFrame = new WindowFrame(
-            WindowFrameBoundary.UnboundedPreceding,
-            WindowFrameBoundary.CurrentRow,
-            FrameType.Rows);
+            "rows",
+            new BetweenWindowFrameBoundary(
+                new WindowFrameBoundaryKeyword("unbounded preceding"),
+                new WindowFrameBoundaryKeyword("current row")
+            )
+        );
 
-        var windowFunction = new WindowFunction(partitionBy, orderBy, windowFrame);
+        var windowFunction = new NamelessWindowDefinition(partitionBy, orderBy, windowFrame);
 
         var overClause = new OverClause(windowFunction);
 
@@ -236,7 +239,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("sum(a.value) over (partition by a.value order by a.id rows between unbounded preceding and current row)", sql);
+        Assert.Equal("sum(a.value) over(partition by a.value order by a.id rows between unbounded preceding and current row)", sql);
     }
 
     [Fact]
@@ -252,6 +255,6 @@ public class ValueExpressionTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("sum(a.value) over ()", sql);
+        Assert.Equal("sum(a.value) over()", sql);
     }
 }

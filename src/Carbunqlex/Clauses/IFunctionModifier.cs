@@ -1,6 +1,6 @@
 ﻿namespace Carbunqlex.Clauses;
 
-public interface IOrderByClause : ISqlComponent
+public interface IFunctionModifier : ISqlComponent
 {
     bool MightHaveQueries { get; }
 }

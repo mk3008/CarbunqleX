@@ -1,4 +1,4 @@
-using Carbunqlex.Clauses;
+﻿using Carbunqlex.Clauses;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ClauseTests;
@@ -11,9 +11,9 @@ public class WindowFrameTests(ITestOutputHelper output)
     public void ToSql_RowsFrame_ReturnsCorrectSql()
     {
         // Arrange
-        var startExpression = WindowFrameBoundary.UnboundedPreceding;
-        var endExpression = WindowFrameBoundary.CurrentRow;
-        var windowFrame = new WindowFrame(startExpression, endExpression, FrameType.Rows);
+        var startExpression = new WindowFrameBoundaryKeyword("unbounded preceding");
+        var endExpression = new WindowFrameBoundaryKeyword("current row");
+        var windowFrame = new WindowFrame("rows", new BetweenWindowFrameBoundary(startExpression, endExpression));
 
         // Act
         var result = windowFrame.ToSqlWithoutCte();
@@ -27,9 +27,9 @@ public class WindowFrameTests(ITestOutputHelper output)
     public void ToSql_RangeFrame_ReturnsCorrectSql()
     {
         // Arrange
-        var startExpression = WindowFrameBoundary.UnboundedPreceding;
-        var endExpression = WindowFrameBoundary.CurrentRow;
-        var windowFrame = new WindowFrame(startExpression, endExpression, FrameType.Range);
+        var startExpression = new WindowFrameBoundaryKeyword("unbounded preceding");
+        var endExpression = new WindowFrameBoundaryKeyword("current row");
+        var windowFrame = new WindowFrame("range", new BetweenWindowFrameBoundary(startExpression, endExpression));
 
         // Act
         var result = windowFrame.ToSqlWithoutCte();

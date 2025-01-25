@@ -4,12 +4,12 @@ using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ClauseTests;
 
-public class OverClauseTests(ITestOutputHelper output)
+public class WindowDefinitionTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
 
     [Fact]
-    public void ToSql_WithWindowFunction_ReturnsCorrectSql()
+    public void ToSql_WithAllComponents_ReturnsCorrectSql()
     {
         // Arrange
         var partitionBy = new PartitionByClause();
@@ -27,13 +27,11 @@ public class OverClauseTests(ITestOutputHelper output)
 
         var windowFunction = new NamelessWindowDefinition(partitionBy, orderBy, windowFrame);
 
-        var overClause = new OverClause(windowFunction);
-
         // Act
-        var result = overClause.ToSqlWithoutCte();
+        var result = windowFunction.ToSqlWithoutCte();
         output.WriteLine(result);
 
         // Assert
-        Assert.Equal("over(partition by a.value order by a.id rows between unbounded preceding and current row)", result);
+        Assert.Equal("(partition by a.value order by a.id rows between unbounded preceding and current row)", result);
     }
 }
