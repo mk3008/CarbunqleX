@@ -41,6 +41,11 @@ public static class ValueExpressionParser
             {
                 return CastExpressionParser.Parse(tokenizer);
             }
+            if (token.Identifier == "not")
+            {
+                tokenizer.Read();
+                return UnaryExpressionParser.Parse(tokenizer, token.Identifier);
+            }
             return ModifierExpressionParser.Parse(tokenizer);
         }
 
@@ -72,9 +77,24 @@ public static class ValueExpressionParser
 
         if (token.Type == TokenType.Operator && token.Value == "*")
         {
-            // not operator, but wildcard
+            // not operator
             tokenizer.CommitPeek();
             return ColumnExpressionParser.Parse(tokenizer, token);
+        }
+
+        if (token.Type == TokenType.Operator && token.Value == "-")
+        {
+            tokenizer.CommitPeek();
+
+            var next = tokenizer.Peek();
+            if (next.Identifier == "infinity")
+            {
+                // -infinity
+                tokenizer.CommitPeek();
+                return new ConstantExpression("-infinity");
+            }
+
+            return UnaryExpressionParser.Parse(tokenizer, token.Value);
         }
 
         throw SqlParsingExceptionBuilder.UnexpectedTokenType(ParserName, TokenType.Identifier, tokenizer, token);
