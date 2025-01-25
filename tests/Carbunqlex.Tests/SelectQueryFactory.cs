@@ -105,7 +105,7 @@ public static class SelectQueryFactory
                 new ColumnExpression("s", "sale_date"),
                 new BinaryExpression(
                     "-",
-                    new KeywordExpression("CURRENT_DATE"),
+                    new ConstantExpression("CURRENT_DATE"),
                     new ModifierExpression("INTERVAL", new ConstantExpression("'7 days'"))
                 )
             )
@@ -170,7 +170,7 @@ public static class SelectQueryFactory
                 new ColumnExpression("s", "sale_date"),
                 new BinaryExpression(
                     "-",
-                    new KeywordExpression("CURRENT_DATE"),
+                    new ConstantExpression("CURRENT_DATE"),
                     new ModifierExpression("INTERVAL", new ConstantExpression("7 days"))
                 )
             )
@@ -341,7 +341,7 @@ public static class SelectQueryFactory
                 new ColumnExpression("s", "sale_date"),
                 new BinaryExpression(
                     "-",
-                    new KeywordExpression("CURRENT_DATE"),
+                    new ConstantExpression("CURRENT_DATE"),
                     new ModifierExpression("INTERVAL", new ConstantExpression("7 days"))
                 )
             )

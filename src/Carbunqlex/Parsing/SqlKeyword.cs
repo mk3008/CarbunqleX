@@ -63,6 +63,7 @@ public static class SqlKeyword
             "CURRENT_TIMESTAMP",
             "LOCALTIME",
             "LOCALTIMESTAMP",
+            "UNBOUNDED",
         }.Select(x => x.ToLowerInvariant()).ToHashSet());
     }
 
@@ -130,7 +131,6 @@ public static class SqlKeyword
             "OVER",
             "FILTER",
             "WITHIN GROUP",
-            "UNBOUNDED",
             "PRECEDING", //unbounded preceding, x preceding
             "FOLLOWING", //unbounded following, x following
             "CURRENT ROW",
