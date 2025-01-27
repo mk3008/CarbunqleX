@@ -1,7 +1,8 @@
-﻿using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Parsing.ValueExpressionParsing;
+using Carbunqlex.ValueExpressions;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Carbunqlex.Parsing.ValueExpressionParsing;
+namespace Carbunqlex.Parsing;
 
 public static class ValueExpressionParser
 {
@@ -95,6 +96,11 @@ public static class ValueExpressionParser
             }
 
             return UnaryExpressionParser.Parse(tokenizer, token.Value);
+        }
+
+        if (token.Type == TokenType.OpenParen)
+        {
+            return ParenthesizedExpressionParser.Parse(tokenizer);
         }
 
         if (token.Type == TokenType.Parameter)
