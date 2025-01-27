@@ -49,4 +49,17 @@ public class ValueParserTests
 
         Assert.Equal("column is not null", result.ToSqlWithoutCte());
     }
+
+    [Fact]
+    public void Parse_HandlesParameterExpression()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("column = :value");
+
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+
+        Assert.Equal("column = :value", result.ToSqlWithoutCte());
+    }
 }

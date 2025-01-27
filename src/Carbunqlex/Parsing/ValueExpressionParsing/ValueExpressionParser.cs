@@ -97,6 +97,11 @@ public static class ValueExpressionParser
             return UnaryExpressionParser.Parse(tokenizer, token.Value);
         }
 
+        if (token.Type == TokenType.Parameter)
+        {
+            return ParameterExpressionParser.Parse(tokenizer);
+        }
+
         throw SqlParsingExceptionBuilder.UnexpectedTokenType(ParserName, TokenType.Identifier, tokenizer, token);
     }
 
