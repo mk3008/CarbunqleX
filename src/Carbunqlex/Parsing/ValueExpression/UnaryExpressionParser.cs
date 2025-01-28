@@ -1,6 +1,6 @@
 ﻿using Carbunqlex.ValueExpressions;
 
-namespace Carbunqlex.Parsing;
+namespace Carbunqlex.Parsing.ValueExpression;
 
 public class UnaryExpressionParser
 {
