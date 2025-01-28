@@ -402,7 +402,7 @@ public static class SelectQueryFactory
         var windowFunction = new NamelessWindowDefinition(
             new PartitionByClause(new ColumnExpression("ColumnName1")),
             new OrderByClause(new OrderByColumn(new ColumnExpression("ColumnName2"))),
-            new WindowFrame(
+            new BetweenWindowFrame(
                 "rows",
                 new BetweenWindowFrameBoundary(
                     new WindowFrameBoundaryKeyword("unbounded preceding"),

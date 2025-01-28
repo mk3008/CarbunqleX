@@ -9,7 +9,7 @@ public static class WindowFrameParser
 {
     private static string ParserName => nameof(WindowFrameParser);
 
-    public static WindowFrame Parse(SqlTokenizer tokenizer)
+    public static BetweenWindowFrame Parse(SqlTokenizer tokenizer)
     {
         var type = tokenizer.Read(ParserName, "rows", "range", "groups").Identifier;
 
@@ -17,12 +17,12 @@ public static class WindowFrameParser
         if (next.Identifier == "between")
         {
             var value = BetweenWindowFrameBoundaryParser.Parse(tokenizer);
-            return new WindowFrame(type, value);
+            return new BetweenWindowFrame(type, value);
         }
         else
         {
             var value = WindowFrameBoundaryParser.Parse(tokenizer);
-            return new WindowFrame(type, value);
+            return new BetweenWindowFrame(type, value);
         }
     }
 }

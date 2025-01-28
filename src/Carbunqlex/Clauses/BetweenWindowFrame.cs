@@ -2,7 +2,7 @@
 
 namespace Carbunqlex.Clauses;
 
-public class WindowFrame : IWindowFrame
+public class BetweenWindowFrame : IWindowFrame
 {
     public IWindowFrameBoundary Value { get; set; }
 
@@ -10,7 +10,7 @@ public class WindowFrame : IWindowFrame
 
     public bool MightHaveCommonTableClauses => false;
 
-    public WindowFrame(string frameType, IWindowFrameBoundary value)
+    public BetweenWindowFrame(string frameType, IWindowFrameBoundary value)
     {
         FrameType = frameType;
         Value = value;

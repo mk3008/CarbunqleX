@@ -18,7 +18,7 @@ public class WindowDefinitionTests(ITestOutputHelper output)
         var orderBy = new OrderByClause();
         orderBy.OrderByColumns.Add(new OrderByColumn(new ColumnExpression("a", "id")));
 
-        var windowFrame = new WindowFrame("rows",
+        var windowFrame = new BetweenWindowFrame("rows",
             new BetweenWindowFrameBoundary(
                 new WindowFrameBoundaryKeyword("unbounded preceding"),
                 new WindowFrameBoundaryKeyword("current row")

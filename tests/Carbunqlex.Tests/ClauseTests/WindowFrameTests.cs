@@ -13,7 +13,7 @@ public class WindowFrameTests(ITestOutputHelper output)
         // Arrange
         var startExpression = new WindowFrameBoundaryKeyword("unbounded preceding");
         var endExpression = new WindowFrameBoundaryKeyword("current row");
-        var windowFrame = new WindowFrame("rows", new BetweenWindowFrameBoundary(startExpression, endExpression));
+        var windowFrame = new BetweenWindowFrame("rows", new BetweenWindowFrameBoundary(startExpression, endExpression));
 
         // Act
         var result = windowFrame.ToSqlWithoutCte();
@@ -29,7 +29,7 @@ public class WindowFrameTests(ITestOutputHelper output)
         // Arrange
         var startExpression = new WindowFrameBoundaryKeyword("unbounded preceding");
         var endExpression = new WindowFrameBoundaryKeyword("current row");
-        var windowFrame = new WindowFrame("range", new BetweenWindowFrameBoundary(startExpression, endExpression));
+        var windowFrame = new BetweenWindowFrame("range", new BetweenWindowFrameBoundary(startExpression, endExpression));
 
         // Act
         var result = windowFrame.ToSqlWithoutCte();

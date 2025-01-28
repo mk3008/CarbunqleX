@@ -19,7 +19,7 @@ public class WindowClauseTests(ITestOutputHelper output)
         var orderBy = new OrderByClause();
         orderBy.OrderByColumns.Add(new OrderByColumn(new ColumnExpression("a", "id")));
 
-        var windowFrame = new WindowFrame("rows",
+        var windowFrame = new BetweenWindowFrame("rows",
             new BetweenWindowFrameBoundary(
                 new WindowFrameBoundaryKeyword("unbounded preceding"),
                 new WindowFrameBoundaryKeyword("current row")
@@ -49,7 +49,7 @@ public class WindowClauseTests(ITestOutputHelper output)
         var orderBy1 = new OrderByClause();
         orderBy1.OrderByColumns.Add(new OrderByColumn(new ColumnExpression("a", "id1")));
 
-        var windowFrame1 = new WindowFrame("rows", new BetweenWindowFrameBoundary(
+        var windowFrame1 = new BetweenWindowFrame("rows", new BetweenWindowFrameBoundary(
             new WindowFrameBoundaryKeyword("unbounded preceding"),
             new WindowFrameBoundaryKeyword("current row")));
 
@@ -62,7 +62,7 @@ public class WindowClauseTests(ITestOutputHelper output)
         var orderBy2 = new OrderByClause();
         orderBy2.OrderByColumns.Add(new OrderByColumn(new ColumnExpression("b", "id2")));
 
-        var windowFrame2 = new WindowFrame("rows", new BetweenWindowFrameBoundary(
+        var windowFrame2 = new BetweenWindowFrame("rows", new BetweenWindowFrameBoundary(
             new WindowFrameBoundaryKeyword("current row"),
             new WindowFrameBoundaryKeyword("unbounded following")));
 

@@ -6,14 +6,14 @@ public class NamelessWindowDefinition : IWindowDefinition
 {
     public PartitionByClause? PartitionBy { get; }
     public OrderByClause? OrderBy { get; }
-    public WindowFrame? WindowFrame { get; }
+    public BetweenWindowFrame? WindowFrame { get; }
 
     public bool MightHaveCommonTableClauses =>
         (PartitionBy?.MightHaveQueries ?? false) ||
         (OrderBy?.MightHaveQueries ?? false) ||
         (WindowFrame?.MightHaveCommonTableClauses ?? false);
 
-    public NamelessWindowDefinition(PartitionByClause? partitionBy, OrderByClause? orderBy, WindowFrame? windowFrame)
+    public NamelessWindowDefinition(PartitionByClause? partitionBy, OrderByClause? orderBy, BetweenWindowFrame? windowFrame)
     {
         PartitionBy = partitionBy;
         OrderBy = orderBy;

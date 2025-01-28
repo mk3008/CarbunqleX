@@ -220,7 +220,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var orderBy = new OrderByClause();
         orderBy.OrderByColumns.Add(new OrderByColumn(new ColumnExpression("a", "id")));
 
-        var windowFrame = new WindowFrame(
+        var windowFrame = new BetweenWindowFrame(
             "rows",
             new BetweenWindowFrameBoundary(
                 new WindowFrameBoundaryKeyword("unbounded preceding"),
