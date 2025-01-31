@@ -39,7 +39,7 @@ public class InlineQueryTests(ITestOutputHelper output)
         var selectClause = new SelectClause(
             new SelectExpression(CreateColumnExpression("ColumnName2"))
         );
-        var fromClause = new FromClause(new TableSource("TableName"));
+        var fromClause = new FromClause(new DatasourceExpression(new TableSource("TableName")));
         var whereClause = new WhereClause(
             new BinaryExpression(
                 "=",

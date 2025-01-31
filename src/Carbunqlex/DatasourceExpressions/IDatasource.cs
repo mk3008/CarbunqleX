@@ -1,14 +1,10 @@
-﻿using Carbunqlex.ValueExpressions;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Carbunqlex.DatasourceExpressions;
 
 public interface IDatasource : ISqlComponent
 {
-    /// <summary>
-    /// The alias of the datasource.
-    /// </summary>
-    string Alias { get; }
+    string DefaultName { get; }
 
     /// <summary>
     /// The full name of the table.
@@ -40,12 +36,4 @@ public interface IDatasource : ISqlComponent
     /// <param name="unionQuerySource"></param>
     /// <returns></returns>
     bool TryGetUnionQuerySource([NotNullWhen(true)] out UnionQuerySource? unionQuerySource);
-}
-
-public static class IDatasourceExtensions
-{
-    public static IEnumerable<ColumnExpression> GetSelectableColumnExpressions(this IDatasource datasource)
-    {
-        return datasource.GetSelectableColumns().Select(columnName => new ColumnExpression(datasource.Alias, columnName));
-    }
 }

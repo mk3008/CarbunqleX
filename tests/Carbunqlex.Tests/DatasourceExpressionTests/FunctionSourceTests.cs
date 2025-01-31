@@ -17,7 +17,7 @@ public class FunctionSourceTests(ITestOutputHelper output)
         var arguments = new List<IValueExpression> { new ConstantExpression(1), new ConstantExpression(2) };
         var alias = "TestAlias";
         var columnAliases = new ColumnAliasClause(new List<string> { "col1", "col2" });
-        var functionSource = new FunctionSource(functionName, arguments, alias, columnAliases);
+        var functionSource = new DatasourceExpression(new FunctionSource(functionName, arguments), alias, columnAliases);
 
         // Act
         var sql = functionSource.ToSqlWithoutCte();
@@ -36,7 +36,7 @@ public class FunctionSourceTests(ITestOutputHelper output)
         var arguments = new List<IValueExpression> { new ConstantExpression(1), new ConstantExpression(2) };
         var alias = "TestAlias";
         var columnAliases = new ColumnAliasClause(new List<string> { "col1", "col2" });
-        var functionSource = new FunctionSource(functionName, arguments, alias, columnAliases);
+        var functionSource = new DatasourceExpression(new FunctionSource(functionName, arguments), alias, columnAliases);
 
         // Act
         var selectableColumns = functionSource.GetSelectableColumns();
@@ -61,7 +61,7 @@ public class FunctionSourceTests(ITestOutputHelper output)
         var functionName = "TestFunction";
         var arguments = new List<IValueExpression> { new ConstantExpression(1), new ConstantExpression(2) };
         var alias = "TestAlias";
-        var functionSource = new FunctionSource(functionName, arguments, alias);
+        var functionSource = new DatasourceExpression(new FunctionSource(functionName, arguments), alias);
 
         // Act
         var selectableColumns = functionSource.GetSelectableColumns();

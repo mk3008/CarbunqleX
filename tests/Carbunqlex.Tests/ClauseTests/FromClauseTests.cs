@@ -9,14 +9,14 @@ public class FromClauseTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
 
-    private static IDatasource GetDatasource()
+    private static DatasourceExpression GetDatasource()
     {
-        return new TableSource("table_a", "a", new List<string> { "Column1", "Column2", "Column3" });
+        return new DatasourceExpression(new TableSource("table_a"), "a", new ColumnAliasClause(["Column1", "Column2", "Column3"]));
     }
 
     private static JoinClause GetInnerJoinClause()
     {
-        var source = new TableSource("table_b", "b", new List<string> { "Column4", "Column5" });
+        var source = new DatasourceExpression(new TableSource("table_b"), "b", new ColumnAliasClause(["Column4", "Column5"]));
 
         var condition = new BinaryExpression(
             "and",
@@ -31,7 +31,7 @@ public class FromClauseTests(ITestOutputHelper output)
                 new ColumnExpression("b", "table_a_sub_id")
             )
         );
-        return new JoinClause(source, JoinType.Inner, condition);
+        return new JoinClause(source, "inner join", condition);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class FromClauseTests(ITestOutputHelper output)
         var sql = fromClause.ToSqlWithoutCte();
 
         // Assert
-        Assert.Equal("from table_a as a", sql);
+        Assert.Equal("from table_a as a(Column1, Column2, Column3)", sql);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class FromClauseTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("from table_a as a inner join table_b as b on a.table_a_id = b.table_a_id and a.table_a_sub_id = b.table_a_sub_id", sql);
+        Assert.Equal("from table_a as a(Column1, Column2, Column3) inner join table_b as b(Column4, Column5) on a.table_a_id = b.table_a_id and a.table_a_sub_id = b.table_a_sub_id", sql);
     }
 
     [Fact]

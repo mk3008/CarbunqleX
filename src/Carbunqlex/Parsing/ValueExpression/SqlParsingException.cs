@@ -16,6 +16,11 @@ public class SqlParsingException : Exception
 
 public static class SqlParsingExceptionBuilder
 {
+    public static SqlParsingException EmptyArgument(string parser, SqlTokenizer tokenizer)
+    {
+        return new SqlParsingException("Empty argument.", parser, tokenizer.Position, Token.Empty);
+    }
+
     public static SqlParsingException EndOfInput(string parser, SqlTokenizer tokenizer)
     {
         return new SqlParsingException("Unexpected end of input.", parser, tokenizer.Position, Token.Empty);
@@ -29,12 +34,12 @@ public static class SqlParsingExceptionBuilder
         return new SqlParsingException($"Unexpected token identifier encountered. Expected: {expectedIdentifier}, Actual: {actualToken.Identifier}, Position: {tokenizer.Position}", parser, tokenizer.Position, actualToken);
     }
 
-    public static Exception UnexpectedTokenType(string sender, TokenType[] expectedTokenTypes, SqlTokenizer sqlTokenizer, Token token)
+    public static SqlParsingException UnexpectedTokenType(string sender, TokenType[] expectedTokenTypes, SqlTokenizer sqlTokenizer, Token token)
     {
         return new SqlParsingException($"Unexpected token type encountered. Expected: {string.Join(" or ", expectedTokenTypes)}, Actual: {token.Type}, Position: {sqlTokenizer.Position}", sender, sqlTokenizer.Position, token);
     }
 
-    public static Exception UnexpectedToken(string sender, string[] expectedTokens, SqlTokenizer sqlTokenizer, Token token)
+    public static SqlParsingException UnexpectedToken(string sender, string[] expectedTokens, SqlTokenizer sqlTokenizer, Token token)
     {
         return new SqlParsingException($"Unexpected token encountered. Expected: {string.Join(" or ", expectedTokens)}, Actual: {token.Type}, Position: {sqlTokenizer.Position}", sender, sqlTokenizer.Position, token);
     }

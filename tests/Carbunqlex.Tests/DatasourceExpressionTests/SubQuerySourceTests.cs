@@ -21,7 +21,7 @@ public class SubQuerySourceTests(ITestOutputHelper output)
                 )
             );
         var alias = "alias";
-        var subQuerySource = new SubQuerySource(query, alias);
+        var subQuerySource = new DatasourceExpression(new SubQuerySource(query), alias);
 
         // Act
         var sql = subQuerySource.ToSqlWithoutCte();
@@ -43,7 +43,7 @@ public class SubQuerySourceTests(ITestOutputHelper output)
         };
         var selectClause = new SelectClause(selectExpressions.ToArray());
         var selectQuery = new SelectQuery(selectClause);
-        var subQuerySource = new SubQuerySource(selectQuery, "subquery");
+        var subQuerySource = new DatasourceExpression(new SubQuerySource(selectQuery), "subquery");
 
         // Act
         var selectableColumns = subQuerySource.GetSelectableColumns();

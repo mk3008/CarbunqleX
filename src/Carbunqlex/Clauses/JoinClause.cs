@@ -4,43 +4,32 @@ using System.Text;
 
 namespace Carbunqlex.Clauses;
 
-public enum JoinType
-{
-    Inner,
-    Left,
-    Right,
-    Full,
-    Cross,
-    Natural
-}
-
 public class JoinClause : ISqlComponent
 {
-    public IDatasource Datasource { get; set; }
-    public JoinType JoinType { get; set; }
+    public DatasourceExpression Datasource { get; set; }
+    public string JoinKeyword { get; set; }
     public IValueExpression? Condition { get; set; }
     public bool IsLateral { get; set; }
 
-    public JoinClause(IDatasource datasource, JoinType joinType, IValueExpression condition)
+    public JoinClause(DatasourceExpression datasource, string joinKeyword, IValueExpression condition)
     {
         Datasource = datasource;
-        JoinType = joinType;
+        JoinKeyword = joinKeyword;
         Condition = condition;
         IsLateral = false;
     }
 
-    public JoinClause(IDatasource datasource, JoinType joinType)
+    public JoinClause(DatasourceExpression datasource, string joinKeyword)
     {
         Datasource = datasource;
-        JoinType = joinType;
+        JoinKeyword = joinKeyword;
         IsLateral = false;
     }
 
     private string GetClauseText()
     {
         var sb = new StringBuilder();
-        sb.Append(JoinType.ToString().ToLower());
-        sb.Append(" join");
+        sb.Append(JoinKeyword.ToLower());
         if (IsLateral)
         {
             sb.Append(" lateral");

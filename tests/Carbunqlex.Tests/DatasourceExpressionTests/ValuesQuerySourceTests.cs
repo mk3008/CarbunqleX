@@ -1,4 +1,5 @@
-﻿using Carbunqlex.DatasourceExpressions;
+﻿using Carbunqlex.Clauses;
+using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
@@ -37,7 +38,7 @@ public class ValuesQuerySourceTests(ITestOutputHelper output)
 
         var alias = "testAlias";
         var columnAliases = new List<string> { "col1", "col2", "col3" };
-        var valuesQuerySource = new SubQuerySource(query, alias, columnAliases);
+        var valuesQuerySource = new DatasourceExpression(new SubQuerySource(query), alias, new ColumnAliasClause(columnAliases));
 
         // Act
         var sql = valuesQuerySource.ToSqlWithoutCte();

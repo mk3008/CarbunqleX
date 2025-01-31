@@ -10,7 +10,7 @@ public class FromEditor(ISelectQuery query, IReadOnlyDictionary<string, IValueEx
 
     private readonly ISelectQuery Query = query;
 
-    public DatasourceModifier Join(JoinType joinType, IDatasource datasource, IValueExpression? condition = null)
+    public DatasourceModifier Join(string joinType, DatasourceExpression datasource, IValueExpression? condition = null)
     {
         if (condition == null)
         {
@@ -47,27 +47,27 @@ public class FromEditor(ISelectQuery query, IReadOnlyDictionary<string, IValueEx
     public DatasourceModifier InnerJoin(string tableName, string alias)
     {
         var condition = BuildJoinCondition(alias);
-        var datasource = new TableSource(tableName, alias);
-        return Join(JoinType.Inner, datasource, condition);
+        var datasource = new DatasourceExpression(new TableSource(tableName), alias);
+        return Join("inner join", datasource, condition);
     }
 
     public DatasourceModifier LeftJoin(string tableName, string alias)
     {
         var condition = BuildJoinCondition(alias);
-        var datasource = new TableSource(tableName, alias);
-        return Join(JoinType.Left, datasource, condition);
+        var datasource = new DatasourceExpression(new TableSource(tableName), alias);
+        return Join("left join", datasource, condition);
     }
 
     public DatasourceModifier RightJoin(string tableName, string alias)
     {
         var condition = BuildJoinCondition(alias);
-        var datasource = new TableSource(tableName, alias);
-        return Join(JoinType.Right, datasource, condition);
+        var datasource = new DatasourceExpression(new TableSource(tableName), alias);
+        return Join("right join", datasource, condition);
     }
 
     public DatasourceModifier CrossJoin(string tableName, string alias)
     {
-        var datasource = new TableSource(tableName, alias);
-        return Join(JoinType.Cross, datasource);
+        var datasource = new DatasourceExpression(new TableSource(tableName), alias);
+        return Join("cross join", datasource);
     }
 }

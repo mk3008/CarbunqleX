@@ -1,4 +1,5 @@
-﻿using Carbunqlex.DatasourceExpressions;
+﻿using Carbunqlex.Clauses;
+using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
@@ -15,7 +16,7 @@ public class TableSourceTests(ITestOutputHelper output)
         var namespaces = new List<string> { "dbo", "schema" };
         var tableName = "Users";
         var alias = "U";
-        var tableSource = new TableSource(namespaces, tableName, alias);
+        var tableSource = new DatasourceExpression(new TableSource(namespaces, tableName), alias);
 
         // Act
         var sql = tableSource.ToSqlWithoutCte();
@@ -31,7 +32,7 @@ public class TableSourceTests(ITestOutputHelper output)
         // Arrange
         var namespaces = new List<string> { "dbo", "schema" };
         var tableName = "Users";
-        var tableSource = new TableSource(namespaces, tableName, tableName);
+        var tableSource = new DatasourceExpression(new TableSource(namespaces, tableName), tableName);
 
         // Act
         var sql = tableSource.ToSqlWithoutCte();
@@ -47,7 +48,7 @@ public class TableSourceTests(ITestOutputHelper output)
         // Arrange
         var tableName = "Users";
         var alias = "U";
-        var tableSource = new TableSource(tableName, alias);
+        var tableSource = new DatasourceExpression(new TableSource(tableName), alias);
 
         // Act
         var sql = tableSource.ToSqlWithoutCte();
@@ -79,7 +80,7 @@ public class TableSourceTests(ITestOutputHelper output)
         // Arrange
         var tableName = "Users";
         var alias = "U";
-        var tableSource = new TableSource(tableName, alias, new List<string> { "Column1", "Column2", "Column3" });
+        var tableSource = new DatasourceExpression(new TableSource(tableName), alias, new ColumnAliasClause(["Column1", "Column2", "Column3"]));
 
         // Act
         var selectableColumns = tableSource.GetSelectableColumns();

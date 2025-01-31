@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using Carbunqlex.DatasourceExpressions;
+﻿using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
@@ -21,7 +20,7 @@ public class FromEditorTests(ITestOutputHelper output)
 
         queryNode.From(["table_a_id"], static from =>
         {
-            from.Join(JoinType.Inner, new TableSource("table_b", "b"), from.ValueMap["table_a_id"].Equal(new ColumnExpression("b", "table_a_id")));
+            from.Join("inner join", new DatasourceExpression(new TableSource("table_b"), "b"), from.ValueMap["table_a_id"].Equal(new ColumnExpression("b", "table_a_id")));
         });
 
         var actual = queryNode.ToSql();

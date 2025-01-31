@@ -119,11 +119,11 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
             new SelectExpression(new ColumnExpression("t2", "ColumnName2"))
         );
 
-        var fromClause = new FromClause(new TableSource("Table1", "t1"));
+        var fromClause = new FromClause(new DatasourceExpression(new TableSource("Table1"), "t1"));
 
         var joinClause = new JoinClause(
-            new TableSource("Table2", "t2"),
-            JoinType.Inner,
+            new DatasourceExpression(new TableSource("Table2"), "Table2"),
+            "inner join",
             new BinaryExpression(
                 "=",
                 new ColumnExpression("t1", "JoinColumn"),
@@ -178,7 +178,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
                 new SelectExpression(new ColumnExpression("subquery", "ColumnName1")),
                 new SelectExpression(new ColumnExpression("subquery", "ColumnName2"))
             ),
-            fromClause: new FromClause(new SubQuerySource(thirdQuery, "subquery"))
+            fromClause: new FromClause(new DatasourceExpression(new SubQuerySource(thirdQuery), "subquery"))
         );
 
         var unionAllQueryWithSubQuery = new UnionQuery(UnionType.Union, unionAllQuery, subQuery);
@@ -193,14 +193,14 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
            new SelectClause(
                new SelectExpression(new ColumnExpression("*"))
            ),
-           fromClause: new FromClause(new SubQuerySource(firstQuery, "sub"))
+           fromClause: new FromClause(new DatasourceExpression(new SubQuerySource(firstQuery), "sub"))
         );
 
         var thirdQuery = new SelectQuery(
            new SelectClause(
                new SelectExpression(new ColumnExpression("*"))
            ),
-           fromClause: new FromClause(new SubQuerySource(secondQuery, "sub"))
+           fromClause: new FromClause(new DatasourceExpression(new SubQuerySource(secondQuery), "sub"))
         );
 
         return thirdQuery;
@@ -215,14 +215,14 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
                new SelectExpression(new ColumnExpression("sub", "ColumnName1"), "ColumnNameX"),
                new SelectExpression(new ColumnExpression("sub", "*"))
            ),
-           fromClause: new FromClause(new SubQuerySource(firstQuery, "sub"))
+           fromClause: new FromClause(new DatasourceExpression(new SubQuerySource(firstQuery), "sub"))
         );
 
         var thirdQuery = new SelectQuery(
            new SelectClause(
                new SelectExpression(new ColumnExpression("*"))
            ),
-           fromClause: new FromClause(new SubQuerySource(secondQuery, "sub"))
+           fromClause: new FromClause(new DatasourceExpression(new SubQuerySource(secondQuery), "sub"))
         );
 
         return thirdQuery;

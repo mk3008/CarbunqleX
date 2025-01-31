@@ -14,7 +14,7 @@ public interface IFromClause : ISqlComponent
     /// <summary>
     /// Retrieves the datasources.
     /// </summary>
-    IEnumerable<IDatasource> GetDatasources();
+    IEnumerable<DatasourceExpression> GetDatasources();
 
     /// <summary>
     /// Retrieves the column expressions.

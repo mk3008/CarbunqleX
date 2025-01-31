@@ -124,9 +124,9 @@ public class ValuesQuery : ISelectQuery
         return Enumerable.Empty<SelectExpression>();
     }
 
-    public IEnumerable<IDatasource> GetDatasources()
+    public IEnumerable<DatasourceExpression> GetDatasources()
     {
-        return Enumerable.Empty<IDatasource>();
+        return Enumerable.Empty<DatasourceExpression>();
     }
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()
     {

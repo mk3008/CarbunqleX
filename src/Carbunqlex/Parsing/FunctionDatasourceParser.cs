@@ -1,0 +1,81 @@
+﻿using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.Parsing.ValueExpressionParsing;
+using Carbunqlex.ValueExpressions;
+
+namespace Carbunqlex.Parsing;
+
+/// <summary>
+/// Parses function datasource expressions from SQL tokens.
+/// e.g. function(arg1, arg2)
+/// </summary>
+public class FunctionDatasourceParser
+{
+    private static string ParserName => nameof(FunctionDatasourceParser);
+
+    public static FunctionSource Parse(SqlTokenizer tokenizer, string functionName)
+    {
+        tokenizer.Read(ParserName, TokenType.OpenParen);
+        var next = tokenizer.Peek();
+        if (next.Type == TokenType.CloseParen)
+        {
+            // no arguments
+            tokenizer.CommitPeek();
+
+            if (tokenizer.IsEnd)
+            {
+                return new FunctionSource(functionName);
+            }
+
+            var hasKeyword = HasWithOrdinalityKeyword(tokenizer);
+            return new FunctionSource(functionName) { HasWithOrdinalityKeyword = hasKeyword };
+        }
+
+        var parameters = new List<IValueExpression>();
+        bool hasWithOrdinalityKeyword = false;
+
+        while (true)
+        {
+            var parameter = ValueExpressionParser.Parse(tokenizer);
+            parameters.Add(parameter);
+
+            next = tokenizer.Peek();
+            if (next.Type == TokenType.Comma)
+            {
+                tokenizer.CommitPeek();
+                continue;
+            }
+            if (next.Type == TokenType.CloseParen)
+            {
+                tokenizer.CommitPeek();
+
+                hasWithOrdinalityKeyword = HasWithOrdinalityKeyword(tokenizer);
+                break;
+            }
+
+            throw SqlParsingExceptionBuilder.UnexpectedTokenType(ParserName, new[] { TokenType.Comma, TokenType.CloseParen }, tokenizer, next);
+        }
+
+        return new FunctionSource(functionName, parameters, hasWithOrdinalityKeyword);
+    }
+
+    /// <summary>
+    /// Checks if the next token is the "with ordinality" keyword.
+    /// </summary>
+    /// <param name="tokenizer"></param>
+    /// <returns></returns>
+    private static bool HasWithOrdinalityKeyword(SqlTokenizer tokenizer)
+    {
+        if (tokenizer.IsEnd)
+        {
+            return false;
+        }
+
+        var next = tokenizer.Peek();
+        if (next.Identifier == "with ordinality")
+        {
+            tokenizer.CommitPeek();
+            return true;
+        }
+        return false;
+    }
+}

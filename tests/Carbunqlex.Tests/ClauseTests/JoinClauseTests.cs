@@ -1,4 +1,4 @@
-using Carbunqlex.Clauses;
+﻿using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
@@ -11,7 +11,7 @@ public class JoinClauseTests(ITestOutputHelper output)
 
     private static JoinClause GetInnerJoinClause()
     {
-        var source = new TableSource("table_b", "b");
+        var source = new DatasourceExpression(new TableSource("table_b"), "b");
         var condition = new BinaryExpression(
             "and"
             , new BinaryExpression(
@@ -25,13 +25,13 @@ public class JoinClauseTests(ITestOutputHelper output)
                 new ColumnExpression("b", "table_a_sub_id")
                 )
         );
-        return new JoinClause(source, JoinType.Inner, condition);
+        return new JoinClause(source, "inner join", condition);
     }
 
     private static JoinClause GetCrossJoinClause()
     {
-        var source = new TableSource("table_b", "b");
-        return new JoinClause(source, JoinType.Cross);
+        var source = new DatasourceExpression(new TableSource("table_b"), "b");
+        return new JoinClause(source, "cross join");
     }
 
     [Fact]

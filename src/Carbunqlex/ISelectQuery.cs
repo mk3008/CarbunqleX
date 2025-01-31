@@ -58,7 +58,7 @@ public interface ISelectQuery : IQuery
     /// Retrieves the datasources.
     /// </summary>
     /// <returns></returns>
-    IEnumerable<IDatasource> GetDatasources();
+    IEnumerable<DatasourceExpression> GetDatasources();
 
     /// <summary>
     /// Retrieves the column expressions.

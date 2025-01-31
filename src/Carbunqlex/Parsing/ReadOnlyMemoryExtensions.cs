@@ -155,12 +155,17 @@ public static class ReadOnlyMemoryExtensions
                 var node = SqlKeyword.OperatorKeywordNodes[normalized];
                 return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Operator, node, out end);
             }
-            else if (SqlKeyword.ConstantValueKeywords.ContainsKey(normalized))
+            else if (SqlKeyword.ConstantValueKeywordNodes.ContainsKey(normalized))
             {
-                var node = SqlKeyword.ConstantValueKeywords[normalized];
+                var node = SqlKeyword.ConstantValueKeywordNodes[normalized];
                 return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Constant, node, out end);
             }
-            else if (!SqlKeyword.CommandKeywords.ContainsKey(normalized))
+            else if (SqlKeyword.JoinKeywordNodes.ContainsKey(normalized))
+            {
+                var node = SqlKeyword.JoinKeywordNodes[normalized];
+                return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Command, node, out end);
+            }
+            else if (!SqlKeyword.CommandKeywordNodes.ContainsKey(normalized))
             {
                 memory.SkipWhiteSpacesAndComments(ref p);
                 var raw = memory.Slice(start, p - start).ToString();
@@ -170,7 +175,7 @@ public static class ReadOnlyMemoryExtensions
             else
             {
                 // Check if the command consists of multiple words
-                var node = SqlKeyword.CommandKeywords[normalized];
+                var node = SqlKeyword.CommandKeywordNodes[normalized];
                 return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Command, node, out end);
             }
         }

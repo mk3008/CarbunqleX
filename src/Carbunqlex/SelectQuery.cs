@@ -194,7 +194,7 @@ public class SelectQuery : ISelectQuery
         return SelectClause.Expressions;
     }
 
-    public IEnumerable<IDatasource> GetDatasources()
+    public IEnumerable<DatasourceExpression> GetDatasources()
     {
         return FromClause.GetDatasources();
     }

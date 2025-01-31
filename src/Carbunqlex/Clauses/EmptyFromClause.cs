@@ -32,9 +32,9 @@ public class EmptyFromClause : IFromClause
         return Enumerable.Empty<ColumnExpression>();
     }
 
-    public IEnumerable<IDatasource> GetDatasources()
+    public IEnumerable<DatasourceExpression> GetDatasources()
     {
-        return Enumerable.Empty<IDatasource>();
+        return Enumerable.Empty<DatasourceExpression>();
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()

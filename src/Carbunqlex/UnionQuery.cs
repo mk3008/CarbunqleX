@@ -183,14 +183,14 @@ public class UnionQuery : ISelectQuery
         }
     }
 
-    public IEnumerable<IDatasource> GetDatasources()
+    public IEnumerable<DatasourceExpression> GetDatasources()
     {
         var components = GetUnionQueryComponents().Select(static (query, index) => new { Index = index, Datasource = query }).ToList();
         var columns = Left.GetSelectExpressions().Select(x => x.Alias).ToList();
 
         foreach (var component in components)
         {
-            yield return new UnionQuerySource(component.Datasource, component.Index.ToString(), columns);
+            yield return new DatasourceExpression(new UnionQuerySource(component.Datasource), component.Index.ToString(), new ColumnAliasClause(columns));
         }
     }
 

@@ -1,5 +1,4 @@
-﻿using Carbunqlex.Clauses;
-using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.ValueExpressions;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
@@ -8,52 +7,48 @@ namespace Carbunqlex.DatasourceExpressions;
 public class FunctionSource : IDatasource
 {
     public string FunctionName { get; set; }
+
     public List<IValueExpression> Arguments { get; set; }
-    public string Alias { get; set; }
-    public IColumnAliasClause ColumnAliasClause { get; set; }
+
     public string TableFullName => string.Empty;
 
-    public FunctionSource(string functionName, IEnumerable<IValueExpression> arguments, string alias, ColumnAliasClause columnAliases)
+    public string DefaultName => string.Empty;
+
+    public bool HasWithOrdinalityKeyword { get; set; }
+
+    public FunctionSource(string functionName, IEnumerable<IValueExpression> arguments, bool hasWithOrdinalityKeyword)
     {
         FunctionName = functionName;
         Arguments = arguments.ToList();
-        Alias = alias;
-        ColumnAliasClause = columnAliases;
+        HasWithOrdinalityKeyword = hasWithOrdinalityKeyword;
     }
 
-    public FunctionSource(string functionName, IEnumerable<IValueExpression> arguments, string alias)
+    public FunctionSource(string functionName, IEnumerable<IValueExpression> arguments)
     {
         FunctionName = functionName;
         Arguments = arguments.ToList();
-        Alias = alias;
-        ColumnAliasClause = EmptyColumnAliasClause.Instance;
     }
 
-    public FunctionSource(string functionName, string alias)
+    public FunctionSource(string functionName)
     {
         FunctionName = functionName;
         Arguments = new List<IValueExpression>();
-        Alias = alias;
-        ColumnAliasClause = new ColumnAliasClause(Enumerable.Empty<string>());
+        HasWithOrdinalityKeyword = false;
     }
 
     public string ToSqlWithoutCte()
     {
-        if (string.IsNullOrWhiteSpace(FunctionName))
-        {
-            throw new ArgumentException("FunctionName is required for a function source.", nameof(FunctionName));
-        }
-        if (string.IsNullOrWhiteSpace(Alias))
-        {
-            throw new ArgumentException("Alias is required for a function source.", nameof(Alias));
-        }
         var sb = new StringBuilder();
         sb.Append(FunctionName);
         sb.Append("(");
         sb.Append(string.Join(", ", Arguments.Select(arg => arg.ToSqlWithoutCte())));
-        sb.Append(") as ");
-        sb.Append(Alias);
-        sb.Append(ColumnAliasClause.ToSqlWithoutCte());
+        sb.Append(")");
+
+        if (HasWithOrdinalityKeyword)
+        {
+            sb.Append(" with ordinality");
+        }
+
         return sb.ToString();
     }
 
@@ -61,11 +56,23 @@ public class FunctionSource : IDatasource
     {
         var tokens = new List<Token>
         {
-            new Token(TokenType.Command, FunctionName),
-            new Token(TokenType.Identifier, Alias)
+            new Token(TokenType.Identifier, FunctionName),
+            new Token(TokenType.OpenParen, "(")
         };
-        tokens.AddRange(Arguments.SelectMany(arg => arg.GenerateTokensWithoutCte()));
-        tokens.AddRange(ColumnAliasClause.GenerateTokensWithoutCte());
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            tokens.AddRange(Arguments[i].GenerateTokensWithoutCte());
+            if (i < Arguments.Count - 1)
+            {
+                tokens.Add(new Token(TokenType.Comma, ","));
+            }
+        }
+        tokens.Add(new Token(TokenType.CloseParen, ")"));
+
+        if (HasWithOrdinalityKeyword)
+        {
+            tokens.Add(new Token(TokenType.Command, "with ordinality"));
+        }
         return tokens;
     }
 
@@ -86,7 +93,7 @@ public class FunctionSource : IDatasource
 
     public IEnumerable<string> GetSelectableColumns()
     {
-        return ColumnAliasClause.GetColumnNames();
+        return Enumerable.Empty<string>();
     }
 
     public bool TryGetSubQuery([NotNullWhen(true)] out ISelectQuery? subQuery)

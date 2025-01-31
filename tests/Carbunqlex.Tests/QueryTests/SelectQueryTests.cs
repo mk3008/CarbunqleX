@@ -85,7 +85,7 @@ public class SelectQueryTests(ITestOutputHelper output)
             new SelectExpression(new ColumnExpression("ColumnName1"))
         );
         var fromClause = new FromClause(
-            new SubQuerySource(subquery, "subquery")
+            new DatasourceExpression(new SubQuerySource(subquery), "subquery")
         );
         var selectQuery = new SelectQuery(selectClause, fromClause);
 
@@ -130,7 +130,7 @@ public class SelectQueryTests(ITestOutputHelper output)
         var selectClause = new SelectClause(
             new SelectExpression(new ColumnExpression("ColumnName1"))
         );
-        var fromClause = new FromClause(new TableSource("outer_cte"));
+        var fromClause = new FromClause(new DatasourceExpression(new TableSource("outer_cte")));
         var selectQuery = new SelectQuery(selectClause, fromClause);
         selectQuery.WithClause.CommonTableClauses.AddRange(withClause.CommonTableClauses);
 
@@ -173,7 +173,7 @@ public class SelectQueryTests(ITestOutputHelper output)
         {
             { "internalParam", "internalValue" }
         });
-        var fromClause = new FromClause(new SubQuerySource(internalQuery, "t"));
+        var fromClause = new FromClause(new DatasourceExpression(new SubQuerySource(internalQuery), "t"));
         var selectQuery = new SelectQuery(selectClause, fromClause);
         selectQuery.Parameters["param1"] = "value1";
 
@@ -199,7 +199,7 @@ public class SelectQueryTests(ITestOutputHelper output)
         {
             { "param1", "internalValue" }
         });
-        var fromClause = new FromClause(new SubQuerySource(internalQuery, "t"));
+        var fromClause = new FromClause(new DatasourceExpression(new SubQuerySource(internalQuery), "t"));
         var selectQuery = new SelectQuery(selectClause, fromClause);
         selectQuery.Parameters["param1"] = "ownValue";
 

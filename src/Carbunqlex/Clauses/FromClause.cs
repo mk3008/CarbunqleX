@@ -6,13 +6,20 @@ namespace Carbunqlex.Clauses;
 
 public class FromClause : IFromClause
 {
-    public IDatasource RootDatasource { get; set; }
+    public DatasourceExpression RootDatasource { get; set; }
 
-    public List<JoinClause> JoinClauses { get; } = new();
+    public List<JoinClause> JoinClauses { get; }
 
-    public FromClause(IDatasource datasource)
+    public FromClause(DatasourceExpression datasource)
     {
         RootDatasource = datasource;
+        JoinClauses = new List<JoinClause>();
+    }
+
+    public FromClause(DatasourceExpression datasource, List<JoinClause> joinClauses)
+    {
+        RootDatasource = datasource;
+        JoinClauses = joinClauses;
     }
 
     public string ToSqlWithoutCte()
@@ -21,8 +28,7 @@ public class FromClause : IFromClause
         sb.Append($"from {RootDatasource.ToSqlWithoutCte()}");
         if (JoinClauses.Count > 0)
         {
-            sb.Append(" ");
-            JoinClauses.Select(j => j.ToSqlWithoutCte()).ToList().ForEach(j => sb.Append(j));
+            JoinClauses.Select(j => j.ToSqlWithoutCte()).ToList().ForEach(j => sb.Append(" ").Append(j));
         }
         return sb.ToString();
     }
@@ -67,9 +73,9 @@ public class FromClause : IFromClause
         return columns;
     }
 
-    public IEnumerable<IDatasource> GetDatasources()
+    public IEnumerable<DatasourceExpression> GetDatasources()
     {
-        return new IDatasource[] { RootDatasource }.Union(JoinClauses.Select(join => join.Datasource));
+        return new DatasourceExpression[] { RootDatasource }.Union(JoinClauses.Select(join => join.Datasource));
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()

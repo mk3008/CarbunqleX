@@ -31,7 +31,7 @@ public class DatasourceNode
     /// <summary>
     /// データソース。
     /// </summary>
-    private IDatasource Datasource { get; }
+    private DatasourceExpression Expression { get; }
 
     /// <summary>
     /// データソースのエイリアス。
@@ -59,12 +59,12 @@ public class DatasourceNode
     /// </summary>
     public IReadOnlyList<QueryNode> ChildQueryNodes { get; }
 
-    public DatasourceNode(IDatasource datasource, DatasourceType datasourceType, IEnumerable<string> columns, IEnumerable<QueryNode> childQueryNodes)
+    public DatasourceNode(DatasourceExpression expression, DatasourceType datasourceType, IEnumerable<string> columns, IEnumerable<QueryNode> childQueryNodes)
     {
-        Datasource = datasource;
+        Expression = expression;
         DatasourceType = datasourceType;
-        Name = Datasource.Alias.ToLowerInvariant();
-        TableFullName = Datasource.TableFullName;
+        Name = Expression.Alias.ToLowerInvariant();
+        TableFullName = Expression.Datasource.TableFullName;
         Columns = columns.ToDictionary(static column => column.ToLowerInvariant(), static column => column).AsReadOnly();
         ChildQueryNodes = childQueryNodes?.ToList().AsReadOnly() ?? new List<QueryNode>().AsReadOnly();
     }

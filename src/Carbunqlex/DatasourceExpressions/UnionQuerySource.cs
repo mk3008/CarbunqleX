@@ -6,17 +6,13 @@ public class UnionQuerySource : IDatasource
 {
     public ISelectQuery Query { get; set; }
 
-    public string Alias { get; set; }
+    public string DefaultName => string.Empty;
 
     public string TableFullName => string.Empty;
 
-    public List<string> ColumnNames { get; } = new();
-
-    public UnionQuerySource(ISelectQuery query, string alias, IEnumerable<string> columns)
+    public UnionQuerySource(ISelectQuery query)
     {
         Query = query;
-        Alias = alias;
-        ColumnNames = columns.ToList();
     }
 
     public string ToSqlWithoutCte()

@@ -34,12 +34,12 @@ public static class SelectQueryFactory
         );
 
         // Create the from clause
-        var fromClause = new FromClause(new TableSource("sale", "s"));
+        var fromClause = new FromClause(new DatasourceExpression(new TableSource("sale"), "sale"));
 
         // Create the join clause for the products table
         var joinClause = new JoinClause(
-            new TableSource("product", "p"),
-            JoinType.Inner,
+            new DatasourceExpression(new TableSource("product"), "product"),
+            "inner join",
             new BinaryExpression(
                 "=",
                 new ColumnExpression("s", "product_id"),
@@ -97,7 +97,7 @@ public static class SelectQueryFactory
             )
         );
 
-        var fromClause = new FromClause(new TableSource("sale", "s"));
+        var fromClause = new FromClause(new DatasourceExpression(new TableSource("sale"), "sale"));
 
         var whereClause = new WhereClause(
             new BinaryExpression(
@@ -139,11 +139,11 @@ public static class SelectQueryFactory
           ), "category_total")
       );
 
-        var fromClause = new FromClause(new TableSource("sale", "s"));
+        var fromClause = new FromClause(new DatasourceExpression(new TableSource("sale"), "sale"));
 
         var joinProduct = new JoinClause(
-            new TableSource("product", "p"),
-            JoinType.Inner,
+            new DatasourceExpression(new TableSource("product"), "product"),
+            "inner join",
             new BinaryExpression(
                 "=",
                 new ColumnExpression("s", "product_id"),
@@ -152,8 +152,8 @@ public static class SelectQueryFactory
         );
 
         var joinCategory = new JoinClause(
-            new TableSource("category", "c"),
-            JoinType.Inner,
+            new DatasourceExpression(new TableSource("category"), "category"),
+            "inner join",
             new BinaryExpression(
                 "=",
                 new ColumnExpression("p", "category_id"),
@@ -280,11 +280,11 @@ public static class SelectQueryFactory
             ), "category_ratio")
         );
 
-        var mainFromClause = new FromClause(new TableSource("sale", "s"));
+        var mainFromClause = new FromClause(new DatasourceExpression(new TableSource("sale"), "sale"));
 
         var mainJoinProduct = new JoinClause(
-            new TableSource("product", "p"),
-            JoinType.Inner,
+            new DatasourceExpression(new TableSource("product"), "product"),
+            "inner join",
             new BinaryExpression(
                 "=",
                 new ColumnExpression("s", "product_id"),
@@ -293,8 +293,8 @@ public static class SelectQueryFactory
         );
 
         var mainJoinCategory = new JoinClause(
-            new TableSource("category", "c"),
-            JoinType.Inner,
+            new DatasourceExpression(new TableSource("category"), "c"),
+            "inner join",
             new BinaryExpression(
                 "=",
                 new ColumnExpression("p", "category_id"),
@@ -303,8 +303,8 @@ public static class SelectQueryFactory
         );
 
         var mainJoinDailySales = new JoinClause(
-            new TableSource("DailySales", "ds"),
-            JoinType.Inner,
+            new DatasourceExpression(new TableSource("DailySales"), "ds"),
+            "inner join",
             new BinaryExpression(
                 "=",
                 new ColumnExpression("s", "sale_date"),
@@ -313,8 +313,8 @@ public static class SelectQueryFactory
         );
 
         var mainJoinCategorySales = new JoinClause(
-            new TableSource("CategorySales", "cs"),
-            JoinType.Inner,
+            new DatasourceExpression(new TableSource("CategorySales"), "cs"),
+            "inner join",
             new BinaryExpression(
                 "AND",
                 new BinaryExpression(
@@ -371,7 +371,7 @@ public static class SelectQueryFactory
             new SelectExpression(new ColumnExpression("ColumnName2"), "alias2")
         );
 
-        var fromClause = new FromClause(new TableSource("TableName"));
+        var fromClause = new FromClause(new DatasourceExpression(new TableSource("TableName")));
 
         var whereClause = new WhereClause(
             new BinaryExpression(
@@ -452,7 +452,7 @@ public static class SelectQueryFactory
                     "number"
                 )
             ),
-            new FromClause(new TableSource("number_series"))
+            new FromClause(new DatasourceExpression(new TableSource("number_series")))
         )
         {
             WhereClause = new WhereClause(
@@ -481,7 +481,7 @@ public static class SelectQueryFactory
             columns.Select(column => new SelectExpression(new ColumnExpression(subQueryAlias, column)))
         );
 
-        var fromClause = new FromClause(new SubQuerySource(subQuery, subQueryAlias));
+        var fromClause = new FromClause(new DatasourceExpression(new SubQuerySource(subQuery), subQueryAlias));
 
         var query = new SelectQuery(selectClause, fromClause);
 
@@ -495,7 +495,7 @@ public static class SelectQueryFactory
         var selectClause = new SelectClause(
             new SelectExpression(new ColumnExpression("*"))
         );
-        var fromClause = new FromClause(new TableSource(cteName));
+        var fromClause = new FromClause(new DatasourceExpression(new TableSource(cteName)));
 
         var selectQuery = new SelectQuery(selectClause, fromClause);
         selectQuery.WithClause.CommonTableClauses.Add(commonTableClause);
@@ -508,7 +508,7 @@ public static class SelectQueryFactory
         var selectClause = new SelectClause(
             columns.ToList().Select(column => new SelectExpression(new ColumnExpression(tableAlias, column)))
         );
-        var fromClause = new FromClause(new TableSource(tableName, tableAlias));
+        var fromClause = new FromClause(new DatasourceExpression(new TableSource(tableName), tableAlias));
         return new SelectQuery(selectClause, fromClause);
     }
 
@@ -517,7 +517,7 @@ public static class SelectQueryFactory
         var selectClause = new SelectClause(
             new SelectExpression(new ColumnExpression("*"))
         );
-        var fromClause = new FromClause(new TableSource(tableName));
+        var fromClause = new FromClause(new DatasourceExpression(new TableSource(tableName)));
         return new SelectQuery(selectClause, fromClause);
     }
 

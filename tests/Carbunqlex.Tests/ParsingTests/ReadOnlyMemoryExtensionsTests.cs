@@ -260,7 +260,7 @@ public class ReadOnlyMemoryExtensionsTests
     [Fact]
     public void DisplayAllSqlKeywords()
     {
-        var keywords = SqlKeyword.CommandKeywords.Values;
+        var keywords = SqlKeyword.CommandKeywordNodes.Values;
 
         foreach (var keyword in keywords)
         {

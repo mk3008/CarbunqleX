@@ -1,67 +1,43 @@
-﻿using System.Text;
-
-namespace Carbunqlex.Parsing;
-
-public readonly struct SqlKeywordNode
-{
-    private static readonly IReadOnlyDictionary<string, SqlKeywordNode> EmptyDictionary = new Dictionary<string, SqlKeywordNode>();
-
-    public string Keyword { get; init; }
-    public IReadOnlyDictionary<string, SqlKeywordNode> Children { get; init; }
-    public bool IsTerminal { get; init; }
-    public SqlKeywordNode(string keyword, bool isTerminal, IEnumerable<SqlKeywordNode> children)
-    {
-        if (keyword == null) throw new ArgumentNullException(nameof(keyword));
-        if (children == null) throw new ArgumentNullException(nameof(children));
-        Keyword = keyword;
-        Children = children.ToDictionary(x => x.Keyword);
-        IsTerminal = isTerminal;
-    }
-    public SqlKeywordNode(string keyword)
-    {
-        if (keyword == null) throw new ArgumentNullException(nameof(keyword));
-        Keyword = keyword;
-        IsTerminal = true;
-        Children = EmptyDictionary;
-    }
-
-    public string ToTreeString(int indent = 0)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine($"{new string(' ', indent)}{Keyword} {(IsTerminal ? "[terminal]" : "")}");
-        foreach (var child in Children.Values)
-        {
-            sb.Append(child.ToTreeString(indent + 2));
-        }
-        return sb.ToString();
-    }
-}
+﻿namespace Carbunqlex.Parsing;
 
 public static class SqlKeyword
 {
-    public static IReadOnlyDictionary<string, SqlKeywordNode> CommandKeywords = SqlKeywordBuilder.Build(GetCommandKeywords()).ToDictionary(node => node.Keyword, node => node);
-
-    public static IReadOnlyDictionary<string, SqlKeywordNode> ConstantValueKeywords = SqlKeywordBuilder.Build(GetConstantValueKeywords()).ToDictionary(node => node.Keyword, node => node);
-
-    public static IReadOnlyDictionary<string, SqlKeywordNode> OperatorKeywordNodes = SqlKeywordBuilder.Build(GetOperatorKeywords()).ToDictionary(node => node.Keyword, node => node);
-
-    public static readonly IReadOnlyDictionary<string, SqlKeywordNode> AllKeywordNodes = SqlKeywordBuilder.Build(AllKeywords).ToDictionary(node => node.Keyword, node => node);
-
-    private static HashSet<string> AllKeywords => GetOperatorKeywords().Concat(GetConstantValueKeywords()).Concat(GetCommandKeywords()).ToHashSet();
-
-    private static HashSet<string> GetOperatorKeywords()
+    static SqlKeyword()
     {
-        return [
+        JoinKeywords = new HashSet<string>
+        {
+            //join
+            "join",
+            "lateral",
+            "inner join",
+            "left join",
+            //"left join lateral",
+            "left outer join",
+            //"left outer join lateral",
+            "right join",
+            //"right join lateral",
+            "right outer join",
+            //"right outer join lateral",
+            "full join",
+            "cross join",
+            //"cross join lateral",
+            "natural join",
+            "natural inner join",
+            "natural left join",
+            "natural right join",
+            "natural full join",
+        };
+
+        OperatorKeywords = new HashSet<string>
+        {
             "is",
             "is not",
             "and",
             "or"
-            ];
-    }
+        };
 
-    private static HashSet<string> GetConstantValueKeywords()
-    {
-        return [
+        ConstantValueKeywords = new HashSet<string>
+        {
             "null",
             "true",
             "false",
@@ -80,12 +56,10 @@ public static class SqlKeyword
             "localtime",
             "localtimestamp",
             "unbounded",
-        ];
-    }
+        };
 
-    private static HashSet<string> GetCommandKeywords()
-    {
-        return [
+        CommandKeywords = new HashSet<string>
+        {
             //common
             "as",
             //with
@@ -110,26 +84,7 @@ public static class SqlKeyword
             "with ordinality",
             "table",
             "table only",
-            //join
-            "join",
             "lateral",
-            "inner join",
-            "left join",
-            "left join lateral",
-            "left outer join",
-            "left outer join lateral",
-            "right join",
-            "right join lateral",
-            "right outer join",
-            "right outer join lateral",
-            "full join",
-            "cross join",
-            "cross join lateral",
-            "natural join",
-            "natural inner join",
-            "natural left join",
-            "natural right join",
-            "natural full join",
             "on",
             "using",
             //where
@@ -395,6 +350,38 @@ public static class SqlKeyword
             "inet",
             "cidr",
             "macaddr"
-        ];
+        };
+
+        AllKeywords = OperatorKeywords.Concat(ConstantValueKeywords).Concat(CommandKeywords).Concat(JoinKeywords).ToHashSet();
+
+        JoinKeywordNodes = SqlKeywordBuilder.Build(JoinKeywords).ToDictionary(node => node.Keyword, node => node);
+
+        CommandKeywordNodes = SqlKeywordBuilder.Build(CommandKeywords).ToDictionary(node => node.Keyword, node => node);
+
+        ConstantValueKeywordNodes = SqlKeywordBuilder.Build(ConstantValueKeywords).ToDictionary(node => node.Keyword, node => node);
+
+        OperatorKeywordNodes = SqlKeywordBuilder.Build(OperatorKeywords).ToDictionary(node => node.Keyword, node => node);
+
+        AllKeywordNodes = SqlKeywordBuilder.Build(AllKeywords).ToDictionary(node => node.Keyword, node => node);
     }
+
+    public static IReadOnlyDictionary<string, SqlKeywordNode> CommandKeywordNodes { get; }
+
+    public static IReadOnlyDictionary<string, SqlKeywordNode> ConstantValueKeywordNodes { get; }
+
+    public static IReadOnlyDictionary<string, SqlKeywordNode> OperatorKeywordNodes { get; }
+
+    public static IReadOnlyDictionary<string, SqlKeywordNode> JoinKeywordNodes { get; }
+
+    public static IReadOnlyDictionary<string, SqlKeywordNode> AllKeywordNodes { get; }
+
+    private static HashSet<string> AllKeywords { get; }
+
+    public static HashSet<string> OperatorKeywords { get; }
+
+    public static HashSet<string> ConstantValueKeywords { get; }
+
+    public static HashSet<string> JoinKeywords { get; }
+
+    public static HashSet<string> CommandKeywords { get; }
 }
