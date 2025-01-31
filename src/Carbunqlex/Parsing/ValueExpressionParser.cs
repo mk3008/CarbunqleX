@@ -48,6 +48,18 @@ public static class ValueExpressionParser
                 tokenizer.Read();
                 return UnaryExpressionParser.Parse(tokenizer, token.Identifier);
             }
+            if (token.Identifier == "cube")
+            {
+                return CubeExpressionParser.Parse(tokenizer);
+            }
+            if (token.Identifier == "rollup")
+            {
+                return RollupExpressionParser.Parse(tokenizer);
+            }
+            if (token.Identifier == "grouping sets")
+            {
+                return GroupingSetsExpressionParser.Parse(tokenizer);
+            }
             return ModifierExpressionParser.Parse(tokenizer);
         }
 

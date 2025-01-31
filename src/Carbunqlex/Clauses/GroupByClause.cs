@@ -37,30 +37,21 @@ public class GroupByClause : ISqlComponent
             return Enumerable.Empty<Token>();
         }
 
-        // Estimate the initial capacity for the tokens list.
-        // Each column can return multiple tokens, so we add a buffer.
-        // For example, a column like "a.value" can return up to 4 tokens:
-        // "a", ".", "value"
-        // Additionally, we add space for commas and the "group by" keyword.
-        int initialCapacity = GroupByColumns.Count * 5 + 1;
-        var tokens = new List<Token>(initialCapacity)
+        var tokens = new List<Token>()
         {
-            new Token(TokenType.StartClause, "group by", "group by")
+            new Token(TokenType.StartClause, "group by")
         };
 
-        foreach (var column in GroupByColumns)
+        for (int i = 0; i < GroupByColumns.Count; i++)
         {
+            var column = GroupByColumns[i];
             tokens.AddRange(column.GenerateTokensWithoutCte());
-            tokens.Add(new Token(TokenType.Comma, ",", "group by"));
+            if (i < GroupByColumns.Count - 1)
+            {
+                tokens.Add(new Token(TokenType.Comma, ","));
+            }
         }
 
-        if (tokens.Count > 1)
-        {
-            // Remove the last comma
-            tokens.RemoveAt(tokens.Count - 1);
-        }
-
-        tokens.Add(new Token(TokenType.EndClause, string.Empty, "group by"));
         return tokens;
     }
 
