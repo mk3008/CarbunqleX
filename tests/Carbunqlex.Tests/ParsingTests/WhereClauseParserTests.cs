@@ -3,9 +3,9 @@ using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ParsingTests;
 
-public class WhereParserTests
+public class WhereClauseParserTests
 {
-    public WhereParserTests(ITestOutputHelper output)
+    public WhereClauseParserTests(ITestOutputHelper output)
     {
         Output = output;
     }
