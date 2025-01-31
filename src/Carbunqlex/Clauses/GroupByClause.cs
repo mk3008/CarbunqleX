@@ -12,6 +12,11 @@ public class GroupByClause : ISqlComponent
         GroupByColumns = groupByColumns.ToList();
     }
 
+    public GroupByClause(List<IValueExpression> groupByColumns)
+    {
+        GroupByColumns = groupByColumns;
+    }
+
     public string ToSqlWithoutCte()
     {
         if (GroupByColumns.Count == 0)
