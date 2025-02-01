@@ -18,6 +18,15 @@ public static class ReadOnlyMemoryExtensions
             return new Token(TokenType.Comma, ",", ",");
         }
 
+        // numeric prefix
+        if (memory.TryReadNumericPrefix(p, out p, out lexeme))
+        {
+            memory.SkipWhiteSpacesAndComments(ref p);
+            var raw = memory.Slice(start, p - start).ToString();
+            end = p;
+            return new Token(TokenType.Constant, lexeme, raw, string.Empty);
+        }
+
         // digit (Prioritize digit check over dot check because there are numbers that start with a dot)
         if (memory.TryReadDigit(p, out p, out lexeme))
         {
@@ -368,6 +377,29 @@ public static class ReadOnlyMemoryExtensions
         lexeme = memory.Slice(start, p - start).ToString();
         endPosition = p;
         return true;
+    }
+
+    private static bool TryReadNumericPrefix(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string lexeme)
+    {
+        foreach (var keyword in SqlKeyword.NumericPrefixKeywords)
+        {
+            if (memory.StartWith(keyword, start, out var p, true))
+            {
+                // Move by the length of the prefix
+                p += keyword.Length;
+
+                if (TryReadDigit(memory, p, out p, out _))
+                {
+                    lexeme = memory.Slice(start, p - start).ToString();
+                    endPosition = p;
+                    return true;
+                }
+                throw new InvalidOperationException($"Invalid numeric prefix at position {start}");
+            }
+        }
+        lexeme = string.Empty;
+        endPosition = start;
+        return false;
     }
 
     /// <summary>

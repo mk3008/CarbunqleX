@@ -4,6 +4,13 @@ public static class SqlKeyword
 {
     static SqlKeyword()
     {
+        NumericPrefixKeywords = new HashSet<string>
+        {
+            "0b",
+            "0o",
+            "0x",
+        };
+
         EscapeLiteralKeywords = new HashSet<string>
         {
             // Postgres
@@ -393,6 +400,8 @@ public static class SqlKeyword
     public static IReadOnlyDictionary<string, SqlKeywordNode> AllKeywordNodes { get; }
 
     private static HashSet<string> AllKeywords { get; }
+
+    public static HashSet<string> NumericPrefixKeywords { get; }
 
     public static HashSet<string> EscapeLiteralKeywords { get; }
 

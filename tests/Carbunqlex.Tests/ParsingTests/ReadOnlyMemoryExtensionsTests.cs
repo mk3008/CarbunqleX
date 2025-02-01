@@ -332,6 +332,36 @@ public class ReadOnlyMemoryExtensionsTests
     }
 
     [Fact]
+    public void ReadLexeme_BinaryConstant()
+    {
+        var memory = new ReadOnlyMemory<char>("0b1101".ToCharArray());
+        var token = memory.ReadLexeme("", 0, out int end);
+        Assert.Equal(TokenType.Constant, token.Type);
+        Assert.Equal("0b1101", token.Value);
+        Assert.Equal(6, end);
+    }
+
+    [Fact]
+    public void ReadLexeme_OctalConstant()
+    {
+        var memory = new ReadOnlyMemory<char>("0o123".ToCharArray());
+        var token = memory.ReadLexeme("", 0, out int end);
+        Assert.Equal(TokenType.Constant, token.Type);
+        Assert.Equal("0o123", token.Value);
+        Assert.Equal(5, end);
+    }
+
+    [Fact]
+    public void ReadLexeme_HexConstant()
+    {
+        var memory = new ReadOnlyMemory<char>("0x123".ToCharArray());
+        var token = memory.ReadLexeme("", 0, out int end);
+        Assert.Equal(TokenType.Constant, token.Type);
+        Assert.Equal("0x123", token.Value);
+        Assert.Equal(5, end);
+    }
+
+    [Fact]
     public void DisplayAllSqlKeywords()
     {
         var keywords = SqlKeyword.CommandKeywordNodes.Values;
