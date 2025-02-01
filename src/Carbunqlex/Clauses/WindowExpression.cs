@@ -5,6 +5,7 @@ namespace Carbunqlex.Clauses;
 public class WindowExpression : ISqlComponent
 {
     public string Alias { get; set; }
+
     public NamelessWindowDefinition WindowFunction { get; }
 
     public WindowExpression(string alias, NamelessWindowDefinition windowFunction)

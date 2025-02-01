@@ -11,6 +11,11 @@ public class WindowClause : ISqlComponent
         WindowExpressions = windowExpressions.ToList();
     }
 
+    public WindowClause(List<WindowExpression> windowExpressions)
+    {
+        WindowExpressions = windowExpressions;
+    }
+
     public string ToSqlWithoutCte()
     {
         if (WindowExpressions.Count == 0)

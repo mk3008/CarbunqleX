@@ -16,7 +16,7 @@ public static class ReadOnlyMemoryExtensions
         {
             //memory.SkipWhiteSpacesAndComments(ref p);
             end = p;
-            return new Token(TokenType.Comma, ",", string.Empty);
+            return new Token(TokenType.Comma, ",", ",");
         }
 
         // dot
@@ -24,7 +24,7 @@ public static class ReadOnlyMemoryExtensions
         {
             //memory.SkipWhiteSpacesAndComments(ref p);
             end = p;
-            return new Token(TokenType.Dot, ".", string.Empty);
+            return new Token(TokenType.Dot, ".", ".");
         }
 
         // single quote 
@@ -68,7 +68,7 @@ public static class ReadOnlyMemoryExtensions
         {
             memory.SkipWhiteSpacesAndComments(ref p);
             end = p;
-            return new Token(TokenType.OpenParen, "(", string.Empty);
+            return new Token(TokenType.OpenParen, "(", "(");
         }
 
         // close parenthesis
@@ -76,7 +76,7 @@ public static class ReadOnlyMemoryExtensions
         {
             memory.SkipWhiteSpacesAndComments(ref p);
             end = p;
-            return new Token(TokenType.CloseParen, ")", string.Empty);
+            return new Token(TokenType.CloseParen, ")", ")");
         }
 
         // open bracket
@@ -84,7 +84,7 @@ public static class ReadOnlyMemoryExtensions
         {
             memory.SkipWhiteSpacesAndComments(ref p);
             end = p;
-            return new Token(TokenType.OpenBracket, "[", string.Empty);
+            return new Token(TokenType.OpenBracket, "[", "[");
         }
 
         // close bracket
@@ -92,7 +92,7 @@ public static class ReadOnlyMemoryExtensions
         {
             memory.SkipWhiteSpacesAndComments(ref p);
             end = p;
-            return new Token(TokenType.CloseBracket, "]", string.Empty);
+            return new Token(TokenType.CloseBracket, "]", "]");
         }
 
         // parameter @
