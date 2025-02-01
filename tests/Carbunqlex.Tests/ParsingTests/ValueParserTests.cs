@@ -61,4 +61,64 @@ public class ValueParserTests
 
         Assert.Equal("column = :value", result.ToSqlWithoutCte());
     }
+
+    [Fact]
+    public void Parse_HandlesUnicodeEscape()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("""
+            U&'d!0061t!+000061' uescape '!'
+            """);
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+        Assert.Equal("""
+            U&'d!0061t!+000061' uescape '!'
+            """, result.ToSqlWithoutCte());
+    }
+
+    [Fact]
+    public void Parse_HandlesHexString()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("""
+            X'68656C6C6F'
+            """);
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+        Assert.Equal("""
+            X'68656C6C6F'
+            """, result.ToSqlWithoutCte());
+    }
+
+    [Fact]
+    public void Parse_HandlesBitString()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("""
+            B'1010101'
+            """);
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+        Assert.Equal("""
+            B'1010101'
+            """, result.ToSqlWithoutCte());
+    }
+
+    [Fact]
+    public void Parse_HandlesEscapeString()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("""
+            E'Hello\nWorld'
+            """);
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+        Assert.Equal("""
+            E'Hello\nWorld'
+            """, result.ToSqlWithoutCte());
+    }
 }

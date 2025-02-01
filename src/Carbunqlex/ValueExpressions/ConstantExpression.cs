@@ -35,4 +35,3 @@ public class ConstantExpression : IValueExpression
         return Enumerable.Empty<ColumnExpression>();
     }
 }
-

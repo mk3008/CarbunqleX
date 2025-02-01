@@ -4,6 +4,15 @@ public static class SqlKeyword
 {
     static SqlKeyword()
     {
+        EscapeLiteralKeywords = new HashSet<string>
+        {
+            // Postgres
+            "E'",
+            "U&'",
+            "X'",
+            "B'",
+        };
+
         JoinKeywords = new HashSet<string>
         {
             //join
@@ -190,6 +199,9 @@ public static class SqlKeyword
             "then",
             "else",
             "end",
+            // escape
+            "escape",
+            "uescape",
             //insert
             "insert into",
             "values",
@@ -355,6 +367,8 @@ public static class SqlKeyword
             "macaddr"
         };
 
+        // EscapeLiteralKeywords are treated as EscapedStringConstant, not Command,
+        // and are not included in AllKeywords
         AllKeywords = OperatorKeywords.Concat(ConstantValueKeywords).Concat(CommandKeywords).Concat(JoinKeywords).ToHashSet();
 
         JoinKeywordNodes = SqlKeywordBuilder.Build(JoinKeywords).ToDictionary(node => node.Keyword, node => node);
@@ -379,6 +393,8 @@ public static class SqlKeyword
     public static IReadOnlyDictionary<string, SqlKeywordNode> AllKeywordNodes { get; }
 
     private static HashSet<string> AllKeywords { get; }
+
+    public static HashSet<string> EscapeLiteralKeywords { get; }
 
     public static HashSet<string> OperatorKeywords { get; }
 

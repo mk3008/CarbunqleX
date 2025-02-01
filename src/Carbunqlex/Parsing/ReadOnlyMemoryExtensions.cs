@@ -14,15 +14,22 @@ public static class ReadOnlyMemoryExtensions
         // comma
         if (memory.StartWith(",", p, out p))
         {
-            //memory.SkipWhiteSpacesAndComments(ref p);
             end = p;
             return new Token(TokenType.Comma, ",", ",");
+        }
+
+        // digit (Prioritize digit check over dot check because there are numbers that start with a dot)
+        if (memory.TryReadDigit(p, out p, out lexeme))
+        {
+            memory.SkipWhiteSpacesAndComments(ref p);
+            var raw = memory.Slice(start, p - start).ToString();
+            end = p;
+            return new Token(TokenType.Constant, lexeme, raw, string.Empty);
         }
 
         // dot
         if (memory.StartWith(".", p, out p))
         {
-            //memory.SkipWhiteSpacesAndComments(ref p);
             end = p;
             return new Token(TokenType.Dot, ".", ".");
         }
@@ -134,13 +141,11 @@ public static class ReadOnlyMemoryExtensions
             return new Token(TokenType.Operator, lexeme, raw, string.Empty);
         }
 
-        // digit
-        if (memory.TryReadDigit(p, out p, out lexeme))
+        // escaped string
+        if (memory.TryReadEscapedString(p, out p, out lexeme))
         {
-            memory.SkipWhiteSpacesAndComments(ref p);
-            var raw = memory.Slice(start, p - start).ToString();
             end = p;
-            return new Token(TokenType.Constant, lexeme, raw, string.Empty);
+            return new Token(TokenType.EscapedStringConstant, lexeme, lexeme, string.Empty);
         }
 
         // word
@@ -365,19 +370,47 @@ public static class ReadOnlyMemoryExtensions
         return true;
     }
 
+    /// <summary>
+    /// Read a digit from the memory.
+    /// Also read notation starting with a dot as a number.
+    /// Underscores are recognized as digit separators.
+    /// </summary>
+    /// <param name="memory"></param>
+    /// <param name="start"></param>
+    /// <param name="endPosition"></param>
+    /// <param name="lexeme"></param>
+    /// <returns></returns>
     private static bool TryReadDigit(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string lexeme)
     {
         endPosition = start;
         var p = start;
         var hasDot = false;
+        var hasExponent = false;
+        var isFirstCharDot = memory.Span[p] == '.';
 
-        if (!char.IsDigit(memory.Span[p]))
+        // Check if the first character is not a digit or a dot
+        if (!char.IsDigit(memory.Span[p]) && !isFirstCharDot)
         {
             lexeme = string.Empty;
             return false;
         }
-        p++;
 
+        // If the first character is a dot, check the next character
+        if (isFirstCharDot)
+        {
+            p++;
+            if (p < memory.Length && char.IsDigit(memory.Span[p]))
+            {
+                p++;
+            }
+            else
+            {
+                lexeme = string.Empty;
+                return false;
+            }
+        }
+
+        // Read digits, dots, and exponents
         while (p < memory.Length)
         {
             if (char.IsDigit(memory.Span[p]) || (memory.Span[p] == '.' && !hasDot))
@@ -388,13 +421,27 @@ public static class ReadOnlyMemoryExtensions
                 }
                 p++;
             }
+            else if ((memory.Span[p] == 'e' || memory.Span[p] == 'E') && !hasExponent)
+            {
+                hasExponent = true;
+                p++;
+                if (p < memory.Length && (memory.Span[p] == '+' || memory.Span[p] == '-'))
+                {
+                    p++;
+                }
+            }
+            else if (memory.Span[p] == '_')
+            {
+                // Skip the underscore
+                p++;
+            }
             else
             {
                 break;
             }
         }
-        endPosition = p;
         lexeme = memory.Slice(start, p - start).ToString();
+        endPosition = p;
         return true;
     }
 
@@ -451,6 +498,45 @@ public static class ReadOnlyMemoryExtensions
         lexeme = memory.Slice(start, p - start).ToString();
         endPosition = p;
         return true;
+    }
+
+    private static bool TryReadEscapedString(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string lexeme)
+    {
+        // Keywords such as "E" and "U&" are included here.
+        // Strings starting with these keywords are treated as string literals.
+        foreach (var keyword in SqlKeyword.EscapeLiteralKeywords)
+        {
+            if (memory.StartWith(keyword, start, out var p, true))
+            {
+                // Read until a single quote is found
+                // However, if single quotes are consecutive, treat them as escape characters
+                while (p < memory.Length)
+                {
+                    if (memory.Span[p] == '\'')
+                    {
+                        if (p + 1 < memory.Length && memory.Span[p + 1] == '\'')
+                        {
+                            p += 2;
+                        }
+                        else
+                        {
+                            p++;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        p++;
+                    }
+                }
+                lexeme = memory.Slice(start, p - start).ToString();
+                endPosition = p;
+                return true;
+            }
+        }
+        lexeme = string.Empty;
+        endPosition = start;
+        return false;
     }
 
     private static bool TryReadWord(this ReadOnlyMemory<char> memory, int start, out int endPosition, out string word)

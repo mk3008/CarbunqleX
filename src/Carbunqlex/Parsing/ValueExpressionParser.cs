@@ -69,6 +69,12 @@ public static class ValueExpressionParser
             return ConstantExpressionParser.Parse(tokenizer);
         }
 
+        // escaped string constant
+        if (token.Type == TokenType.EscapedStringConstant)
+        {
+            return EscapeLiteralExpressionParser.Parse(tokenizer);
+        }
+
         if (token.Type == TokenType.Identifier)
         {
             tokenizer.CommitPeek();

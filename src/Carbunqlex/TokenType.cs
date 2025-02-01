@@ -18,4 +18,5 @@ public enum TokenType : byte
     OpenBracket,
     CloseBracket,
     Comment,
+    EscapedStringConstant,
 }

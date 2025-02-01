@@ -153,6 +153,16 @@ public class ReadOnlyMemoryExtensionsTests
     }
 
     [Fact]
+    public void ReadLexeme_Underscore_ReturnsConstantToken()
+    {
+        var memory = new ReadOnlyMemory<char>("123_456".ToCharArray());
+        var token = memory.ReadLexeme("", 0, out int end);
+        Assert.Equal(TokenType.Constant, token.Type);
+        Assert.Equal("123_456", token.Value);
+        Assert.Equal(7, end);
+    }
+
+    [Fact]
     public void ReadLexeme_Word_ReturnsIdentifierToken()
     {
         var memory = new ReadOnlyMemory<char>("test word".ToCharArray());
@@ -255,6 +265,70 @@ public class ReadOnlyMemoryExtensionsTests
         var memory = new ReadOnlyMemory<char>("Inner/*comment*/Test ".ToCharArray());
         var exception = Assert.Throws<NotSupportedException>(() => memory.ReadLexeme("", 0, out int end));
         Assert.Equal("Unsupported keyword 'Inner Test' of type 'Command' found between positions 0 and 20.", exception.Message);
+    }
+
+    [Fact]
+    public void ReadLexeme_DotStartDigit()
+    {
+        var memory = new ReadOnlyMemory<char>(".001".ToCharArray());
+        var token = memory.ReadLexeme("", 0, out int end);
+        Assert.Equal(TokenType.Constant, token.Type);
+        Assert.Equal(".001", token.Value);
+        Assert.Equal(4, end);
+    }
+
+    [Fact]
+    public void ReadLexeme_DigitDot()
+    {
+        var memory = new ReadOnlyMemory<char>("4.".ToCharArray());
+        var token = memory.ReadLexeme("", 0, out int end);
+        Assert.Equal(TokenType.Constant, token.Type);
+        Assert.Equal("4.", token.Value);
+        Assert.Equal(2, end);
+    }
+
+    [Fact]
+    public void ReadLexeme_ScientificNotation()
+    {
+        var memory = new ReadOnlyMemory<char>("1.23e-4".ToCharArray());
+        var token = memory.ReadLexeme("", 0, out int end);
+        Assert.Equal(TokenType.Constant, token.Type);
+        Assert.Equal("1.23e-4", token.Value);
+        Assert.Equal(7, end);
+    }
+
+    [Fact]
+    public void ReadLexeme_ScientificNotation2()
+    {
+        var memory = new ReadOnlyMemory<char>("1.23e+4".ToCharArray());
+        var token = memory.ReadLexeme("", 0, out int end);
+        Assert.Equal(TokenType.Constant, token.Type);
+        Assert.Equal("1.23e+4", token.Value);
+        Assert.Equal(7, end);
+    }
+
+    [Fact]
+    public void ReadLexeme_ScientificNotation3()
+    {
+        var memory = new ReadOnlyMemory<char>("5e2".ToCharArray());
+        var token = memory.ReadLexeme("", 0, out int end);
+        Assert.Equal(TokenType.Constant, token.Type);
+        Assert.Equal("5e2", token.Value);
+        Assert.Equal(3, end);
+    }
+
+    [Fact]
+    public void ReadLexeme_UnicodeEscape()
+    {
+        var memory = new ReadOnlyMemory<char>("""
+            U&'d\0061t\+000061'
+            """.ToCharArray());
+        var token = memory.ReadLexeme("", 0, out int end);
+        Assert.Equal(TokenType.EscapedStringConstant, token.Type);
+        Assert.Equal("""
+            U&'d\0061t\+000061'
+            """, token.Value);
+        Assert.Equal(19, end);
     }
 
     [Fact]
