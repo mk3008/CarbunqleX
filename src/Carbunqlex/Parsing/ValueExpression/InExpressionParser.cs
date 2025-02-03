@@ -10,7 +10,7 @@ public static class InExpressionParser
     {
         var isnNegated = tokenizer.Read(ParserName, TokenType.Command, token =>
         {
-            return token.Identifier switch
+            return token.CommandOrOperatorText switch
             {
                 "in" => false,
                 "not in" => true,

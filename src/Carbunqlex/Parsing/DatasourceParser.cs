@@ -25,7 +25,7 @@ public class DatasourceParser
 
             next = tokenizer.Peek();
 
-            if (next.Identifier == "as")
+            if (next.CommandOrOperatorText == "as")
             {
                 return new TableSource(identifier.Value);
             }

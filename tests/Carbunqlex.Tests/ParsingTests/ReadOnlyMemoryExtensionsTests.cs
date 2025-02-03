@@ -255,7 +255,7 @@ public class ReadOnlyMemoryExtensionsTests
         Assert.Equal(TokenType.Command, token.Type);
         Assert.Equal("SELECT DISTINCT ON", token.Value);
         Assert.Equal("SELECT/*comment*/DISTINCT--comment\nON ", token.RawValue);
-        Assert.Equal("select distinct on", token.Identifier);
+        Assert.Equal("select distinct on", token.CommandOrOperatorText);
         Assert.Equal(38, end);
     }
 

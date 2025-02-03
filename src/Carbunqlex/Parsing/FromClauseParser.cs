@@ -26,7 +26,7 @@ public class FromClauseParser
 
         while (next.Type == TokenType.Command || next.Type == TokenType.Comma)
         {
-            if (next.Type == TokenType.Comma || SqlKeyword.JoinKeywords.Contains(next.Identifier))
+            if (next.Type == TokenType.Comma || SqlKeyword.JoinKeywords.Contains(next.CommandOrOperatorText))
             {
                 joins.Add(JoinClauseParser.Parse(tokenizer));
             }

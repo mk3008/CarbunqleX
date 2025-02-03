@@ -114,10 +114,11 @@ public class ConstantExpressionParserTests
     public void Parse_EndOfInput_ThrowsInvalidOperationException()
     {
         // Arrange
-        var tokenizer = new SqlTokenizer("");
-
         // Act & Assert
-        var exception = Assert.Throws<SqlParsingException>(() => ConstantExpressionParser.Parse(tokenizer));
-        Assert.Equal("Unexpected end of input.", exception.Message);
+        var exception = Assert.Throws<ArgumentException>(() =>
+        {
+            var tokenizer = new SqlTokenizer("");
+        });
+        Assert.Equal("The value cannot be an empty string or composed entirely of whitespace. (Parameter 'sql')", exception.Message);
     }
 }

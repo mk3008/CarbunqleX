@@ -14,20 +14,20 @@ internal static class WindowFrameBoundaryExpressionParser
     {
         var next = tokenizer.Peek();
 
-        if (next.Identifier == "current row")
+        if (next.CommandOrOperatorText == "current row")
         {
             tokenizer.Read();
-            return new WindowFrameBoundaryKeyword(next.Identifier);
+            return new WindowFrameBoundaryKeyword(next.CommandOrOperatorText);
         }
 
-        if (next.Identifier == "unbounded")
+        if (next.CommandOrOperatorText == "unbounded")
         {
             tokenizer.Read();
             next = tokenizer.Peek();
-            if (next.Identifier == "preceding" || next.Identifier == "following")
+            if (next.CommandOrOperatorText == "preceding" || next.CommandOrOperatorText == "following")
             {
                 tokenizer.Read();
-                return new WindowFrameBoundaryKeyword("unbounded " + next.Identifier);
+                return new WindowFrameBoundaryKeyword("unbounded " + next.CommandOrOperatorText);
             }
             throw SqlParsingExceptionBuilder.UnexpectedToken(ParserName, ["preceding", "following"], tokenizer, next);
         }
@@ -35,10 +35,10 @@ internal static class WindowFrameBoundaryExpressionParser
         var rows = ValueExpressionParser.Parse(tokenizer);
 
         next = tokenizer.Peek();
-        if (next.Identifier == "preceding" || next.Identifier == "following")
+        if (next.CommandOrOperatorText == "preceding" || next.CommandOrOperatorText == "following")
         {
             tokenizer.Read();
-            return new WindowFrameBoundaryExpression(rows, next.Identifier);
+            return new WindowFrameBoundaryExpression(rows, next.CommandOrOperatorText);
         }
         throw SqlParsingExceptionBuilder.UnexpectedToken(ParserName, ["preceding", "following"], tokenizer, next);
     }

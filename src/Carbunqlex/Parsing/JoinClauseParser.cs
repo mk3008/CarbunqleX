@@ -21,7 +21,7 @@ public static class JoinClauseParser
         }
 
         var joinKeyword = tokenizer.Read(ParserName, TokenType.Command);
-        if (!SqlKeyword.JoinKeywords.Contains(joinKeyword.Identifier))
+        if (!SqlKeyword.JoinKeywords.Contains(joinKeyword.CommandOrOperatorText))
         {
             throw SqlParsingExceptionBuilder.UnexpectedToken(ParserName, SqlKeyword.JoinKeywords.ToArray(), tokenizer, joinKeyword);
         }
@@ -34,7 +34,7 @@ public static class JoinClauseParser
 
         bool isLateral = false;
         var next = tokenizer.Peek();
-        if (next.Identifier == "lateral")
+        if (next.CommandOrOperatorText == "lateral")
         {
             tokenizer.CommitPeek();
             isLateral = true;
@@ -48,7 +48,7 @@ public static class JoinClauseParser
         }
 
         next = tokenizer.Peek();
-        if (next.Identifier == "on")
+        if (next.CommandOrOperatorText == "on")
         {
             tokenizer.Read();
             var condition = ValueExpressionParser.Parse(tokenizer);

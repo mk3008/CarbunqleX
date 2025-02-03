@@ -19,21 +19,21 @@ public class WindowFunctionParser
 
         var partitionBy = tokenizer.Peek(static (r, next) =>
         {
-            return next.Identifier == "partition by"
+            return next.CommandOrOperatorText == "partition by"
                 ? PartitionByClauseParser.Parse(r)
                 : null;
         });
 
         var orderBy = tokenizer.Peek(static (r, next) =>
         {
-            return next.Identifier == "order by"
+            return next.CommandOrOperatorText == "order by"
                 ? OrderByClauseParser.Parse(r)
                 : null;
         });
 
         var windowFrame = tokenizer.Peek(static (r, next) =>
         {
-            return next.Identifier == "rows" || next.Identifier == "range" || next.Identifier == "groups"
+            return next.CommandOrOperatorText == "rows" || next.CommandOrOperatorText == "range" || next.CommandOrOperatorText == "groups"
                 ? WindowFrameParser.Parse(r)
                 : null;
         });

@@ -10,7 +10,7 @@ public static class BetweenExpressionParser
     {
         var isNegated = tokenizer.Read(ParserName, TokenType.Command, token =>
         {
-            return token.Identifier switch
+            return token.CommandOrOperatorText switch
             {
                 "between" => false,
                 "not between" => true,

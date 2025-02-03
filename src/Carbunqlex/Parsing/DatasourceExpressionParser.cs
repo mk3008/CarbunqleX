@@ -22,7 +22,7 @@ public class DatasourceExpressionParser
 
         var next = tokenizer.Peek();
 
-        if (next.Identifier == "as")
+        if (next.CommandOrOperatorText == "as")
         {
             // Alias with AS keyword
             tokenizer.CommitPeek();

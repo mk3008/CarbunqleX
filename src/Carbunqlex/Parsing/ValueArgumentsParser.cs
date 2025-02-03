@@ -32,7 +32,7 @@ public static class ValueArgumentsParser
                 return new ValueArguments(args);
             }
 
-            if (token.Identifier == "order by")
+            if (token.CommandOrOperatorText == "order by")
             {
                 var orderByClause = OrderByClauseParser.Parse(tokenizer);
                 var expression = new ValueArguments(args) { OrderByClause = orderByClause };

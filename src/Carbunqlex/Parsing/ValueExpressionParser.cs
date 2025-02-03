@@ -31,32 +31,32 @@ public static class ValueExpressionParser
         // command (e.g., array, modifier)
         if (token.Type == TokenType.Command)
         {
-            if (token.Identifier == "array")
+            if (token.CommandOrOperatorText == "array")
             {
                 return ArrayExpressionParser.Parse(tokenizer);
             }
-            if (token.Identifier == "case")
+            if (token.CommandOrOperatorText == "case")
             {
                 return CaseExpressionParser.Parse(tokenizer); ;
             }
-            if (token.Identifier == "cast")
+            if (token.CommandOrOperatorText == "cast")
             {
                 return CastExpressionParser.Parse(tokenizer);
             }
-            if (token.Identifier == "not")
+            if (token.CommandOrOperatorText == "not")
             {
                 tokenizer.Read();
-                return UnaryExpressionParser.Parse(tokenizer, token.Identifier);
+                return UnaryExpressionParser.Parse(tokenizer, token.CommandOrOperatorText);
             }
-            if (token.Identifier == "cube")
+            if (token.CommandOrOperatorText == "cube")
             {
                 return CubeExpressionParser.Parse(tokenizer);
             }
-            if (token.Identifier == "rollup")
+            if (token.CommandOrOperatorText == "rollup")
             {
                 return RollupExpressionParser.Parse(tokenizer);
             }
-            if (token.Identifier == "grouping sets")
+            if (token.CommandOrOperatorText == "grouping sets")
             {
                 return GroupingSetsExpressionParser.Parse(tokenizer);
             }
@@ -107,7 +107,7 @@ public static class ValueExpressionParser
             tokenizer.CommitPeek();
 
             var next = tokenizer.Peek();
-            if (next.Identifier == "infinity")
+            if (next.Value.Equals("infinity", StringComparison.InvariantCultureIgnoreCase))
             {
                 // -infinity
                 tokenizer.CommitPeek();
@@ -148,17 +148,17 @@ public static class ValueExpressionParser
 
         if (nextToken.Type == TokenType.Command)
         {
-            if (nextToken.Identifier == "between" || nextToken.Identifier == "not between")
+            if (nextToken.CommandOrOperatorText == "between" || nextToken.CommandOrOperatorText == "not between")
             {
                 renewValue = BetweenExpressionParser.Parse(tokenizer, left);
                 return true;
             }
-            if (nextToken.Identifier == "like" || nextToken.Identifier == "not like")
+            if (nextToken.CommandOrOperatorText == "like" || nextToken.CommandOrOperatorText == "not like")
             {
                 renewValue = LikeExpressionParser.Parse(tokenizer, left);
                 return true;
             }
-            if (nextToken.Identifier == "in" || nextToken.Identifier == "not in")
+            if (nextToken.CommandOrOperatorText == "in" || nextToken.CommandOrOperatorText == "not in")
             {
                 renewValue = InExpressionParser.Parse(tokenizer, left);
                 return true;
@@ -169,7 +169,7 @@ public static class ValueExpressionParser
         {
             // ignore operators
             // In the case of "between", "and" is not treated as an operator, and if detected, break.
-            if (ignoreOperators != null && ignoreOperators.Contains(nextToken.Value))
+            if (ignoreOperators != null && ignoreOperators.Contains(nextToken.Value.ToLower()))
             {
                 renewValue = left;
                 return false;

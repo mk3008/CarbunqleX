@@ -14,7 +14,7 @@ public static class EscapeLiteralExpressionParser
             return new EscapeLiteralExpression(token.Value);
         }
 
-        if (tokenizer.Peek().Identifier == "uescape")
+        if (tokenizer.Peek().CommandOrOperatorText == "uescape")
         {
             tokenizer.CommitPeek();
             var escapeOption = tokenizer.Read(ParserName, TokenType.Constant).Value;

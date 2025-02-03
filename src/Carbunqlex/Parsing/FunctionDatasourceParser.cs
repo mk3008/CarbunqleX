@@ -71,7 +71,7 @@ public class FunctionDatasourceParser
         }
 
         var next = tokenizer.Peek();
-        if (next.Identifier == "with ordinality")
+        if (next.CommandOrOperatorText == "with ordinality")
         {
             tokenizer.CommitPeek();
             return true;

@@ -6,17 +6,36 @@ public class SqlTokenizer
 {
     public SqlTokenizer(string sql)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sql, nameof(sql));
+
         Memory = sql.AsMemory();
         PreviousIdentifier = string.Empty;
+        PeekPosition = 0;
     }
 
+    /// <summary>
+    /// The input string to tokenize.
+    /// </summary>
     private ReadOnlyMemory<char> Memory { get; }
 
+    /// <summary>
+    /// The current position in the input string.
+    /// </summary>
     public int Position { get; private set; }
 
+    /// <summary>
+    /// The token that was peeked at.
+    /// </summary>
     private Token? PeekToken;
+
+    /// <summary>
+    /// The position of the peeked token.
+    /// </summary>
     private int PeekPosition;
 
+    /// <summary>
+    /// Indicates if the tokenizer has reached the end of the input string.
+    /// </summary>
     public bool IsEnd => Position >= Memory.Length;
 
     public string PreviousIdentifier { get; private set; }
@@ -115,32 +134,32 @@ public class SqlTokenizer
     public Token Read()
     {
         var token = ReadCore();
-        PreviousIdentifier = token.Identifier;
+        PreviousIdentifier = token.CommandOrOperatorText;
         return token;
     }
 
-    public Token Read(string sender, string expectedIdentifier)
+    public Token Read(string sender, string expectedCommand)
     {
         if (TryRead(out var token))
         {
-            if (token.Identifier == expectedIdentifier)
+            if (token.CommandOrOperatorText == expectedCommand)
             {
                 return token;
             }
-            throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(sender, expectedIdentifier, this, token);
+            throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(sender, expectedCommand, this, token);
         }
         throw SqlParsingExceptionBuilder.EndOfInput(sender, this);
     }
 
-    public Token Read(string sender, params string[] expectedIdentifiers)
+    public Token Read(string sender, params string[] expectedCommands)
     {
         if (TryRead(out var token))
         {
-            if (expectedIdentifiers.Contains(token.Identifier))
+            if (expectedCommands.Contains(token.CommandOrOperatorText))
             {
                 return token;
             }
-            throw SqlParsingExceptionBuilder.UnexpectedToken(sender, expectedIdentifiers, this, token);
+            throw SqlParsingExceptionBuilder.UnexpectedToken(sender, expectedCommands, this, token);
         }
         throw SqlParsingExceptionBuilder.EndOfInput(sender, this);
     }

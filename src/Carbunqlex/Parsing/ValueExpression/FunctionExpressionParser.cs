@@ -35,19 +35,19 @@ public static class FunctionExpressionParser
         // TODO: Add support for FILTER, WITHIN GROUP, OVER clauses
         next = tokenizer.Peek();
 
-        if (next.Identifier == "filter")
+        if (next.CommandOrOperatorText == "filter")
         {
             var filter = FilterClauseParser.Parse(tokenizer);
             return new FunctionExpression(function.Value, prefixModifier, args, filter);
         }
 
-        if (next.Identifier == "within group")
+        if (next.CommandOrOperatorText == "within group")
         {
             var withinGroup = WithinGroupClauseParser.Parse(tokenizer);
             return new FunctionExpression(function.Value, prefixModifier, args, withinGroup);
         }
 
-        if (next.Identifier == "over")
+        if (next.CommandOrOperatorText == "over")
         {
             var over = OverClauseParser.Parse(tokenizer);
             return new FunctionExpression(function.Value, prefixModifier, args, over);
@@ -73,7 +73,7 @@ public static class FunctionExpressionParser
         }
 
         var next = tokenizer.Peek();
-        if (next.Identifier == "order by")
+        if (next.CommandOrOperatorText == "order by")
         {
             var orderBy = OrderByClauseParser.Parse(tokenizer);
             return new ValueArguments(args, orderBy);

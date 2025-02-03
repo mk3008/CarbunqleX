@@ -31,7 +31,7 @@ public static class SqlParsingExceptionBuilder
     }
     public static SqlParsingException UnexpectedTokenIdentifier(string parser, string expectedIdentifier, SqlTokenizer tokenizer, Token actualToken)
     {
-        return new SqlParsingException($"Unexpected token identifier encountered. Expected: {expectedIdentifier}, Actual: {actualToken.Identifier}, Position: {tokenizer.Position}", parser, tokenizer.Position, actualToken);
+        return new SqlParsingException($"Unexpected token identifier encountered. Expected: {expectedIdentifier}, Actual: {actualToken.CommandOrOperatorText}, Position: {tokenizer.Position}", parser, tokenizer.Position, actualToken);
     }
 
     public static SqlParsingException UnexpectedTokenType(string sender, TokenType[] expectedTokenTypes, SqlTokenizer sqlTokenizer, Token token)

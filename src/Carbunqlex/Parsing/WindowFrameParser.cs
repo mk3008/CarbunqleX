@@ -11,10 +11,10 @@ public static class WindowFrameParser
 
     public static BetweenWindowFrame Parse(SqlTokenizer tokenizer)
     {
-        var type = tokenizer.Read(ParserName, "rows", "range", "groups").Identifier;
+        var type = tokenizer.Read(ParserName, "rows", "range", "groups").CommandOrOperatorText;
 
         var next = tokenizer.Peek();
-        if (next.Identifier == "between")
+        if (next.CommandOrOperatorText == "between")
         {
             var value = BetweenWindowFrameBoundaryParser.Parse(tokenizer);
             return new BetweenWindowFrame(type, value);

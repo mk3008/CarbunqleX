@@ -20,7 +20,7 @@ public class FilterClauseParser
         }
 
         var next = tokenizer.Peek();
-        if (next.Identifier == "over")
+        if (next.CommandOrOperatorText == "over")
         {
             var overClause = OverClauseParser.Parse(tokenizer);
             return new FilterClause(whereClause, overClause);

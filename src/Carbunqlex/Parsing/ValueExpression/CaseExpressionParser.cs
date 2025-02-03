@@ -13,7 +13,7 @@ public static class CaseExpressionParser
 
         var caseValue = tokenizer.Peek(token =>
         {
-            return token.Identifier == "when" ? null : ValueExpressionParser.Parse(tokenizer);
+            return token.CommandOrOperatorText == "when" ? null : ValueExpressionParser.Parse(tokenizer);
         }, null);
 
         var whenClauses = ParseWhenThenPair(tokenizer).ToList();
@@ -26,9 +26,9 @@ public static class CaseExpressionParser
 
         var elseOrEndToken = tokenizer.Read(ParserName, TokenType.Command);
 
-        var elseValue = elseOrEndToken.Identifier == "end"
+        var elseValue = elseOrEndToken.CommandOrOperatorText == "end"
             ? null
-            : elseOrEndToken.Identifier == "else"
+            : elseOrEndToken.CommandOrOperatorText == "else"
                    ? ValueExpressionParser.Parse(tokenizer)
                    : throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(ParserName, "'else' or 'end'", tokenizer, elseOrEndToken);
 
@@ -48,7 +48,7 @@ public static class CaseExpressionParser
 
     private static IEnumerable<WhenClause> ParseWhenThenPair(SqlTokenizer tokenizer)
     {
-        while (tokenizer.TryPeek(out var token) && token.Identifier == "when")
+        while (tokenizer.TryPeek(out var token) && token.CommandOrOperatorText == "when")
         {
             tokenizer.CommitPeek();
             var whenValue = ValueExpressionParser.Parse(tokenizer);

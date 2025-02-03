@@ -10,7 +10,7 @@ public static class LikeExpressionParser
     {
         var isnNegated = tokenizer.Read(ParserName, TokenType.Command, token =>
         {
-            return token.Identifier switch
+            return token.CommandOrOperatorText switch
             {
                 "like" => false,
                 "not like" => true,
@@ -20,7 +20,7 @@ public static class LikeExpressionParser
 
         var right = ValueExpressionParser.Parse(tokenizer);
 
-        if (tokenizer.Peek(t => t.Identifier == "escape" ? true : false, false))
+        if (tokenizer.Peek(t => t.CommandOrOperatorText == "escape" ? true : false, false))
         {
             tokenizer.CommitPeek();
             var escapeOption = tokenizer.Read(ParserName, TokenType.Constant).Value;

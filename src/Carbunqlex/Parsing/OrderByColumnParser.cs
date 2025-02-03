@@ -23,7 +23,7 @@ public class OrderByColumnParser
             return true;
         }
 
-        var next = tokenizer.Peek(token => token.Identifier);
+        var next = tokenizer.Peek(token => token.CommandOrOperatorText);
 
         if (next == "asc" || next == "desc")
         {
@@ -41,7 +41,7 @@ public class OrderByColumnParser
             return null;
         }
 
-        var next = tokenizer.Peek(token => token.Identifier);
+        var next = tokenizer.Peek(token => token.CommandOrOperatorText);
 
         if (next == "nulls first" || next == "nulls last")
         {
