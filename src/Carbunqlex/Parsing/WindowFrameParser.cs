@@ -7,11 +7,9 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 public static class WindowFrameParser
 {
-    private static string ParserName => nameof(WindowFrameParser);
-
     public static BetweenWindowFrame Parse(SqlTokenizer tokenizer)
     {
-        var type = tokenizer.Read(ParserName, "rows", "range", "groups").CommandOrOperatorText;
+        var type = tokenizer.Read("rows", "range", "groups").CommandOrOperatorText;
 
         var next = tokenizer.Peek();
         if (next.CommandOrOperatorText == "between")

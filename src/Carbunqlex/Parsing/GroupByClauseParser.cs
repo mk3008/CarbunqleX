@@ -5,11 +5,9 @@ namespace Carbunqlex.Parsing;
 
 public class GroupByClauseParser
 {
-    private static string ParserName => nameof(GroupByClauseParser);
-
     public static GroupByClause Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "group by");
+        tokenizer.Read("group by");
 
         var expressions = new List<IValueExpression>();
         while (true)

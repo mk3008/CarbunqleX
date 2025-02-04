@@ -4,11 +4,9 @@ namespace Carbunqlex.Parsing;
 
 public class OverClauseParser
 {
-    private static string ParserName => nameof(OverClauseParser);
-
     public static OverClause Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "over");
+        tokenizer.Read("over");
 
         var windowFunction = WindowFunctionParser.Parse(tokenizer);
 

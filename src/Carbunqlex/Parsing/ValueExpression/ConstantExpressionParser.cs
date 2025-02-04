@@ -4,11 +4,9 @@ namespace Carbunqlex.Parsing.ValueExpressionParsing;
 
 public static class ConstantExpressionParser
 {
-    private static string Name => nameof(ConstantExpressionParser);
-
     public static ConstantExpression Parse(SqlTokenizer tokenizer)
     {
-        var token = tokenizer.Read(Name, TokenType.Constant);
+        var token = tokenizer.Read(TokenType.Constant);
         return new ConstantExpression(token.Value);
     }
 }

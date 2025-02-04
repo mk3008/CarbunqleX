@@ -7,11 +7,9 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 public static class WindowClauseParser
 {
-    private static string ParserName => nameof(WindowClauseParser);
-
     public static WindowClause Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "window");
+        tokenizer.Read("window");
 
         var windowExpressions = new List<WindowExpression>();
 
@@ -33,20 +31,19 @@ public static class WindowClauseParser
 
         return new WindowClause(windowExpressions.ToArray());
     }
-}
 
-public static class WindowExpressionParser
-{
-    private static string ParserName => nameof(WindowExpressionParser);
-    public static WindowExpression Parse(SqlTokenizer tokenizer)
+    private static class WindowExpressionParser
     {
-        var alias = tokenizer.Read(ParserName, TokenType.Identifier).Value;
-        tokenizer.Read(ParserName, "as");
-        var windowFunction = WindowFunctionParser.Parse(tokenizer);
-        if (windowFunction is NamelessWindowDefinition w)
+        public static WindowExpression Parse(SqlTokenizer tokenizer)
         {
-            return new WindowExpression(alias, w);
+            var alias = tokenizer.Read(TokenType.Identifier).Value;
+            tokenizer.Read("as");
+            var windowFunction = WindowFunctionParser.Parse(tokenizer);
+            if (windowFunction is NamelessWindowDefinition w)
+            {
+                return new WindowExpression(alias, w);
+            }
+            throw new Exception("Named window definition expected");
         }
-        throw new Exception("Named window definition expected");
     }
 }

@@ -7,8 +7,6 @@ namespace Carbunqlex.Parsing;
 
 public static class ValueExpressionParser
 {
-    private static string ParserName => nameof(ValueExpressionParser);
-
     public static IValueExpression Parse(SqlTokenizer tokenizer, string[]? ignoreOperators = null)
     {
         var current = ParseAsCurrent(tokenizer);
@@ -25,7 +23,7 @@ public static class ValueExpressionParser
     {
         if (!tokenizer.TryPeek(out var token))
         {
-            throw SqlParsingExceptionBuilder.EndOfInput(ParserName, tokenizer); ;
+            throw SqlParsingExceptionBuilder.EndOfInput(tokenizer); ;
         }
 
         // command (e.g., array, modifier)
@@ -127,7 +125,7 @@ public static class ValueExpressionParser
             return ParameterExpressionParser.Parse(tokenizer);
         }
 
-        throw SqlParsingExceptionBuilder.UnexpectedTokenType(ParserName, TokenType.Identifier, tokenizer, token);
+        throw SqlParsingExceptionBuilder.UnexpectedTokenType(tokenizer, TokenType.Identifier, token);
     }
 
     /// <summary>
@@ -182,21 +180,5 @@ public static class ValueExpressionParser
         // no next expression
         renewValue = left;
         return false;
-    }
-
-    [Obsolete("Use ParseArguments instead.")]
-    public static IEnumerable<IValueExpression> ParseArguments(SqlTokenizer tokenizer, TokenType openTokenType, TokenType closeTokenType)
-    {
-        tokenizer.Read(ParserName, openTokenType);
-        while (true)
-        {
-            yield return Parse(tokenizer);
-
-            var token = tokenizer.Read(ParserName, closeTokenType, TokenType.Comma);
-            if (token.Type == closeTokenType)
-            {
-                break;
-            }
-        }
     }
 }

@@ -72,7 +72,7 @@ public class SqlTokenizer
         {
             return action(token);
         }
-        throw SqlParsingExceptionBuilder.EndOfInput(nameof(SqlTokenizer), this);
+        throw SqlParsingExceptionBuilder.EndOfInput(this);
     }
 
     public T Peek<T>(Func<SqlTokenizer, Token, T> action)
@@ -81,7 +81,7 @@ public class SqlTokenizer
         {
             return action(this, token);
         }
-        throw SqlParsingExceptionBuilder.EndOfInput(nameof(SqlTokenizer), this);
+        throw SqlParsingExceptionBuilder.EndOfInput(this);
     }
 
     public T Peek<T>(Func<Token, T> action, T defaultValue)
@@ -102,7 +102,7 @@ public class SqlTokenizer
         {
             return token;
         }
-        throw SqlParsingExceptionBuilder.EndOfInput(nameof(SqlTokenizer), this);
+        throw SqlParsingExceptionBuilder.EndOfInput(this);
     }
 
     public bool TryRead(out Token token)
@@ -138,7 +138,7 @@ public class SqlTokenizer
         return token;
     }
 
-    public Token Read(string sender, string expectedCommand)
+    public Token Read(string expectedCommand)
     {
         if (TryRead(out var token))
         {
@@ -146,12 +146,12 @@ public class SqlTokenizer
             {
                 return token;
             }
-            throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(sender, expectedCommand, this, token);
+            throw SqlParsingExceptionBuilder.UnexpectedToken(this, expectedCommand, token);
         }
-        throw SqlParsingExceptionBuilder.EndOfInput(sender, this);
+        throw SqlParsingExceptionBuilder.EndOfInput(this);
     }
 
-    public Token Read(string sender, params string[] expectedCommands)
+    public Token Read(params string[] expectedCommands)
     {
         if (TryRead(out var token))
         {
@@ -159,18 +159,18 @@ public class SqlTokenizer
             {
                 return token;
             }
-            throw SqlParsingExceptionBuilder.UnexpectedToken(sender, expectedCommands, this, token);
+            throw SqlParsingExceptionBuilder.UnexpectedToken(this, expectedCommands, token);
         }
-        throw SqlParsingExceptionBuilder.EndOfInput(sender, this);
+        throw SqlParsingExceptionBuilder.EndOfInput(this);
     }
 
-    public T Read<T>(string sender, TokenType expectedTokenType, Func<Token, T> action)
+    public T Read<T>(TokenType expectedTokenType, Func<Token, T> action)
     {
-        var token = Read(sender, expectedTokenType);
+        var token = Read(expectedTokenType);
         return action(token);
     }
 
-    public Token Read(string sender, TokenType expectedTokenType)
+    public Token Read(TokenType expectedTokenType)
     {
         if (TryRead(out var token))
         {
@@ -179,12 +179,12 @@ public class SqlTokenizer
                 return token;
             }
 
-            throw SqlParsingExceptionBuilder.UnexpectedTokenType(sender, expectedTokenType, this, token);
+            throw SqlParsingExceptionBuilder.UnexpectedTokenType(this, expectedTokenType, token);
         }
-        throw SqlParsingExceptionBuilder.EndOfInput(sender, this);
+        throw SqlParsingExceptionBuilder.EndOfInput(this);
     }
 
-    public Token Read(string sender, params TokenType[] expectedTokenTypes)
+    public Token Read(params TokenType[] expectedTokenTypes)
     {
         if (TryRead(out var token))
         {
@@ -192,8 +192,8 @@ public class SqlTokenizer
             {
                 return token;
             }
-            throw SqlParsingExceptionBuilder.UnexpectedTokenType(sender, expectedTokenTypes, this, token);
+            throw SqlParsingExceptionBuilder.UnexpectedTokenType(this, expectedTokenTypes, token);
         }
-        throw SqlParsingExceptionBuilder.EndOfInput(sender, this);
+        throw SqlParsingExceptionBuilder.EndOfInput(this);
     }
 }

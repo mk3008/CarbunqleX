@@ -7,8 +7,6 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 internal static class WindowFrameBoundaryParser
 {
-    private static string ParserName => nameof(WindowFrameBoundaryParser);
-
     public static WindowFrameBoundary Parse(SqlTokenizer tokenizer)
     {
         return new WindowFrameBoundary(WindowFrameBoundaryExpressionParser.Parse(tokenizer));

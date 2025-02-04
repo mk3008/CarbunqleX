@@ -2,45 +2,44 @@
 
 public class SqlParsingException : Exception
 {
-    public SqlParsingException(string message, string parser, int position, Token token) : base(message)
+    public SqlParsingException(string message, int position, Token token) : base(message)
     {
-        Parser = parser;
         Position = position;
         Token = token;
     }
 
-    public string Parser { get; }
     public int Position { get; }
     public Token Token { get; }
 }
 
 public static class SqlParsingExceptionBuilder
 {
-    public static SqlParsingException EmptyArgument(string parser, SqlTokenizer tokenizer)
+    public static SqlParsingException EmptyArgument(SqlTokenizer tokenizer)
     {
-        return new SqlParsingException("Empty argument.", parser, tokenizer.Position, Token.Empty);
+        return new SqlParsingException("Empty argument.", tokenizer.Position, Token.Empty);
     }
 
-    public static SqlParsingException EndOfInput(string parser, SqlTokenizer tokenizer)
+    public static SqlParsingException EndOfInput(SqlTokenizer tokenizer)
     {
-        return new SqlParsingException("Unexpected end of input.", parser, tokenizer.Position, Token.Empty);
+        return new SqlParsingException("Unexpected end of input.", tokenizer.Position, Token.Empty);
     }
-    public static SqlParsingException UnexpectedTokenType(string parser, TokenType expectedType, SqlTokenizer tokenizer, Token actualToken)
+    public static SqlParsingException UnexpectedTokenType(SqlTokenizer tokenizer, TokenType expectedType, Token actualToken)
     {
-        return new SqlParsingException($"Unexpected token type encountered. Expected: {expectedType}, Actual: {actualToken.Type}, Position: {tokenizer.Position}", parser, tokenizer.Position, actualToken);
-    }
-    public static SqlParsingException UnexpectedTokenIdentifier(string parser, string expectedIdentifier, SqlTokenizer tokenizer, Token actualToken)
-    {
-        return new SqlParsingException($"Unexpected token identifier encountered. Expected: {expectedIdentifier}, Actual: {actualToken.CommandOrOperatorText}, Position: {tokenizer.Position}", parser, tokenizer.Position, actualToken);
+        return new SqlParsingException($"Unexpected token type encountered. Expected: {expectedType}, Actual: {actualToken.Type}, Position: {tokenizer.Position}", tokenizer.Position, actualToken);
     }
 
-    public static SqlParsingException UnexpectedTokenType(string sender, TokenType[] expectedTokenTypes, SqlTokenizer sqlTokenizer, Token token)
+    public static SqlParsingException UnexpectedTokenType(SqlTokenizer sqlTokenizer, TokenType[] expectedTokenTypes, Token actualToken)
     {
-        return new SqlParsingException($"Unexpected token type encountered. Expected: {string.Join(" or ", expectedTokenTypes)}, Actual: {token.Type}, Position: {sqlTokenizer.Position}", sender, sqlTokenizer.Position, token);
+        return new SqlParsingException($"Unexpected token type encountered. Expected: {string.Join(" or ", expectedTokenTypes)}, Actual: {actualToken.Type}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, actualToken);
     }
 
-    public static SqlParsingException UnexpectedToken(string sender, string[] expectedTokens, SqlTokenizer sqlTokenizer, Token token)
+    public static SqlParsingException UnexpectedToken(SqlTokenizer sqlTokenizer, string expectedToken, Token actualToken)
     {
-        return new SqlParsingException($"Unexpected token encountered. Expected: {string.Join(" or ", expectedTokens)}, Actual: {token.Type}, Position: {sqlTokenizer.Position}", sender, sqlTokenizer.Position, token);
+        return new SqlParsingException($"Unexpected token encountered. Expected: {expectedToken}, Actual: {actualToken.Type}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, actualToken);
+    }
+
+    public static SqlParsingException UnexpectedToken(SqlTokenizer sqlTokenizer, string[] expectedTokens, Token actualToken)
+    {
+        return new SqlParsingException($"Unexpected token encountered. Expected: {string.Join(" or ", expectedTokens)}, Actual: {actualToken.Type}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, actualToken);
     }
 }

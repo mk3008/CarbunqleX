@@ -8,8 +8,6 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 public class DatasourceExpressionParser
 {
-    private static string ParserName => nameof(DatasourceExpressionParser);
-
     public static DatasourceExpression Parse(SqlTokenizer tokenizer)
     {
         var datasource = DatasourceParser.Parse(tokenizer);

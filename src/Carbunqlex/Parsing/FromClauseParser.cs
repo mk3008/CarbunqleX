@@ -8,11 +8,9 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 public class FromClauseParser
 {
-    private static string ParserName => nameof(FromClauseParser);
-
     public static FromClause Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "from");
+        tokenizer.Read("from");
 
         var datasource = DatasourceExpressionParser.Parse(tokenizer);
 

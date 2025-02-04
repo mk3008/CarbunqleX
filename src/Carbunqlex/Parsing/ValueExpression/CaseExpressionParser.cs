@@ -5,11 +5,9 @@ namespace Carbunqlex.Parsing.ValueExpressionParsing;
 
 public static class CaseExpressionParser
 {
-    private static string ParserName => nameof(CaseExpressionParser);
-
     public static ICaseExpression Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "case");
+        tokenizer.Read("case");
 
         var caseValue = tokenizer.Peek(token =>
         {
@@ -21,16 +19,16 @@ public static class CaseExpressionParser
         if (whenClauses.Count == 0)
         {
             var errorToken = tokenizer.Read();
-            throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(ParserName, "when", tokenizer, errorToken);
+            throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["between", "not between"], errorToken);
         }
 
-        var elseOrEndToken = tokenizer.Read(ParserName, TokenType.Command);
+        var elseOrEndToken = tokenizer.Read(TokenType.Command);
 
         var elseValue = elseOrEndToken.CommandOrOperatorText == "end"
             ? null
             : elseOrEndToken.CommandOrOperatorText == "else"
                    ? ValueExpressionParser.Parse(tokenizer)
-                   : throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(ParserName, "'else' or 'end'", tokenizer, elseOrEndToken);
+                   : throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["else", "end"], elseOrEndToken);
 
         if (caseValue != null)
         {
@@ -52,7 +50,7 @@ public static class CaseExpressionParser
         {
             tokenizer.CommitPeek();
             var whenValue = ValueExpressionParser.Parse(tokenizer);
-            tokenizer.Read(ParserName, "then");
+            tokenizer.Read("then");
             var thenValue = ValueExpressionParser.Parse(tokenizer);
 
             yield return new WhenClause(whenValue, thenValue);

@@ -4,11 +4,9 @@ namespace Carbunqlex.Parsing;
 
 public class HavingClauseParser
 {
-    private static string ParserName => nameof(HavingClauseParser);
-
     public static HavingClause Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "having");
+        tokenizer.Read("having");
 
         var expression = ValueExpressionParser.Parse(tokenizer);
 

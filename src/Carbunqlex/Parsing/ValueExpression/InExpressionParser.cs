@@ -4,17 +4,15 @@ namespace Carbunqlex.Parsing.ValueExpressionParsing;
 
 public static class InExpressionParser
 {
-    private static string ParserName => nameof(InExpressionParser);
-
     public static InExpression Parse(SqlTokenizer tokenizer, IValueExpression left)
     {
-        var isnNegated = tokenizer.Read(ParserName, TokenType.Command, token =>
+        var isnNegated = tokenizer.Read(TokenType.Command, token =>
         {
             return token.CommandOrOperatorText switch
             {
                 "in" => false,
                 "not in" => true,
-                _ => throw SqlParsingExceptionBuilder.UnexpectedTokenIdentifier(ParserName, "'in' or 'not in'", tokenizer, token)
+                _ => throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["in", "not in"], token)
             };
         });
 

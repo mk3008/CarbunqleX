@@ -4,11 +4,9 @@ namespace Carbunqlex.Parsing;
 
 public class OrderByClauseParser
 {
-    private static string ParserName => nameof(OrderByClauseParser);
-
     public static OrderByClause Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "order by");
+        tokenizer.Read("order by");
 
         var expressions = new List<OrderByColumn>();
 

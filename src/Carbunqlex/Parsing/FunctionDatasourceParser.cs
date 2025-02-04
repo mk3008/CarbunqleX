@@ -10,11 +10,9 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 public class FunctionDatasourceParser
 {
-    private static string ParserName => nameof(FunctionDatasourceParser);
-
     public static FunctionSource Parse(SqlTokenizer tokenizer, string functionName)
     {
-        tokenizer.Read(ParserName, TokenType.OpenParen);
+        tokenizer.Read(TokenType.OpenParen);
         var next = tokenizer.Peek();
         if (next.Type == TokenType.CloseParen)
         {
@@ -52,7 +50,7 @@ public class FunctionDatasourceParser
                 break;
             }
 
-            throw SqlParsingExceptionBuilder.UnexpectedTokenType(ParserName, new[] { TokenType.Comma, TokenType.CloseParen }, tokenizer, next);
+            throw SqlParsingExceptionBuilder.UnexpectedTokenType(tokenizer, [TokenType.Comma, TokenType.CloseParen], next);
         }
 
         return new FunctionSource(functionName, parameters, hasWithOrdinalityKeyword);

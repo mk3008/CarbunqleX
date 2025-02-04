@@ -4,8 +4,6 @@ namespace Carbunqlex.Parsing;
 
 public class WindowFunctionParser
 {
-    private static string ParserName => nameof(WindowFunctionParser);
-
     public static IWindowDefinition Parse(SqlTokenizer tokenizer)
     {
         var next = tokenizer.Peek();
@@ -15,7 +13,7 @@ public class WindowFunctionParser
             return new NamedWindowDefinition(name);
         }
 
-        tokenizer.Read(ParserName, TokenType.OpenParen);
+        tokenizer.Read(TokenType.OpenParen);
 
         var partitionBy = tokenizer.Peek(static (r, next) =>
         {
@@ -38,7 +36,7 @@ public class WindowFunctionParser
                 : null;
         });
 
-        tokenizer.Read(ParserName, TokenType.CloseParen);
+        tokenizer.Read(TokenType.CloseParen);
 
         return new NamelessWindowDefinition(partitionBy, orderBy, windowFrame);
     }

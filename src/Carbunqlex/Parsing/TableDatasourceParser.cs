@@ -9,8 +9,6 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 public class TableDatasourceParser
 {
-    private static string ParserName => nameof(TableDatasourceParser);
-
     public static TableSource Parse(SqlTokenizer tokenizer)
     {
         var next = tokenizer.Peek();
@@ -37,6 +35,6 @@ public class TableDatasourceParser
             return new TableSource(namespaces, tableName);
         }
 
-        throw SqlParsingExceptionBuilder.UnexpectedTokenType(ParserName, new[] { TokenType.Identifier }, tokenizer, next);
+        throw SqlParsingExceptionBuilder.UnexpectedTokenType(tokenizer, TokenType.Identifier, next);
     }
 }

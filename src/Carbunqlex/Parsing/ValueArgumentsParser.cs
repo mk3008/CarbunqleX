@@ -5,11 +5,9 @@ namespace Carbunqlex.Parsing;
 
 public static class ValueArgumentsParser
 {
-    private static string ParserName => nameof(ValueArgumentsParser);
-
-    public static ValueArguments Parse(SqlTokenizer tokenizer, TokenType open, TokenType close)
+    public static ValueArguments Parse(SqlTokenizer tokenizer, TokenType openToken, TokenType closeToken)
     {
-        tokenizer.Read(ParserName, open);
+        tokenizer.Read(openToken);
 
         var args = new List<IValueExpression>();
         while (true)
@@ -26,7 +24,7 @@ public static class ValueArgumentsParser
 
         return tokenizer.Peek(token =>
         {
-            if (token.Type == close)
+            if (token.Type == closeToken)
             {
                 tokenizer.Read();
                 return new ValueArguments(args);
@@ -36,11 +34,11 @@ public static class ValueArgumentsParser
             {
                 var orderByClause = OrderByClauseParser.Parse(tokenizer);
                 var expression = new ValueArguments(args) { OrderByClause = orderByClause };
-                tokenizer.Read(ParserName, close);
+                tokenizer.Read(closeToken);
                 return expression;
             }
 
-            throw SqlParsingExceptionBuilder.UnexpectedToken(ParserName, [close.ToString(), "order by"], tokenizer, token);
+            throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, [closeToken.ToString(), "order by"], token);
         });
     }
 }

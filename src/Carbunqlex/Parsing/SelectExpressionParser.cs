@@ -4,8 +4,6 @@ namespace Carbunqlex.Parsing;
 
 public static class SelectExpressionParser
 {
-    private static string ParserName => nameof(SelectExpressionParser);
-
     public static SelectExpression Parse(SqlTokenizer tokenizer)
     {
         var expression = ValueExpressionParser.Parse(tokenizer);
@@ -20,7 +18,7 @@ public static class SelectExpressionParser
         {
             // have "as" keyword
             tokenizer.CommitPeek();
-            var alias = tokenizer.Read(ParserName, TokenType.Identifier).Value;
+            var alias = tokenizer.Read(TokenType.Identifier).Value;
             return new SelectExpression(expression, alias);
         }
         else if (next.Type == TokenType.Identifier)

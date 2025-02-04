@@ -4,11 +4,10 @@ namespace Carbunqlex.Parsing;
 
 public static class GroupingSetsExpressionParser
 {
-    private static string ParserName => nameof(GroupingSetsExpressionParser);
     public static GroupingSetsExpression Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "grouping sets");
-        tokenizer.Read(ParserName, TokenType.OpenParen);
+        tokenizer.Read("grouping sets");
+        tokenizer.Read(TokenType.OpenParen);
         var expressions = new List<GroupingSetExpression>();
         while (true)
         {
@@ -25,7 +24,7 @@ public static class GroupingSetsExpressionParser
             }
             break;
         }
-        tokenizer.Read(ParserName, TokenType.CloseParen);
+        tokenizer.Read(TokenType.CloseParen);
         return new GroupingSetsExpression(expressions);
     }
 }

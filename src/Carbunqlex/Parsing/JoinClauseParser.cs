@@ -9,8 +9,6 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 public static class JoinClauseParser
 {
-    private static string ParserName => nameof(JoinClauseParser);
-
     private static string ParseJoinKeyword(SqlTokenizer tokenizer)
     {
         // comma
@@ -20,10 +18,10 @@ public static class JoinClauseParser
             return "cross join";
         }
 
-        var joinKeyword = tokenizer.Read(ParserName, TokenType.Command);
+        var joinKeyword = tokenizer.Read(TokenType.Command);
         if (!SqlKeyword.JoinKeywords.Contains(joinKeyword.CommandOrOperatorText))
         {
-            throw SqlParsingExceptionBuilder.UnexpectedToken(ParserName, SqlKeyword.JoinKeywords.ToArray(), tokenizer, joinKeyword);
+            throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, SqlKeyword.JoinKeywords.ToArray(), joinKeyword);
         }
         return joinKeyword.Value;
     }

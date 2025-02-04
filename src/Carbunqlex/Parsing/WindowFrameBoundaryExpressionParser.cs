@@ -8,8 +8,6 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 internal static class WindowFrameBoundaryExpressionParser
 {
-    private static string ParserName => nameof(WindowFrameBoundaryExpressionParser);
-
     public static IWindowFrameBoundaryExpression Parse(SqlTokenizer tokenizer)
     {
         var next = tokenizer.Peek();
@@ -29,7 +27,7 @@ internal static class WindowFrameBoundaryExpressionParser
                 tokenizer.Read();
                 return new WindowFrameBoundaryKeyword("unbounded " + next.CommandOrOperatorText);
             }
-            throw SqlParsingExceptionBuilder.UnexpectedToken(ParserName, ["preceding", "following"], tokenizer, next);
+            throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["preceding", "following"], next);
         }
 
         var rows = ValueExpressionParser.Parse(tokenizer);
@@ -40,6 +38,6 @@ internal static class WindowFrameBoundaryExpressionParser
             tokenizer.Read();
             return new WindowFrameBoundaryExpression(rows, next.CommandOrOperatorText);
         }
-        throw SqlParsingExceptionBuilder.UnexpectedToken(ParserName, ["preceding", "following"], tokenizer, next);
+        throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["preceding", "following"], next);
     }
 }

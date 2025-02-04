@@ -5,12 +5,10 @@ namespace Carbunqlex.Parsing;
 
 public class CubeExpressionParser
 {
-    private static string ParserName => nameof(CubeExpressionParser);
-
     public static CubeExpression Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "cube");
-        tokenizer.Read(ParserName, TokenType.OpenParen);
+        tokenizer.Read("cube");
+        tokenizer.Read(TokenType.OpenParen);
         var expressions = new List<IValueExpression>();
         while (true)
         {
@@ -27,7 +25,7 @@ public class CubeExpressionParser
             }
             break;
         }
-        tokenizer.Read(ParserName, TokenType.CloseParen);
+        tokenizer.Read(TokenType.CloseParen);
         return new CubeExpression(expressions);
     }
 }

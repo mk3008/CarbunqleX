@@ -9,7 +9,6 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 public class DatasourceParser
 {
-    private static string ParserName => nameof(DatasourceParser);
     public static IDatasource Parse(SqlTokenizer tokenizer)
     {
         var next = tokenizer.Peek();
@@ -45,6 +44,6 @@ public class DatasourceParser
             throw new NotImplementedException();
         }
 
-        throw SqlParsingExceptionBuilder.UnexpectedTokenType(ParserName, new[] { TokenType.Identifier, TokenType.OpenParen }, tokenizer, next);
+        throw SqlParsingExceptionBuilder.UnexpectedTokenType(tokenizer, new[] { TokenType.Identifier, TokenType.OpenParen }, next);
     }
 }

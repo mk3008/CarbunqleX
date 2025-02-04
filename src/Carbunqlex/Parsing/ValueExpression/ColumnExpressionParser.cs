@@ -4,8 +4,6 @@ namespace Carbunqlex.Parsing.ValueExpressionParsing;
 
 public static class ColumnExpressionParser
 {
-    private static string ParserName => nameof(ColumnExpressionParser);
-
     public static ColumnExpression Parse(SqlTokenizer tokenizer, Token identifier)
     {
         var values = IdentifierValueParser.Parse(tokenizer, identifier).ToList();

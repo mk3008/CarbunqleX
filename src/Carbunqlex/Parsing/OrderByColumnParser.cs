@@ -4,8 +4,6 @@ namespace Carbunqlex.Parsing;
 
 public class OrderByColumnParser
 {
-    private static string ParserName => nameof(OrderByColumnParser);
-
     public static OrderByColumn Parse(SqlTokenizer tokenizer)
     {
         var expression = ValueExpressionParser.Parse(tokenizer);

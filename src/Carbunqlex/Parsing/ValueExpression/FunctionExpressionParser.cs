@@ -4,11 +4,9 @@ namespace Carbunqlex.Parsing.ValueExpressionParsing;
 
 public static class FunctionExpressionParser
 {
-    private static string ParserName => nameof(FunctionExpressionParser);
-
     public static FunctionExpression Parse(SqlTokenizer tokenizer, Token function)
     {
-        tokenizer.Read(ParserName, TokenType.OpenParen);
+        tokenizer.Read(TokenType.OpenParen);
 
         // support for distinct, all keyword
         var next = tokenizer.Peek();
@@ -25,7 +23,7 @@ public static class FunctionExpressionParser
 
         var args = ParseArguments(tokenizer);
 
-        tokenizer.Read(ParserName, TokenType.CloseParen);
+        tokenizer.Read(TokenType.CloseParen);
 
         if (tokenizer.IsEnd)
         {

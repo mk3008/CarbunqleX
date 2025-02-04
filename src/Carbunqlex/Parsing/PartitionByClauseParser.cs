@@ -8,11 +8,9 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 public class PartitionByClauseParser
 {
-    private static string ParserName => nameof(PartitionByClauseParser);
-
     public static PartitionByClause Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "partition by");
+        tokenizer.Read("partition by");
 
         var args = ParseArgs(tokenizer);
 

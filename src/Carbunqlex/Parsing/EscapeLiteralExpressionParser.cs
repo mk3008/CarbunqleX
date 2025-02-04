@@ -4,10 +4,9 @@ namespace Carbunqlex.Parsing;
 
 public static class EscapeLiteralExpressionParser
 {
-    private static string ParserName => nameof(EscapeLiteralExpressionParser);
     public static EscapeLiteralExpression Parse(SqlTokenizer tokenizer)
     {
-        var token = tokenizer.Read(ParserName, TokenType.EscapedStringConstant);
+        var token = tokenizer.Read(TokenType.EscapedStringConstant);
 
         if (tokenizer.IsEnd)
         {
@@ -17,7 +16,7 @@ public static class EscapeLiteralExpressionParser
         if (tokenizer.Peek().CommandOrOperatorText == "uescape")
         {
             tokenizer.CommitPeek();
-            var escapeOption = tokenizer.Read(ParserName, TokenType.Constant).Value;
+            var escapeOption = tokenizer.Read(TokenType.Constant).Value;
             return new EscapeLiteralExpression(token.Value, escapeOption);
         }
 

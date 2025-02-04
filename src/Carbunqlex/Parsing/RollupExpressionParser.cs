@@ -5,11 +5,10 @@ namespace Carbunqlex.Parsing;
 
 public static class RollupExpressionParser
 {
-    private static string ParserName => nameof(RollupExpressionParser);
     public static RollupExpression Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "rollup");
-        tokenizer.Read(ParserName, TokenType.OpenParen);
+        tokenizer.Read("rollup");
+        tokenizer.Read(TokenType.OpenParen);
         var expressions = new List<IValueExpression>();
         while (true)
         {
@@ -26,7 +25,7 @@ public static class RollupExpressionParser
             }
             break;
         }
-        tokenizer.Read(ParserName, TokenType.CloseParen);
+        tokenizer.Read(TokenType.CloseParen);
         return new RollupExpression(expressions);
     }
 }

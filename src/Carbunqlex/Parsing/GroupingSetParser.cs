@@ -5,10 +5,9 @@ namespace Carbunqlex.Parsing;
 
 public static class GroupingSetParser
 {
-    private static string ParserName => nameof(GroupingSetParser);
     public static GroupingSetExpression Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, TokenType.OpenParen);
+        tokenizer.Read(TokenType.OpenParen);
         var expressions = new List<IValueExpression>();
         while (true)
         {
@@ -25,7 +24,7 @@ public static class GroupingSetParser
             }
             break;
         }
-        tokenizer.Read(ParserName, TokenType.CloseParen);
+        tokenizer.Read(TokenType.CloseParen);
         return new GroupingSetExpression(expressions);
     }
 }

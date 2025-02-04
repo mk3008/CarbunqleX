@@ -9,17 +9,16 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 public class ColumnAliasClauseParser
 {
-    private static string ParserName => nameof(ColumnAliasClauseParser);
     public static ColumnAliasClause Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, TokenType.OpenParen);
+        tokenizer.Read(TokenType.OpenParen);
 
         var next = tokenizer.Peek();
 
         var columns = new List<string>();
         while (true)
         {
-            var column = tokenizer.Read(ParserName, TokenType.Identifier).Value;
+            var column = tokenizer.Read(TokenType.Identifier).Value;
             columns.Add(column);
 
             next = tokenizer.Peek();
@@ -33,7 +32,7 @@ public class ColumnAliasClauseParser
                 tokenizer.Read();
                 break;
             }
-            throw SqlParsingExceptionBuilder.UnexpectedTokenType(ParserName, [TokenType.Comma, TokenType.CloseParen], tokenizer, next);
+            throw SqlParsingExceptionBuilder.UnexpectedTokenType(tokenizer, [TokenType.Comma, TokenType.CloseParen], next);
         }
 
         return new ColumnAliasClause(columns);

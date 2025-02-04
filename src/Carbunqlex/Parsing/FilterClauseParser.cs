@@ -4,15 +4,13 @@ namespace Carbunqlex.Parsing;
 
 public class FilterClauseParser
 {
-    private static string ParserName => nameof(FilterClauseParser);
-
     public static FilterClause Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "filter");
-        tokenizer.Read(ParserName, TokenType.OpenParen);
+        tokenizer.Read("filter");
+        tokenizer.Read(TokenType.OpenParen);
 
         var whereClause = WhereClauseParser.Parse(tokenizer);
-        tokenizer.Read(ParserName, TokenType.CloseParen);
+        tokenizer.Read(TokenType.CloseParen);
 
         if (tokenizer.IsEnd)
         {

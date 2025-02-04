@@ -7,13 +7,11 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 internal static class BetweenWindowFrameBoundaryParser
 {
-    private static string ParserName => nameof(BetweenWindowFrameBoundaryParser);
-
     public static BetweenWindowFrameBoundary Parse(SqlTokenizer tokenizer)
     {
-        tokenizer.Read(ParserName, "between");
+        tokenizer.Read("between");
         var start = WindowFrameBoundaryExpressionParser.Parse(tokenizer);
-        tokenizer.Read(ParserName, "and");
+        tokenizer.Read("and");
         var end = WindowFrameBoundaryExpressionParser.Parse(tokenizer);
         return new BetweenWindowFrameBoundary(start, end);
     }
