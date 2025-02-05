@@ -1,46 +1,18 @@
 ﻿namespace Carbunqlex.Clauses;
 
-public enum LockType
-{
-    Update,
-    Share,
-    NoKeyUpdate,
-    KeyShare
-}
-
-internal static class LockTypeExtensions
-{
-    /// <summary>
-    /// Converts the LockType enum to its corresponding SQL string representation.
-    /// This method uses a switch statement for optimal performance.
-    /// </summary>
-    /// <param name="lockType">The LockType enum value.</param>
-    /// <returns>The SQL string representation of the LockType.</returns>
-    public static string ToSqlString(this LockType lockType)
-    {
-        return lockType switch
-        {
-            LockType.Update => "update",
-            LockType.Share => "share",
-            LockType.NoKeyUpdate => "no key update",
-            LockType.KeyShare => "key share",
-            _ => throw new ArgumentOutOfRangeException(nameof(lockType), lockType, null)
-        };
-    }
-}
-
 public class ForClause : IForClause
 {
-    public LockType LockType { get; }
+    public string LockType { get; }
 
-    public ForClause(LockType lockType)
+    public ForClause(string lockType)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(lockType, nameof(lockType));
         LockType = lockType;
     }
 
     public string ToSqlWithoutCte()
     {
-        return $"for {LockType.ToSqlString()}";
+        return $"for {LockType}";
     }
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
@@ -48,7 +20,7 @@ public class ForClause : IForClause
         return new List<Token>
             {
                 new Token(TokenType.StartClause, "for", "for"),
-                new Token(TokenType.Command, LockType.ToSqlString()),
+                new Token(TokenType.Command, LockType),
                 new Token(TokenType.EndClause, string.Empty, "for")
             };
     }

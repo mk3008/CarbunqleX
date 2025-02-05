@@ -23,7 +23,7 @@ public class WhereEditor
     {
         if (Query.TryGetWhereClause(out var whereClause))
         {
-            whereClause.And(condition);
+            whereClause.Add(condition);
         }
         else
         {

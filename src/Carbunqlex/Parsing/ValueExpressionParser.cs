@@ -151,7 +151,7 @@ public static class ValueExpressionParser
                 renewValue = BetweenExpressionParser.Parse(tokenizer, left);
                 return true;
             }
-            if (nextToken.CommandOrOperatorText == "like" || nextToken.CommandOrOperatorText == "not like")
+            if (nextToken.CommandOrOperatorText is "like" or "not like" or "ilike" or "not ilike")
             {
                 renewValue = LikeExpressionParser.Parse(tokenizer, left);
                 return true;

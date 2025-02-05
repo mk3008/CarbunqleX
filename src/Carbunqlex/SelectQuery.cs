@@ -10,25 +10,27 @@ public class SelectQuery : ISelectQuery
 {
     public WithClause WithClause { get; } = new WithClause();
     public SelectClause SelectClause { get; }
-    public IFromClause FromClause { get; set; }
-    public WhereClause WhereClause { get; set; } = new WhereClause();
+    public IFromClause? FromClause { get; set; }
+    public WhereClause WhereClause { get; } = new WhereClause();
     public GroupByClause GroupByClause { get; } = new GroupByClause();
     public HavingClause HavingClause { get; } = new HavingClause();
     public OrderByClause OrderByClause { get; } = new OrderByClause();
     public WindowClause WindowClause { get; } = new WindowClause();
-    public IForClause ForClause { get; set; } = EmptyForClause.Instance;
+    public IForClause? ForClause { get; set; }
     public IPagingClause PagingClause { get; set; } = EmptyPagingClause.Instance;
 
     public SelectQuery(SelectClause selectClause)
     {
         SelectClause = selectClause;
         FromClause = EmptyFromClause.Instance;
+        ForClause = null;
     }
 
     public SelectQuery(SelectClause selectClause, IFromClause fromClause)
     {
         SelectClause = selectClause;
         FromClause = fromClause;
+        ForClause = null;
     }
 
     public string ToSql()
@@ -53,10 +55,13 @@ public class SelectQuery : ISelectQuery
 
         sb.Append(SelectClause.ToSqlWithoutCte());
 
-        var fromSql = FromClause.ToSqlWithoutCte();
-        if (!string.IsNullOrEmpty(fromSql))
+        if (FromClause != null)
         {
-            sb.Append(" ").Append(fromSql);
+            var fromSql = FromClause.ToSqlWithoutCte();
+            if (!string.IsNullOrEmpty(fromSql))
+            {
+                sb.Append(" ").Append(fromSql);
+            }
         }
 
         var whereSql = WhereClause.ToSqlWithoutCte();
@@ -89,10 +94,13 @@ public class SelectQuery : ISelectQuery
             sb.Append(" ").Append(windowSql);
         }
 
-        var forSql = ForClause.ToSqlWithoutCte();
-        if (!string.IsNullOrEmpty(forSql))
+        if (ForClause != null)
         {
-            sb.Append(" ").Append(forSql);
+            var forSql = ForClause.ToSqlWithoutCte();
+            if (!string.IsNullOrEmpty(forSql))
+            {
+                sb.Append(" ").Append(forSql);
+            }
         }
 
         var pagingSql = PagingClause.ToSqlWithoutCte();
@@ -104,7 +112,7 @@ public class SelectQuery : ISelectQuery
         return sb.ToString();
     }
 
-    public IEnumerable<Token> Generatetokens()
+    public IEnumerable<Token> GenerateTokens()
     {
         var tokens = new List<Token>();
 
@@ -119,13 +127,13 @@ public class SelectQuery : ISelectQuery
         var tokens = new List<Token>();
 
         tokens.AddRange(SelectClause.GenerateTokensWithoutCte());
-        tokens.AddRange(FromClause.GenerateTokensWithoutCte());
+        if (FromClause != null) tokens.AddRange(FromClause.GenerateTokensWithoutCte());
         tokens.AddRange(WhereClause.GenerateTokensWithoutCte());
         tokens.AddRange(GroupByClause.GenerateTokensWithoutCte());
         tokens.AddRange(HavingClause.GenerateTokensWithoutCte());
         tokens.AddRange(OrderByClause.GenerateTokensWithoutCte());
         tokens.AddRange(WindowClause.GenerateTokensWithoutCte());
-        tokens.AddRange(ForClause.GenerateTokensWithoutCte());
+        if (ForClause != null) tokens.AddRange(ForClause.GenerateTokensWithoutCte());
         tokens.AddRange(PagingClause.GenerateTokensWithoutCte());
 
         return tokens;
@@ -153,13 +161,13 @@ public class SelectQuery : ISelectQuery
         queries.Add(this);
         queries.AddRange(WithClause.GetQueries());
         queries.AddRange(SelectClause.GetQueries());
-        queries.AddRange(FromClause.GetQueries());
+        if (FromClause != null) queries.AddRange(FromClause.GetQueries());
         queries.AddRange(WhereClause.GetQueries());
         queries.AddRange(GroupByClause.GetQueries());
         queries.AddRange(HavingClause.GetQueries());
         queries.AddRange(OrderByClause.GetQueries());
         queries.AddRange(WindowClause.GetQueries());
-        queries.AddRange(ForClause.GetQueries());
+        if (ForClause != null) queries.AddRange(ForClause.GetQueries());
         queries.AddRange(PagingClause.GetQueries());
 
         return queries;
@@ -196,6 +204,10 @@ public class SelectQuery : ISelectQuery
 
     public IEnumerable<DatasourceExpression> GetDatasources()
     {
+        if (FromClause == null)
+        {
+            return Enumerable.Empty<DatasourceExpression>();
+        }
         return FromClause.GetDatasources();
     }
 
@@ -204,7 +216,7 @@ public class SelectQuery : ISelectQuery
         var columnExpressions = new List<ColumnExpression>();
 
         columnExpressions.AddRange(SelectClause.ExtractColumnExpressions());
-        columnExpressions.AddRange(FromClause.ExtractColumnExpressions());
+        if (FromClause != null) columnExpressions.AddRange(FromClause.ExtractColumnExpressions());
         columnExpressions.AddRange(WhereClause.ExtractColumnExpressions());
 
         return columnExpressions;
@@ -240,6 +252,10 @@ public class SelectQuery : ISelectQuery
 
     public void AddJoin(JoinClause joinClause)
     {
+        if (FromClause == null)
+        {
+            throw new InvalidOperationException("Cannot add a join clause without a FROM clause.");
+        }
         FromClause.AddJoin(joinClause);
     }
 }

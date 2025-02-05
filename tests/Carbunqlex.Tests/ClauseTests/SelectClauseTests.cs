@@ -35,7 +35,6 @@ public class SelectClauseTests(ITestOutputHelper output)
     {
         // Arrange
         var selectClause = new SelectClause(
-            EmptyDistinctClause.Instance,
             new SelectExpression(CreateColumnExpression("ColumnName")),
             new SelectExpression(CreateColumnExpression("ColumnName"), "name")
         );

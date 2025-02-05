@@ -149,8 +149,8 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
         var selectQuery = new SelectQuery(selectClause)
         {
             FromClause = fromClause,
-            WhereClause = whereClause,
         };
+        selectQuery.WhereClause.Add(whereClause.Condition!);
         selectQuery.OrderByClause.OrderByColumns.AddRange(orderByClause.OrderByColumns);
 
         return selectQuery;

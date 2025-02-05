@@ -50,8 +50,8 @@ public class InlineQueryTests(ITestOutputHelper output)
         var selectQuery = new SelectQuery(selectClause)
         {
             FromClause = fromClause,
-            WhereClause = whereClause
         };
+        selectQuery.WhereClause.Add(whereClause.Condition!);
         var inlineQuery = new InlineQuery(selectQuery);
 
         // Act

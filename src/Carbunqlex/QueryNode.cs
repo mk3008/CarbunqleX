@@ -261,7 +261,7 @@ public class QueryNode : ISqlComponent
 
     public IEnumerable<Token> Generatetokens()
     {
-        return Query.Generatetokens();
+        return Query.GenerateTokens();
     }
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()

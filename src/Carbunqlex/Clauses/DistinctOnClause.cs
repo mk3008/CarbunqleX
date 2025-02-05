@@ -5,11 +5,17 @@ namespace Carbunqlex.Clauses;
 public class DistinctOnClause : IDistinctClause
 {
     public bool IsDistinct { get; } = true;
+
     public List<IValueExpression> DistinctOnColumns { get; }
 
     public DistinctOnClause(params IValueExpression[] distinctOnColumns)
     {
         DistinctOnColumns = distinctOnColumns.ToList();
+    }
+
+    public DistinctOnClause(List<IValueExpression> distinctOnColumns)
+    {
+        DistinctOnColumns = distinctOnColumns;
     }
 
     public string ToSqlWithoutCte()

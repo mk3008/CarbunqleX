@@ -71,4 +71,14 @@ public class OrderByClause
             .Where(orderByColumn => orderByColumn.Column.MightHaveQueries)
             .SelectMany(orderByColumn => orderByColumn.Column.GetQueries());
     }
+
+    public void Add(OrderByColumn orderByColumn)
+    {
+        OrderByColumns.Add(orderByColumn);
+    }
+
+    public void AddRange(IEnumerable<OrderByColumn> orderByColumns)
+    {
+        OrderByColumns.AddRange(orderByColumns);
+    }
 }

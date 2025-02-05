@@ -19,7 +19,7 @@ public interface IQuery : ISqlComponent
     /// This can include the WITH clause if the query is at the root level.
     /// </summary>
     /// <returns>The tokens representing the query.</returns>
-    IEnumerable<Token> Generatetokens();
+    IEnumerable<Token> GenerateTokens();
 
     /// <summary>
     /// Retrieves the common table clauses (CTEs) associated with the component.

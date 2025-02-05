@@ -63,8 +63,8 @@ public static class SelectQueryFactory
         var selectQuery = new SelectQuery(selectExpressions)
         {
             FromClause = fromClause,
-            WhereClause = whereClause
         };
+        selectQuery.WhereClause.Add(whereClause.Condition!);
 
         return selectQuery;
     }
@@ -114,8 +114,8 @@ public static class SelectQueryFactory
         var selectQuery = new SelectQuery(selectExpressions)
         {
             FromClause = fromClause,
-            WhereClause = whereClause,
         };
+        selectQuery.WhereClause.Add(whereClause.Condition!);
         selectQuery.GroupByClause.GroupByColumns.AddRange(
             [
                 new ColumnExpression("s", "sale_date")
@@ -179,8 +179,8 @@ public static class SelectQueryFactory
         var selectQuery = new SelectQuery(selectClause)
         {
             FromClause = fromClause,
-            WhereClause = whereClause,
         };
+        selectQuery.WhereClause.Add(whereClause.Condition!);
         selectQuery.GroupByClause.GroupByColumns.AddRange(
             [
                 new ColumnExpression("c", "category_name"),
@@ -350,8 +350,8 @@ public static class SelectQueryFactory
         var mainQuery = new SelectQuery(mainSelectClause)
         {
             FromClause = mainFromClause,
-            WhereClause = mainWhereClause,
         };
+        mainQuery.WhereClause.Add(mainWhereClause.Condition!);
         mainQuery.OrderByClause.OrderByColumns.AddRange(
             [
                 new OrderByColumn(new ColumnExpression("s", "sale_date")),
@@ -413,18 +413,17 @@ public static class SelectQueryFactory
 
         var windowClause = new WindowClause(new WindowExpression("w", windowFunction));
 
-        var forClause = new ForClause(LockType.Update);
+        var forClause = new ForClause("update");
 
         var pagingClause = new PagingClause(new ConstantExpression(10), new ConstantExpression(20));
 
         var selectQuery = new SelectQuery(selectClause)
         {
             FromClause = fromClause,
-            WhereClause = whereClause,
             ForClause = forClause,
             PagingClause = pagingClause
         };
-
+        selectQuery.WhereClause.Add(whereClause.Condition!);
         selectQuery.GroupByClause.GroupByColumns.AddRange(groupByClause.GroupByColumns);
         selectQuery.HavingClause.Conditions.AddRange(havingClause.Conditions);
         selectQuery.OrderByClause.OrderByColumns.AddRange(orderByClause.OrderByColumns);
@@ -453,16 +452,15 @@ public static class SelectQueryFactory
                 )
             ),
             new FromClause(new DatasourceExpression(new TableSource("number_series")))
-        )
-        {
-            WhereClause = new WhereClause(
-                        new BinaryExpression(
-                            "<",
-                            new ColumnExpression("number"),
-                            new ConstantExpression(10)
-                        )
-                    )
-        };
+        );
+        var WhereClause = new WhereClause(
+            new BinaryExpression(
+                "<",
+                new ColumnExpression("number"),
+                new ConstantExpression(10)
+                )
+            );
+        recursiveQuerySecondary.WhereClause.Add(WhereClause.Condition!);
 
         var unionAllQuery = new UnionQuery(
             UnionType.UnionAll,
@@ -478,7 +476,7 @@ public static class SelectQueryFactory
         var subQuery = CreateSelectQuery(tableName, tableAlias, columns);
 
         var selectClause = new SelectClause(
-            columns.Select(column => new SelectExpression(new ColumnExpression(subQueryAlias, column)))
+            columns.Select(column => new SelectExpression(new ColumnExpression(subQueryAlias, column))).ToList()
         );
 
         var fromClause = new FromClause(new DatasourceExpression(new SubQuerySource(subQuery), subQueryAlias));
@@ -506,7 +504,7 @@ public static class SelectQueryFactory
     public static SelectQuery CreateSelectQuery(string tableName, string tableAlias, params string[] columns)
     {
         var selectClause = new SelectClause(
-            columns.ToList().Select(column => new SelectExpression(new ColumnExpression(tableAlias, column)))
+            columns.ToList().Select(column => new SelectExpression(new ColumnExpression(tableAlias, column))).ToList()
         );
         var fromClause = new FromClause(new DatasourceExpression(new TableSource(tableName), tableAlias));
         return new SelectQuery(selectClause, fromClause);

@@ -8,7 +8,20 @@ public class GroupByClauseParser
     public static GroupByClause Parse(SqlTokenizer tokenizer)
     {
         tokenizer.Read("group by");
+        var expressions = ParseGroupByColumns(tokenizer);
+        return new GroupByClause(expressions);
+    }
 
+    public static List<IValueExpression> ParseGroupByColumns(SqlTokenizer tokenizer)
+    {
+        return ValueExpressionListParser.Parse(tokenizer);
+    }
+}
+
+public static class ValueExpressionListParser
+{
+    public static List<IValueExpression> Parse(SqlTokenizer tokenizer)
+    {
         var expressions = new List<IValueExpression>();
         while (true)
         {
@@ -25,6 +38,6 @@ public class GroupByClauseParser
             }
             break;
         }
-        return new GroupByClause(expressions);
+        return expressions;
     }
 }

@@ -8,11 +8,11 @@ public class ForClauseTests(ITestOutputHelper output)
     private readonly ITestOutputHelper output = output;
 
     [Theory]
-    [InlineData(LockType.Update, "for update")]
-    [InlineData(LockType.Share, "for share")]
-    [InlineData(LockType.NoKeyUpdate, "for no key update")]
-    [InlineData(LockType.KeyShare, "for key share")]
-    public void ToSql_ReturnsExpectedSqlString(LockType lockType, string expectedSql)
+    [InlineData("update", "for update")]
+    [InlineData("share", "for share")]
+    [InlineData("no key update", "for no key update")]
+    [InlineData("key share", "for key share")]
+    public void ToSql_ReturnsExpectedSqlString(string lockType, string expectedSql)
     {
         // Arrange
         var forClause = new ForClause(lockType);

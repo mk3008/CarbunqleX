@@ -38,7 +38,7 @@ public class WhereClause : ISqlComponent
         }
 
         var tokens = new List<Token> {
-            new Token(TokenType.StartClause, "where", "where")
+            new Token(TokenType.StartClause, "where")
         };
         tokens.AddRange(Condition.GenerateTokensWithoutCte());
         tokens.Add(new Token(TokenType.EndClause, string.Empty, "where"));
@@ -69,7 +69,7 @@ public class WhereClause : ISqlComponent
         return Condition.ExtractColumnExpressions();
     }
 
-    public void AddCondition(string @operator, IValueExpression expression)
+    public void Add(string @operator, IValueExpression expression)
     {
         if (Condition == null)
         {
@@ -81,8 +81,8 @@ public class WhereClause : ISqlComponent
         }
     }
 
-    public void And(IValueExpression expression)
+    public void Add(IValueExpression expression)
     {
-        AddCondition("and", expression);
+        Add("and", expression);
     }
 }

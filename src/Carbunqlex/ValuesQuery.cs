@@ -45,7 +45,7 @@ public class ValuesQuery : ISelectQuery
         return ToSql();
     }
 
-    public IEnumerable<Token> Generatetokens()
+    public IEnumerable<Token> GenerateTokens()
     {
         int capacity = Rows.Sum(row => row.Capacity) + (Rows.Count - 1) + 1;
 
@@ -64,7 +64,7 @@ public class ValuesQuery : ISelectQuery
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        return Generatetokens();
+        return GenerateTokens();
     }
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()

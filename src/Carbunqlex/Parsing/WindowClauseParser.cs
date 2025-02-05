@@ -10,9 +10,13 @@ public static class WindowClauseParser
     public static WindowClause Parse(SqlTokenizer tokenizer)
     {
         tokenizer.Read("window");
+        var windowExpressions = ParseWindowExpressions(tokenizer);
+        return new WindowClause(windowExpressions.ToArray());
+    }
 
+    public static List<WindowExpression> ParseWindowExpressions(SqlTokenizer tokenizer)
+    {
         var windowExpressions = new List<WindowExpression>();
-
         while (true)
         {
             var windowExpression = WindowExpressionParser.Parse(tokenizer);
@@ -28,8 +32,7 @@ public static class WindowClauseParser
             }
             break;
         }
-
-        return new WindowClause(windowExpressions.ToArray());
+        return windowExpressions;
     }
 
     private static class WindowExpressionParser

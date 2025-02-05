@@ -61,4 +61,14 @@ public class GroupByClause : ISqlComponent
             .Where(column => column.MightHaveQueries)
             .SelectMany(column => column.GetQueries());
     }
+
+    public void Add(IValueExpression column)
+    {
+        GroupByColumns.Add(column);
+    }
+
+    public void AddRange(IEnumerable<IValueExpression> columns)
+    {
+        GroupByColumns.AddRange(columns);
+    }
 }

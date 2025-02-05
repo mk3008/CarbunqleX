@@ -6,58 +6,57 @@ namespace Carbunqlex.Clauses;
 public class SelectClause : ISqlComponent
 {
     public List<SelectExpression> Expressions { get; }
-    public IDistinctClause DistinctClause { get; set; }
+
+    public IDistinctClause? DistinctClause { get; set; }
 
     public SelectClause(params SelectExpression[] selectExpressions)
     {
-        DistinctClause = EmptyDistinctClause.Instance;
+        DistinctClause = null;
         Expressions = selectExpressions.ToList();
     }
 
-    public SelectClause(IEnumerable<SelectExpression> selectExpressions)
+    public SelectClause(List<SelectExpression> selectExpressions)
     {
-        DistinctClause = EmptyDistinctClause.Instance;
-        Expressions = selectExpressions.ToList();
+        DistinctClause = null;
+        Expressions = selectExpressions;
     }
 
-    public SelectClause(IDistinctClause distinctClause, params SelectExpression[] selectExpressions)
-    {
-        DistinctClause = distinctClause;
-        Expressions = selectExpressions.ToList();
-    }
-
-    public SelectClause(IDistinctClause distinctClause, IEnumerable<SelectExpression> selectExpressions)
+    public SelectClause(IDistinctClause? distinctClause, params SelectExpression[] selectExpressions)
     {
         DistinctClause = distinctClause;
         Expressions = selectExpressions.ToList();
+    }
+
+    public SelectClause(IDistinctClause? distinctClause, List<SelectExpression> selectExpressions)
+    {
+        DistinctClause = distinctClause;
+        Expressions = selectExpressions;
     }
 
     public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
-        sb.Append("select ");
+        sb.Append("select");
 
-        var distinctSql = DistinctClause.ToSqlWithoutCte();
-        if (!string.IsNullOrEmpty(distinctSql))
+        if (DistinctClause != null)
         {
-            sb.Append(distinctSql).Append(" ");
+            sb.Append(" ").Append(DistinctClause.ToSqlWithoutCte());
         }
 
         if (Expressions.Count == 0)
         {
-            sb.Append("*");
+            sb.Append(" *");
         }
         else
         {
-            foreach (var column in Expressions)
+            sb.Append(" ");
+            for (var i = 0; i < Expressions.Count; i++)
             {
-                sb.Append(column.ToSqlWithoutCte()).Append(", ");
-            }
-
-            // Remove the trailing comma and space if there are any expressions
-            if (Expressions.Count > 0)
-            {
-                sb.Length -= 2;
+                sb.Append(Expressions[i].ToSqlWithoutCte());
+                if (i < Expressions.Count - 1)
+                {
+                    sb.Append(", ");
+                }
             }
         }
 
@@ -66,16 +65,13 @@ public class SelectClause : ISqlComponent
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        // Estimate the initial capacity for the tokens list.
-        // Each SelectExpression can return up to 3 tokens (column name, AS, alias).
-        // Adding 2 for the "select" keyword and potential "distinct" clause.
-        int initialCapacity = Expressions.Count * 3 + 2;
-        var tokens = new List<Token>(initialCapacity)
-        {
-            new Token(TokenType.Command, "select")
-        };
+        var tokens = new List<Token>();
+        tokens.Add(new Token(TokenType.Command, "select"));
 
-        tokens.AddRange(DistinctClause.GenerateTokensWithoutCte());
+        if (DistinctClause != null)
+        {
+            tokens.AddRange(DistinctClause.GenerateTokensWithoutCte());
+        }
 
         if (Expressions.Count == 0)
         {

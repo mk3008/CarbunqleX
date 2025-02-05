@@ -69,10 +69,10 @@ public class UnionQuery : ISelectQuery
         return sb.ToString();
     }
 
-    public IEnumerable<Token> Generatetokens()
+    public IEnumerable<Token> GenerateTokens()
     {
-        var lefttokens = Left.Generatetokens().ToList();
-        var righttokens = Right.Generatetokens().ToList();
+        var lefttokens = Left.GenerateTokens().ToList();
+        var righttokens = Right.GenerateTokens().ToList();
 
         // Initial capacity is set to accommodate the tokens from Left, Right, and the UnionType keyword.
         var tokens = new List<Token>(lefttokens.Count + righttokens.Count + 1);

@@ -64,4 +64,14 @@ public class WindowClause : ISqlComponent
     {
         return WindowExpressions.SelectMany(we => we.GetQueries());
     }
+
+    public void Add(WindowExpression windowExpression)
+    {
+        WindowExpressions.Add(windowExpression);
+    }
+
+    public void AddRange(IEnumerable<WindowExpression> windowExpressions)
+    {
+        WindowExpressions.AddRange(windowExpressions);
+    }
 }

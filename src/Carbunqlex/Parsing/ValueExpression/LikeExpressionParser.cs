@@ -6,12 +6,14 @@ public static class LikeExpressionParser
 {
     public static LikeExpression Parse(SqlTokenizer tokenizer, IValueExpression left)
     {
-        var isnNegated = tokenizer.Read(TokenType.Command, token =>
+        var (isNegated, keyword) = tokenizer.Read(TokenType.Command, token =>
         {
             return token.CommandOrOperatorText switch
             {
-                "like" => false,
-                "not like" => true,
+                "like" => (false, "like"),
+                "not like" => (true, "like"),
+                "ilike" => (false, "ilike"),
+                "not ilike" => (true, "ilike"),
                 _ => throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["like", "not like"], token)
             };
         });
@@ -22,9 +24,9 @@ public static class LikeExpressionParser
         {
             tokenizer.CommitPeek();
             var escapeOption = tokenizer.Read(TokenType.Constant).Value;
-            return new LikeExpression(isnNegated, left, right, escapeOption);
+            return new LikeExpression(isNegated, keyword, left, right, escapeOption);
         }
 
-        return new LikeExpression(isnNegated, left, right);
+        return new LikeExpression(isNegated, keyword, left, right);
     }
 }

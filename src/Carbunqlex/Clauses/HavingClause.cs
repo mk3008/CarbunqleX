@@ -12,6 +12,11 @@ public class HavingClause : ISqlComponent
         Conditions = conditions.ToList();
     }
 
+    public HavingClause(List<IValueExpression> conditions)
+    {
+        Conditions = conditions;
+    }
+
     public string ToSqlWithoutCte()
     {
         if (Conditions.Count == 0)
@@ -57,5 +62,15 @@ public class HavingClause : ISqlComponent
         return Conditions
             .Where(condition => condition.MightHaveQueries)
             .SelectMany(condition => condition.GetQueries());
+    }
+
+    public void Add(IValueExpression condition)
+    {
+        Conditions.Add(condition);
+    }
+
+    public void AddRange(IEnumerable<IValueExpression> conditions)
+    {
+        Conditions.AddRange(conditions);
     }
 }
