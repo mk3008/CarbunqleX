@@ -69,8 +69,17 @@ public static class SelectQueryParser
 
         if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText == "for")
         {
-            tokenizer.CommitPeek();
             selectQuery.ForClause = ForClauseParser.Parse(tokenizer);
+        }
+
+        if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText == "offset")
+        {
+            selectQuery.OffsetClause = OffsetClauseParser.Parse(tokenizer);
+        }
+
+        if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText is "limit" or "fetch")
+        {
+            selectQuery.LimitClause = LimitClauseParser.Parse(tokenizer);
         }
 
         return selectQuery;

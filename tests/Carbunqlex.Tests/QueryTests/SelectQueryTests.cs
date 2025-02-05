@@ -25,7 +25,7 @@ public class SelectQueryTests(ITestOutputHelper output)
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("select ColumnName1, ColumnName2 as alias2 from TableName where ColumnName1 = 1 group by ColumnName1, ColumnName2 having ColumnName1 > 10 order by ColumnName1, ColumnName2 desc window w as (partition by ColumnName1 order by ColumnName2 rows between unbounded preceding and current row) for update offset 10 rows fetch next 20 rows only", sql);
+        Assert.Equal("select ColumnName1, ColumnName2 as alias2 from TableName where ColumnName1 = 1 group by ColumnName1, ColumnName2 having ColumnName1 > 10 order by ColumnName1, ColumnName2 desc window w as (partition by ColumnName1 order by ColumnName2 rows between unbounded preceding and current row) for update offset 10 fetch next 20", sql);
     }
 
     [Fact]

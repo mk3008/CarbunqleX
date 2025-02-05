@@ -4,39 +4,102 @@ using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ClauseTests;
 
-public class PagingClauseTests(ITestOutputHelper output)
+public class PagingClauseTests
 {
-    private readonly ITestOutputHelper output = output;
+    private readonly ITestOutputHelper output;
 
-    [Fact]
-    public void ToSql_ReturnsCorrectSql()
+    public PagingClauseTests(ITestOutputHelper output)
     {
-        // Arrange
-        var offset = new ConstantExpression(10);
-        var fetch = new ConstantExpression(20);
-        var pagingClause = new PagingClause(offset, fetch);
-
-        // Act
-        var sql = pagingClause.ToSqlWithoutCte();
-        output.WriteLine(sql);
-
-        // Assert
-        Assert.Equal("offset 10 rows fetch next 20 rows only", sql);
+        this.output = output;
     }
 
     [Fact]
-    public void ToSql_WithParameterExpressions_ReturnsCorrectSql()
+    public void OffsetClause_ToSql_ReturnsCorrectSql()
     {
         // Arrange
-        var offset = new ParameterExpression("@offset");
-        var fetch = new ParameterExpression("@fetch");
-        var pagingClause = new PagingClause(offset, fetch);
+        var offset = new ConstantExpression(10);
+        var offsetClause = new OffsetClause(offset);
 
         // Act
-        var sql = pagingClause.ToSqlWithoutCte();
+        var sql = offsetClause.ToSqlWithoutCte();
         output.WriteLine(sql);
 
         // Assert
-        Assert.Equal("offset @offset rows fetch next @fetch rows only", sql);
+        Assert.Equal("offset 10", sql);
+    }
+
+    [Fact]
+    public void FetchClause_ToSql_ReturnsCorrectSql()
+    {
+        // Arrange
+        var fetch = new ConstantExpression(20);
+        var fetchClause = new FetchClause("next", fetch, false, string.Empty);
+
+        // Act
+        var sql = fetchClause.ToSqlWithoutCte();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("fetch next 20", sql);
+    }
+
+    [Fact]
+    public void LimitClause_ToSql_ReturnsCorrectSql()
+    {
+        // Arrange
+        var limit = new ConstantExpression(30);
+        var limitClause = new LimitClause(limit);
+
+        // Act
+        var sql = limitClause.ToSqlWithoutCte();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("limit 30", sql);
+    }
+
+    [Fact]
+    public void OffsetClause_WithParameterExpressions_ReturnsCorrectSql()
+    {
+        // Arrange
+        var offset = new ParameterExpression("@offset");
+        var offsetClause = new OffsetClause(offset);
+
+        // Act
+        var sql = offsetClause.ToSqlWithoutCte();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("offset @offset", sql);
+    }
+
+    [Fact]
+    public void FetchClause_WithParameterExpressions_ReturnsCorrectSql()
+    {
+        // Arrange
+        var fetch = new ParameterExpression("@fetch");
+        var fetchClause = new FetchClause("next", fetch, false, "rows only");
+
+        // Act
+        var sql = fetchClause.ToSqlWithoutCte();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("fetch next @fetch rows only", sql);
+    }
+
+    [Fact]
+    public void LimitClause_WithParameterExpressions_ReturnsCorrectSql()
+    {
+        // Arrange
+        var limit = new ParameterExpression("@limit");
+        var limitClause = new LimitClause(limit);
+
+        // Act
+        var sql = limitClause.ToSqlWithoutCte();
+        output.WriteLine(sql);
+
+        // Assert
+        Assert.Equal("limit @limit", sql);
     }
 }

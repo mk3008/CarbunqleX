@@ -75,15 +75,6 @@ public class SqlTokenizer
         throw SqlParsingExceptionBuilder.EndOfInput(this);
     }
 
-    public T Peek<T>(Func<SqlTokenizer, Token, T> action)
-    {
-        if (TryPeek(out var token))
-        {
-            return action(this, token);
-        }
-        throw SqlParsingExceptionBuilder.EndOfInput(this);
-    }
-
     public T Peek<T>(Func<Token, T> action, T defaultValue)
     {
         if (TryPeek(out var token))
@@ -93,8 +84,23 @@ public class SqlTokenizer
         return defaultValue;
     }
 
-    //[Obsolete("Use Peek<T> instead")]
-    //public Token Peek(out int position) => Memory.ReadLexeme(PreviousIdentifier, Position, out position);
+    public T Peek<T>(Func<SqlTokenizer, Token, T> action)
+    {
+        if (TryPeek(out var token))
+        {
+            return action(this, token);
+        }
+        throw SqlParsingExceptionBuilder.EndOfInput(this);
+    }
+
+    public T Peek<T>(Func<SqlTokenizer, Token, T> action, T defaultValue)
+    {
+        if (TryPeek(out var token))
+        {
+            return action(this, token);
+        }
+        return defaultValue;
+    }
 
     public Token Peek()
     {

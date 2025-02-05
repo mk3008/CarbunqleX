@@ -17,7 +17,8 @@ public class SelectQuery : ISelectQuery
     public OrderByClause OrderByClause { get; } = new OrderByClause();
     public WindowClause WindowClause { get; } = new WindowClause();
     public IForClause? ForClause { get; set; }
-    public IPagingClause PagingClause { get; set; } = EmptyPagingClause.Instance;
+    public OffsetClause? OffsetClause { get; set; }
+    public ILimitClause? LimitClause { get; set; }
 
     public SelectQuery(SelectClause selectClause)
     {
@@ -37,8 +38,6 @@ public class SelectQuery : ISelectQuery
     {
         var sb = new StringBuilder();
 
-        // Generate the SQL for the common table expressions (CTEs) associated with the query.
-        // For example, if WITH clauses are used in subqueries or inline queries, retrieve and centralize those CTEs.
         var withSql = new WithClause(GetCommonTableClauses()).ToSql();
         if (!string.IsNullOrEmpty(withSql))
         {
@@ -103,10 +102,22 @@ public class SelectQuery : ISelectQuery
             }
         }
 
-        var pagingSql = PagingClause.ToSqlWithoutCte();
-        if (!string.IsNullOrEmpty(pagingSql))
+        if (OffsetClause != null)
         {
-            sb.Append(" ").Append(pagingSql);
+            var offsetSql = OffsetClause.ToSqlWithoutCte();
+            if (!string.IsNullOrEmpty(offsetSql))
+            {
+                sb.Append(" ").Append(offsetSql);
+            }
+        }
+
+        if (LimitClause != null)
+        {
+            var limitSql = LimitClause.ToSqlWithoutCte();
+            if (!string.IsNullOrEmpty(limitSql))
+            {
+                sb.Append(" ").Append(limitSql);
+            }
         }
 
         return sb.ToString();
@@ -116,7 +127,7 @@ public class SelectQuery : ISelectQuery
     {
         var tokens = new List<Token>();
 
-        tokens.AddRange(WithClause.Generatetokens());
+        tokens.AddRange(WithClause.GenerateTokensWithoutCte());
         tokens.AddRange(GenerateTokensWithoutCte());
 
         return tokens;
@@ -134,7 +145,8 @@ public class SelectQuery : ISelectQuery
         tokens.AddRange(OrderByClause.GenerateTokensWithoutCte());
         tokens.AddRange(WindowClause.GenerateTokensWithoutCte());
         if (ForClause != null) tokens.AddRange(ForClause.GenerateTokensWithoutCte());
-        tokens.AddRange(PagingClause.GenerateTokensWithoutCte());
+        if (OffsetClause != null) tokens.AddRange(OffsetClause.GenerateTokensWithoutCte());
+        if (LimitClause != null) tokens.AddRange(LimitClause.GenerateTokensWithoutCte());
 
         return tokens;
     }
@@ -168,7 +180,8 @@ public class SelectQuery : ISelectQuery
         queries.AddRange(OrderByClause.GetQueries());
         queries.AddRange(WindowClause.GetQueries());
         if (ForClause != null) queries.AddRange(ForClause.GetQueries());
-        queries.AddRange(PagingClause.GetQueries());
+        if (OffsetClause != null) queries.AddRange(OffsetClause.GetQueries());
+        if (LimitClause != null) queries.AddRange(LimitClause.GetQueries());
 
         return queries;
     }

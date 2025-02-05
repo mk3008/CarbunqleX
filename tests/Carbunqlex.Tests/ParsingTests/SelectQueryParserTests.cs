@@ -77,6 +77,12 @@ public class SelectQueryParserTests
     [InlineData("tsvector search", "select id, name from users where to_tsvector(name) @@ to_tsquery('alice')")]
     [InlineData("plainto_tsquery", "select id, name from users where plainto_tsquery(name) @@ to_tsvector('alice')")]
     [InlineData("inner join with tablesample", "select u.id, u.name, o.total from users as u tablesample system (10) join orders as o on u.id = o.user_id")]
+    [InlineData("fetch first 5 rows", "select id, name from users fetch first 5")]
+    [InlineData("fetch next 10 rows", "select id, name from users fetch next 10")]
+    [InlineData("fetch next 1 row", "select id, name from users fetch next 1")]
+    [InlineData("fetch with offset", "select id, name from users offset 5 fetch next 10")]
+    [InlineData("fetch percent", "select id, name from users fetch first 10 percent")]
+    [InlineData("fetch percent with offset", "select id, name from users offset 5 fetch next 20")]
     public void Parse(string caption, string query)
     {
         Output.WriteLine($"Caption: {caption}");

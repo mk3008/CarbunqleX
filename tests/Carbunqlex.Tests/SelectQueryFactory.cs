@@ -415,13 +415,15 @@ public static class SelectQueryFactory
 
         var forClause = new ForClause("update");
 
-        var pagingClause = new PagingClause(new ConstantExpression(10), new ConstantExpression(20));
+        var offsetClause = new OffsetClause(new ConstantExpression(10));
+        var fetchClause = new FetchClause("next", new ConstantExpression(20), false, string.Empty);
 
         var selectQuery = new SelectQuery(selectClause)
         {
             FromClause = fromClause,
             ForClause = forClause,
-            PagingClause = pagingClause
+            OffsetClause = offsetClause,
+            LimitClause = fetchClause
         };
         selectQuery.WhereClause.Add(whereClause.Condition!);
         selectQuery.GroupByClause.GroupByColumns.AddRange(groupByClause.GroupByColumns);
