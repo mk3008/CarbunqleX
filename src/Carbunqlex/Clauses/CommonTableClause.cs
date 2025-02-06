@@ -2,47 +2,20 @@
 
 namespace Carbunqlex.Clauses;
 
-public enum Materialization
-{
-    None,
-    Materialized,
-    NotMaterialized
-}
-
-internal static class MaterializationExtensions
-{
-    /// <summary>
-    /// Converts the Materialization enum to its corresponding SQL string representation.
-    /// This method uses a switch statement for optimal performance.
-    /// </summary>
-    /// <param name="materialization">The Materialization enum value.</param>
-    /// <returns>The SQL string representation of the Materialization.</returns>
-    public static string ToSqlString(this Materialization materialization)
-    {
-        return materialization switch
-        {
-            Materialization.Materialized => "materialized",
-            Materialization.NotMaterialized => "not materialized",
-            Materialization.None => string.Empty,
-            _ => throw new ArgumentOutOfRangeException(nameof(materialization), materialization, null)
-        };
-    }
-}
-
 public class CommonTableClause : ISqlComponent
 {
     public bool IsRecursive { get; set; }
     public string Alias { get; set; }
     public ISelectQuery Query { get; }
     public ColumnAliasClause? ColumnAliasClause { get; }
-    public Materialization Materialization { get; }
+    public bool? IsMaterialized { get; }
 
-    public CommonTableClause(ISelectQuery query, string alias, ColumnAliasClause? columnAliases = null, Materialization materialization = Materialization.None, bool isRecursive = false)
+    public CommonTableClause(ISelectQuery query, string alias, ColumnAliasClause? columnAliases = null, bool? isMaterialized = null, bool isRecursive = false)
     {
         Query = query;
         Alias = alias;
         ColumnAliasClause = columnAliases;
-        Materialization = materialization;
+        IsMaterialized = isMaterialized;
         IsRecursive = isRecursive;
     }
 
@@ -56,15 +29,14 @@ public class CommonTableClause : ISqlComponent
             sb.Append(ColumnAliasClause.ToSqlWithoutCte());
         }
 
-        sb.Append(" as ");
+        sb.Append(" as");
 
-        var materializationSql = Materialization.ToSqlString();
-        if (!string.IsNullOrEmpty(materializationSql))
+        if (IsMaterialized != null)
         {
-            sb.Append(materializationSql).Append(" ");
+            sb.Append(IsMaterialized.Value ? " materialized " : " not materialized ");
         }
 
-        sb.Append("(");
+        sb.Append(" (");
         sb.Append(Query.ToSqlWithoutCte());
         sb.Append(")");
         return sb.ToString();
@@ -84,10 +56,16 @@ public class CommonTableClause : ISqlComponent
 
         tokens.Add(Token.AsKeyword);
 
-        var materializationSql = Materialization.ToSqlString();
-        if (!string.IsNullOrEmpty(materializationSql))
+        if (IsMaterialized != null)
         {
-            tokens.Add(new Token(TokenType.Command, materializationSql));
+            if (IsMaterialized.Value)
+            {
+                tokens.Add(new Token(TokenType.Command, "materialized"));
+            }
+            else
+            {
+                tokens.Add(new Token(TokenType.Command, "not materialized"));
+            }
         }
 
         tokens.Add(new Token(TokenType.OpenParen, "("));

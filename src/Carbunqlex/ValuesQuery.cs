@@ -10,6 +10,7 @@ public class ValuesQuery : ISelectQuery
 {
     public readonly List<ValuesRow> Rows = new();
     private int? columnCount;
+    public bool MightHaveQueries => false;
 
     public void AddRow(IEnumerable<IValueExpression> columns)
     {

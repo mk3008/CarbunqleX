@@ -16,14 +16,16 @@ public class SelectQuery : ISelectQuery
     public HavingClause HavingClause { get; } = new HavingClause();
     public OrderByClause OrderByClause { get; } = new OrderByClause();
     public WindowClause WindowClause { get; } = new WindowClause();
-    public IForClause? ForClause { get; set; }
-    public OffsetClause? OffsetClause { get; set; }
     public ILimitClause? LimitClause { get; set; }
+    public OffsetClause? OffsetClause { get; set; }
+    public IForClause? ForClause { get; set; }
 
     public SelectQuery(SelectClause selectClause)
     {
         SelectClause = selectClause;
         FromClause = EmptyFromClause.Instance;
+        LimitClause = null;
+        OffsetClause = null;
         ForClause = null;
     }
 
@@ -31,6 +33,8 @@ public class SelectQuery : ISelectQuery
     {
         SelectClause = selectClause;
         FromClause = fromClause;
+        LimitClause = null;
+        OffsetClause = null;
         ForClause = null;
     }
 
@@ -93,12 +97,12 @@ public class SelectQuery : ISelectQuery
             sb.Append(" ").Append(windowSql);
         }
 
-        if (ForClause != null)
+        if (LimitClause != null)
         {
-            var forSql = ForClause.ToSqlWithoutCte();
-            if (!string.IsNullOrEmpty(forSql))
+            var limitSql = LimitClause.ToSqlWithoutCte();
+            if (!string.IsNullOrEmpty(limitSql))
             {
-                sb.Append(" ").Append(forSql);
+                sb.Append(" ").Append(limitSql);
             }
         }
 
@@ -111,12 +115,12 @@ public class SelectQuery : ISelectQuery
             }
         }
 
-        if (LimitClause != null)
+        if (ForClause != null)
         {
-            var limitSql = LimitClause.ToSqlWithoutCte();
-            if (!string.IsNullOrEmpty(limitSql))
+            var forSql = ForClause.ToSqlWithoutCte();
+            if (!string.IsNullOrEmpty(forSql))
             {
-                sb.Append(" ").Append(limitSql);
+                sb.Append(" ").Append(forSql);
             }
         }
 
@@ -144,9 +148,9 @@ public class SelectQuery : ISelectQuery
         tokens.AddRange(HavingClause.GenerateTokensWithoutCte());
         tokens.AddRange(OrderByClause.GenerateTokensWithoutCte());
         tokens.AddRange(WindowClause.GenerateTokensWithoutCte());
-        if (ForClause != null) tokens.AddRange(ForClause.GenerateTokensWithoutCte());
-        if (OffsetClause != null) tokens.AddRange(OffsetClause.GenerateTokensWithoutCte());
         if (LimitClause != null) tokens.AddRange(LimitClause.GenerateTokensWithoutCte());
+        if (OffsetClause != null) tokens.AddRange(OffsetClause.GenerateTokensWithoutCte());
+        if (ForClause != null) tokens.AddRange(ForClause.GenerateTokensWithoutCte());
 
         return tokens;
     }
@@ -179,14 +183,15 @@ public class SelectQuery : ISelectQuery
         queries.AddRange(HavingClause.GetQueries());
         queries.AddRange(OrderByClause.GetQueries());
         queries.AddRange(WindowClause.GetQueries());
-        if (ForClause != null) queries.AddRange(ForClause.GetQueries());
-        if (OffsetClause != null) queries.AddRange(OffsetClause.GetQueries());
         if (LimitClause != null) queries.AddRange(LimitClause.GetQueries());
+        if (OffsetClause != null) queries.AddRange(OffsetClause.GetQueries());
+        if (ForClause != null) queries.AddRange(ForClause.GetQueries());
 
         return queries;
     }
 
     public Dictionary<string, object?> Parameters { get; } = new();
+    public bool MightHaveQueries => true;
 
     public IDictionary<string, object?> GetParameters()
     {

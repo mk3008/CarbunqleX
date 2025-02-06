@@ -1,15 +1,24 @@
 ﻿using Carbunqlex.ValueExpressions;
 
-namespace Carbunqlex.Parsing;
+namespace Carbunqlex.Parsing.ValueExpression;
 
 public class ParenthesizedExpressionParser
 {
-    public static ParenthesizedExpression Parse(SqlTokenizer tokenizer)
+    public static IValueExpression Parse(SqlTokenizer tokenizer)
     {
         tokenizer.Read(TokenType.OpenParen);
-        var value = ValueExpressionParser.Parse(tokenizer);
-        tokenizer.Read(TokenType.CloseParen);
 
-        return new ParenthesizedExpression(value);
+        if (tokenizer.Peek().CommandOrOperatorText == "select")
+        {
+            var query = SelectQueryParser.Parse(tokenizer);
+            tokenizer.Read(TokenType.CloseParen);
+            return new InlineQuery(query);
+        }
+        else
+        {
+            var value = ValueExpressionParser.Parse(tokenizer);
+            tokenizer.Read(TokenType.CloseParen);
+            return new ParenthesizedExpression(value);
+        }
     }
 }

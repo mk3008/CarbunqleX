@@ -1,28 +1,50 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.Parsing.ValueExpressionParsing;
+using Carbunqlex.Parsing.ValueExpression;
 using Carbunqlex.ValueExpressions;
 
 namespace Carbunqlex.Parsing;
 
 public static class SelectQueryParser
 {
-    public static SelectQuery Parse(SqlTokenizer tokenizer)
+    public static ISelectQuery Parse(SqlTokenizer tokenizer)
+    {
+        var selectQuery = ParseCore(tokenizer);
+
+        var isUnion = tokenizer.Peek(static t =>
+        {
+            return SqlKeyword.UnionCommandKeywords.Contains(t.CommandOrOperatorText)
+                ? true
+                : false;
+        }, false);
+
+        if (isUnion)
+        {
+            return ParseUnion(tokenizer, selectQuery);
+        }
+        return selectQuery;
+    }
+
+    private static SelectQuery ParseCore(SqlTokenizer tokenizer)
     {
         var next = tokenizer.Peek();
 
         if (next.CommandOrOperatorText == "with")
         {
-            throw new NotImplementedException();
+            tokenizer.CommitPeek();
+            var commonTables = WithClauseParser.ParseCommonTables(tokenizer);
+            var query = ParseWithoutCte(tokenizer);
+            query.WithClause.AddRange(commonTables);
+            return query;
         }
         else if (next.CommandOrOperatorText == "select")
         {
-            return ParseWithoutWith(tokenizer);
+            return ParseWithoutCte(tokenizer);
         }
 
         throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["select", "with"], next);
     }
 
-    public static SelectQuery ParseWithoutWith(SqlTokenizer tokenizer)
+    public static SelectQuery ParseWithoutCte(SqlTokenizer tokenizer)
     {
         tokenizer.Read("select");
 
@@ -72,14 +94,14 @@ public static class SelectQueryParser
             selectQuery.ForClause = ForClauseParser.Parse(tokenizer);
         }
 
-        if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText == "offset")
-        {
-            selectQuery.OffsetClause = OffsetClauseParser.Parse(tokenizer);
-        }
-
         if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText is "limit" or "fetch")
         {
             selectQuery.LimitClause = LimitClauseParser.Parse(tokenizer);
+        }
+
+        if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText == "offset")
+        {
+            selectQuery.OffsetClause = OffsetClauseParser.Parse(tokenizer);
         }
 
         return selectQuery;
@@ -117,7 +139,6 @@ public static class SelectQueryParser
         return new SelectClause(distinctClause, expressions);
     }
 
-
     private static class DistinctClauseParser
     {
         public static DistinctClause Parse(SqlTokenizer tokenizer)
@@ -153,6 +174,12 @@ public static class SelectQueryParser
             tokenizer.Read(TokenType.CloseParen);
             return new DistinctOnClause(expressions);
         }
+    }
 
+    private static UnionQuery ParseUnion(SqlTokenizer tokenizer, ISelectQuery left)
+    {
+        var unionType = tokenizer.Read(SqlKeyword.UnionCommandKeywords).Value;
+        var right = Parse(tokenizer);
+        return new UnionQuery(unionType, left, right);
     }
 }

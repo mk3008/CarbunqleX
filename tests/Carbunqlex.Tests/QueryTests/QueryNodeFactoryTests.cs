@@ -160,7 +160,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
     {
         var firstQuery = SelectQueryFactory.CreateSelectQuery("Table1", "t1", "ColumnName1", "ColumnName2");
         var secondQuery = SelectQueryFactory.CreateSelectQuery("Table2", "t2", "ColumnName1", "ColumnName2");
-        var unionAllQuery = new UnionQuery(UnionType.Union, firstQuery, secondQuery);
+        var unionAllQuery = new UnionQuery("union", firstQuery, secondQuery);
 
         return unionAllQuery;
     }
@@ -169,7 +169,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
     {
         var firstQuery = SelectQueryFactory.CreateSelectQuery("Table1", "t1", "ColumnName1", "ColumnName2");
         var secondQuery = SelectQueryFactory.CreateSelectQuery("Table2", "t2", "ColumnName1", "ColumnName2");
-        var unionAllQuery = new UnionQuery(UnionType.Union, firstQuery, secondQuery);
+        var unionAllQuery = new UnionQuery("union", firstQuery, secondQuery);
 
 
         var thirdQuery = SelectQueryFactory.CreateSelectQuery("Table3", "t3", "ColumnName1", "ColumnName2");
@@ -181,7 +181,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
             fromClause: new FromClause(new DatasourceExpression(new SubQuerySource(thirdQuery), "subquery"))
         );
 
-        var unionAllQueryWithSubQuery = new UnionQuery(UnionType.Union, unionAllQuery, subQuery);
+        var unionAllQueryWithSubQuery = new UnionQuery("union", unionAllQuery, subQuery);
         return unionAllQueryWithSubQuery;
     }
 

@@ -2,6 +2,9 @@
 
 namespace Carbunqlex.ValueExpressions;
 
+/// <summary>
+/// Represents an inline query.
+/// </summary>
 public class InlineQuery : IValueExpression
 {
     public ISelectQuery Query { get; }

@@ -1,4 +1,4 @@
-﻿namespace Carbunqlex.Parsing.ValueExpressionParsing;
+﻿namespace Carbunqlex.Parsing.ValueExpression;
 
 internal static class IdentifierValueParser
 {

@@ -1,5 +1,5 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.Parsing.ValueExpressionParsing;
+using Carbunqlex.Parsing.ValueExpression;
 
 namespace Carbunqlex.Parsing;
 
@@ -19,9 +19,9 @@ public static class JoinClauseParser
         }
 
         var joinKeyword = tokenizer.Read(TokenType.Command);
-        if (!SqlKeyword.JoinKeywords.Contains(joinKeyword.CommandOrOperatorText))
+        if (!SqlKeyword.JoinCommandKeywords.Contains(joinKeyword.CommandOrOperatorText))
         {
-            throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, SqlKeyword.JoinKeywords.ToArray(), joinKeyword);
+            throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, SqlKeyword.JoinCommandKeywords.ToArray(), joinKeyword);
         }
         return joinKeyword.Value;
     }

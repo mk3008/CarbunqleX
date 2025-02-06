@@ -1,7 +1,7 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.ValueExpressions;
 
-namespace Carbunqlex.Parsing.ValueExpressionParsing;
+namespace Carbunqlex.Parsing.ValueExpression;
 
 public static class CaseExpressionParser
 {
@@ -24,24 +24,32 @@ public static class CaseExpressionParser
 
         var elseOrEndToken = tokenizer.Read(TokenType.Command);
 
-        var elseValue = elseOrEndToken.CommandOrOperatorText == "end"
-            ? null
-            : elseOrEndToken.CommandOrOperatorText == "else"
-                   ? ValueExpressionParser.Parse(tokenizer)
-                   : throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["else", "end"], elseOrEndToken);
+        if (elseOrEndToken.CommandOrOperatorText == "else")
+        {
+            var elseValue = ValueExpressionParser.Parse(tokenizer);
+            tokenizer.Read("end");
 
-        if (caseValue != null)
-        {
-            return elseValue != null
-                ? new CaseExpression(caseValue, whenClauses, elseValue)
-                : new CaseExpression(caseValue, whenClauses);
+            if (caseValue != null)
+            {
+                return new CaseExpression(caseValue, whenClauses, elseValue);
+            }
+            else
+            {
+                return new CaseWhenExpression(whenClauses, elseValue);
+            }
         }
-        else
+        else if (elseOrEndToken.CommandOrOperatorText == "end")
         {
-            return elseValue != null
-                ? new CaseWhenExpression(whenClauses, elseValue)
-                : new CaseWhenExpression(whenClauses);
+            if (caseValue != null)
+            {
+                return new CaseExpression(caseValue, whenClauses);
+            }
+            else
+            {
+                return new CaseWhenExpression(whenClauses);
+            }
         }
+        throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["else", "end"], elseOrEndToken);
     }
 
     private static IEnumerable<WhenClause> ParseWhenThenPair(SqlTokenizer tokenizer)

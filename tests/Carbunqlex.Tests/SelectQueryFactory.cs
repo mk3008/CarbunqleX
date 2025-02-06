@@ -465,7 +465,7 @@ public static class SelectQueryFactory
         recursiveQuerySecondary.WhereClause.Add(WhereClause.Condition!);
 
         var unionAllQuery = new UnionQuery(
-            UnionType.UnionAll,
+            "union all",
             recursiveQueryPrimary,
             recursiveQuerySecondary
         );

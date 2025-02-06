@@ -46,7 +46,7 @@ public interface IQuery : ISqlComponent
 /// <summary>
 /// Represents a SQL query that can generate SQL strings and tokens, with or without CTEs.
 /// </summary>
-public interface ISelectQuery : IQuery
+public interface ISelectQuery : IQuery, IArgumentExpression
 {
     /// <summary>
     /// Retrieves the select expressions.
@@ -59,12 +59,6 @@ public interface ISelectQuery : IQuery
     /// </summary>
     /// <returns></returns>
     IEnumerable<DatasourceExpression> GetDatasources();
-
-    /// <summary>
-    /// Retrieves the column expressions.
-    /// </summary>
-    /// <returns></returns>
-    IEnumerable<ColumnExpression> ExtractColumnExpressions();
 
     bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause);
 

@@ -14,7 +14,7 @@
         /// <summary>
         /// Defines a set of characters considered as symbols that terminate an identifier.
         /// </summary>
-        private static readonly HashSet<char> Symbols = new HashSet<char>
+        private static readonly HashSet<char> MultipleSymbols = new HashSet<char>
         {
             '+', '-', '*', '/', '%', // Arithmetic operators
             '~', '@', '#', '$', '^', '&', // Special symbols
@@ -49,14 +49,14 @@
             return WhiteSpaces.Contains(c);
         }
 
-        public static bool IsSingleSymbols(this char c)
+        public static bool IsSingleSymbol(this char c)
         {
             return CharacterSymbols.Contains(c);
         }
 
-        public static bool IsMultipleSymbols(this char c)
+        public static bool IsMultipleSymbol(this char c)
         {
-            return Symbols.Contains(c);
+            return MultipleSymbols.Contains(c);
         }
 
         public static bool IsLineEnd(this char c)

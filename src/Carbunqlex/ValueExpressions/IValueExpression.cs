@@ -65,7 +65,7 @@ public static class IValueExpressionExtensions
         ValueBuilder.In(left, ValueBuilder.ConstantSet(values));
 
     public static InExpression In(this IValueExpression left, ISelectQuery right) =>
-        ValueBuilder.In(left, new ScalarSubquery(right));
+        ValueBuilder.In(left, right);
 
     public static InExpression NotIn(this IValueExpression left, IArgumentExpression right) =>
         ValueBuilder.NotIn(left, right);
@@ -74,7 +74,7 @@ public static class IValueExpressionExtensions
         ValueBuilder.NotIn(left, ValueBuilder.ConstantSet(values));
 
     public static InExpression NotIn(this IValueExpression left, ISelectQuery right) =>
-        ValueBuilder.NotIn(left, new ScalarSubquery(right));
+        ValueBuilder.NotIn(left, right);
 
     public static BinaryExpression IsNull(this IValueExpression expression) =>
         new BinaryExpression("is", expression, ValueBuilder.Null);
@@ -95,7 +95,7 @@ public static class IValueExpressionExtensions
         ValueBuilder.Any(left, ValueBuilder.Array(right));
 
     public static BinaryExpression Any(this IValueExpression left, ISelectQuery right) =>
-        ValueBuilder.Any(left, new ScalarSubquery(right));
+        ValueBuilder.Any(left, right);
 
     public static BinaryExpression Any(this IValueExpression left, IArgumentExpression right) =>
         ValueBuilder.Any(left, right);

@@ -1,5 +1,4 @@
 ﻿using Carbunqlex.Parsing.ValueExpression;
-using Carbunqlex.Parsing.ValueExpressionParsing;
 using Carbunqlex.ValueExpressions;
 using System.Diagnostics.CodeAnalysis;
 
@@ -57,6 +56,10 @@ public static class ValueExpressionParser
             if (token.CommandOrOperatorText == "grouping sets")
             {
                 return GroupingSetsExpressionParser.Parse(tokenizer);
+            }
+            if (token.CommandOrOperatorText is "exists" or "not exists")
+            {
+                return ExistsExpressionParser.Parse(tokenizer);
             }
             return ModifierExpressionParser.Parse(tokenizer);
         }
@@ -156,7 +159,7 @@ public static class ValueExpressionParser
                 renewValue = LikeExpressionParser.Parse(tokenizer, left);
                 return true;
             }
-            if (nextToken.CommandOrOperatorText == "in" || nextToken.CommandOrOperatorText == "not in")
+            if (nextToken.CommandOrOperatorText is "in" or "not in")
             {
                 renewValue = InExpressionParser.Parse(tokenizer, left);
                 return true;

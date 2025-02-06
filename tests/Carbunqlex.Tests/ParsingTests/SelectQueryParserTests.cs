@@ -83,15 +83,22 @@ public class SelectQueryParserTests
     [InlineData("fetch with offset", "select id, name from users offset 5 fetch next 10")]
     [InlineData("fetch percent", "select id, name from users fetch first 10 percent")]
     [InlineData("fetch percent with offset", "select id, name from users offset 5 fetch next 20")]
+    [InlineData("Postgres named parameter", "select id, name from users where id = :id")]
+    [InlineData("Postgres positional parameter", "select id, name from users where id = $1")]
+    [InlineData("Multiple named parameters", "select id, name from users where id = :id and age > :age")]
+    [InlineData("Multiple positional parameters", "select id, name from users where id = $1 and age > $2")]
+    [InlineData("MySQL named parameter", "select id, name from users where id = @id")]
+    [InlineData("MySQL positional parameter", "select id, name from users where id = ?")]
+    [InlineData("Excessive parentheses in subqueries", "select id from ((select id from users) union (select id from users)) as d")]
     public void Parse(string caption, string query)
     {
-        Output.WriteLine($"Caption: {caption}");
+        Output.WriteLine($"Caption: {caption}\n{query}");
         // Arrange
         var tokenizer = new SqlTokenizer(query);
 
         // Act
         var result = SelectQueryParser.Parse(tokenizer);
-        var actual = result.ToSqlWithoutCte();
+        var actual = result.ToSql();
         Output.WriteLine(actual);
 
         // Assert

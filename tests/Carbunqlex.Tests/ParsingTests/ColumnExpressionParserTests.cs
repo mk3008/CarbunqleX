@@ -1,5 +1,5 @@
 ﻿using Carbunqlex.Parsing;
-using Carbunqlex.Parsing.ValueExpressionParsing;
+using Carbunqlex.Parsing.ValueExpression;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 

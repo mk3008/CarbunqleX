@@ -1,6 +1,6 @@
 ﻿using Carbunqlex.ValueExpressions;
 
-namespace Carbunqlex.Parsing.ValueExpressionParsing;
+namespace Carbunqlex.Parsing.ValueExpression;
 
 public static class FunctionExpressionParser
 {
@@ -30,21 +30,17 @@ public static class FunctionExpressionParser
             return new FunctionExpression(function.Value, prefixModifier, args);
         }
 
-        // TODO: Add support for FILTER, WITHIN GROUP, OVER clauses
         next = tokenizer.Peek();
-
         if (next.CommandOrOperatorText == "filter")
         {
             var filter = FilterClauseParser.Parse(tokenizer);
             return new FunctionExpression(function.Value, prefixModifier, args, filter);
         }
-
         if (next.CommandOrOperatorText == "within group")
         {
             var withinGroup = WithinGroupClauseParser.Parse(tokenizer);
             return new FunctionExpression(function.Value, prefixModifier, args, withinGroup);
         }
-
         if (next.CommandOrOperatorText == "over")
         {
             var over = OverClauseParser.Parse(tokenizer);
@@ -56,6 +52,12 @@ public static class FunctionExpressionParser
 
     private static ValueArguments ParseArguments(SqlTokenizer tokenizer)
     {
+        // no arguments
+        if (tokenizer.Peek().Type == TokenType.CloseParen)
+        {
+            return new ValueArguments();
+        }
+
         var args = new List<IValueExpression>();
 
         while (true)
@@ -65,11 +67,13 @@ public static class FunctionExpressionParser
             if (tokenizer.TryPeek(out var comma) && comma.Type == TokenType.Comma)
             {
                 tokenizer.Read();
-                continue; ;
+                continue;
             }
             break;
         }
 
+        // check for ORDER BY clause
+        // e.g. array_agg(value order by sort_column)
         var next = tokenizer.Peek();
         if (next.CommandOrOperatorText == "order by")
         {

@@ -1,5 +1,5 @@
 ﻿using Carbunqlex.DatasourceExpressions;
-using Carbunqlex.Parsing.ValueExpressionParsing;
+using Carbunqlex.Parsing.ValueExpression;
 using Carbunqlex.ValueExpressions;
 
 namespace Carbunqlex.Parsing;

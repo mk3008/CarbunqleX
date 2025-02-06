@@ -52,7 +52,7 @@ public static class ValueBuilder
 
     public static InExpression In(IValueExpression left, ISelectQuery scalarSubQuery)
     {
-        return In(left, new ScalarSubquery(scalarSubQuery));
+        return In(left, scalarSubQuery);
     }
 
     public static InExpression NotIn(IValueExpression left, IArgumentExpression right)
@@ -67,7 +67,7 @@ public static class ValueBuilder
 
     public static InExpression NotIn(IValueExpression left, ISelectQuery scalarSubQuery)
     {
-        return NotIn(left, new ScalarSubquery(scalarSubQuery));
+        return NotIn(left, scalarSubQuery);
     }
 
     public static LikeExpression Like(IValueExpression left, IValueExpression right)
@@ -92,7 +92,7 @@ public static class ValueBuilder
 
     public static BinaryExpression Any(IValueExpression left, ISelectQuery scalarSubQuery)
     {
-        return new BinaryExpression("=", left, new FunctionExpression("any", string.Empty, new ScalarSubquery(scalarSubQuery)));
+        return new BinaryExpression("=", left, new FunctionExpression("any", string.Empty, scalarSubQuery));
     }
 
     public static FunctionExpression Function(string functionName, IEnumerable<IValueExpression> arguments, OverClause? overClause = null)

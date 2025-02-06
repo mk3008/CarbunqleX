@@ -1,4 +1,4 @@
-﻿using Carbunqlex.Parsing.ValueExpressionParsing;
+﻿using Carbunqlex.Parsing.ValueExpression;
 
 namespace Carbunqlex.Parsing;
 
@@ -158,6 +158,19 @@ public class SqlTokenizer
     }
 
     public Token Read(params string[] expectedCommands)
+    {
+        if (TryRead(out var token))
+        {
+            if (expectedCommands.Contains(token.CommandOrOperatorText))
+            {
+                return token;
+            }
+            throw SqlParsingExceptionBuilder.UnexpectedToken(this, expectedCommands, token);
+        }
+        throw SqlParsingExceptionBuilder.EndOfInput(this);
+    }
+
+    public Token Read(IEnumerable<string> expectedCommands)
     {
         if (TryRead(out var token))
         {

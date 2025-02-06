@@ -13,7 +13,7 @@ public class UnionQueryTests(ITestOutputHelper output)
         var selectQuery1 = SelectQueryFactory.CreateSelectConstantQuery(1, "value1");
         var selectQuery2 = SelectQueryFactory.CreateSelectConstantQuery(2, "value2");
 
-        var unionQuery = new UnionQuery(UnionType.Union, selectQuery1, selectQuery2);
+        var unionQuery = new UnionQuery("union", selectQuery1, selectQuery2);
 
         // Act
         var sql = unionQuery.ToSqlWithoutCte();
@@ -30,7 +30,7 @@ public class UnionQueryTests(ITestOutputHelper output)
         var selectQuery1 = SelectQueryFactory.CreateSelectConstantQuery(1, "value1");
         var selectQuery2 = SelectQueryFactory.CreateSelectConstantQuery(2, "value2");
 
-        var unionQuery = new UnionQuery(UnionType.UnionAll, selectQuery1, selectQuery2);
+        var unionQuery = new UnionQuery("union all", selectQuery1, selectQuery2);
 
         // Act
         var sql = unionQuery.ToSqlWithoutCte();
@@ -47,7 +47,7 @@ public class UnionQueryTests(ITestOutputHelper output)
         var selectQuery1 = SelectQueryFactory.CreateSelectConstantQuery(1, "value1");
         var selectQuery2 = SelectQueryFactory.CreateSelectConstantQuery(2, "value2");
 
-        var unionQuery = new UnionQuery(UnionType.Intersect, selectQuery1, selectQuery2);
+        var unionQuery = new UnionQuery("intersect", selectQuery1, selectQuery2);
 
         // Act
         var sql = unionQuery.ToSqlWithoutCte();
@@ -64,7 +64,7 @@ public class UnionQueryTests(ITestOutputHelper output)
         var selectQuery1 = SelectQueryFactory.CreateSelectConstantQuery(1, "value1");
         var selectQuery2 = SelectQueryFactory.CreateSelectConstantQuery(2, "value2");
 
-        var unionQuery = new UnionQuery(UnionType.Except, selectQuery1, selectQuery2);
+        var unionQuery = new UnionQuery("except", selectQuery1, selectQuery2);
 
         // Act
         var sql = unionQuery.ToSqlWithoutCte();
@@ -82,8 +82,8 @@ public class UnionQueryTests(ITestOutputHelper output)
         var selectQuery2 = SelectQueryFactory.CreateSelectAllQueryWithWithClause("table2", "cte2");
         var selectQuery3 = SelectQueryFactory.CreateSelectAllQueryWithWithClause("table3", "cte3");
 
-        var unionQuery1 = new UnionQuery(UnionType.Union, selectQuery1, selectQuery2);
-        var unionQuery2 = new UnionQuery(UnionType.UnionAll, unionQuery1, selectQuery3);
+        var unionQuery1 = new UnionQuery("union", selectQuery1, selectQuery2);
+        var unionQuery2 = new UnionQuery("union all", unionQuery1, selectQuery3);
 
         // Act
         var sql = unionQuery2.ToSql();
@@ -100,7 +100,7 @@ public class UnionQueryTests(ITestOutputHelper output)
         var selectQuery1 = SelectQueryFactory.CreateSelectAllQueryWithWithClause("table1", "cte");
         var selectQuery2 = SelectQueryFactory.CreateSelectAllQueryWithWithClause("table1", "cte");
 
-        var unionQuery = new UnionQuery(UnionType.Union, selectQuery1, selectQuery2);
+        var unionQuery = new UnionQuery("union", selectQuery1, selectQuery2);
 
         // Act
         var sql = unionQuery.ToSql();

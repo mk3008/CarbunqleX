@@ -20,7 +20,7 @@ public static class SqlKeyword
             "B'",
         };
 
-        JoinKeywords = new HashSet<string>
+        JoinCommandKeywords = new HashSet<string>
         {
             //join
             "join",
@@ -74,15 +74,28 @@ public static class SqlKeyword
             "unbounded",
         };
 
+        UnionCommandKeywords = new HashSet<string>
+        {
+            "union",
+            "union all",
+            "union distinct",
+            "intersect",
+            "intersect all",
+            "intersect distinct",
+            "except",
+            "except all",
+            "except distinct",
+        };
+
         CommandKeywords = new HashSet<string>
         {
             //common
             "as",
             //with
             "with",
-            "with recursive",
-            "with only",
-            "with ordinality",
+            "recursive",
+            "only",
+            "ordinality",
             "materialized",
             "not materialized",
             "search breadth first by",
@@ -90,8 +103,8 @@ public static class SqlKeyword
             //select
             "select",
             "select all",
-            "select distinct",
-            "select distinct on",
+            "distinct",
+            "distinct on",
             //from
             "from",
             "from only",
@@ -105,6 +118,8 @@ public static class SqlKeyword
             "using",
             //where
             "where",
+            "exists",
+            "not exists",
             //group
             "group by",
             "group by all",
@@ -125,16 +140,6 @@ public static class SqlKeyword
             "following", //unbounded following, x following
             "current row",
             "partition by",
-            //set
-            "union",
-            "union all",
-            "union distinct",
-            "intersect",
-            "intersect all",
-            "intersect distinct",
-            "except",
-            "except all",
-            "except distinct",
             //order by
             "order by",
             "asc",
@@ -381,9 +386,11 @@ public static class SqlKeyword
 
         // EscapeLiteralKeywords are treated as EscapedStringConstant, not Command,
         // and are not included in AllKeywords
-        AllKeywords = OperatorKeywords.Concat(ConstantValueKeywords).Concat(CommandKeywords).Concat(JoinKeywords).ToHashSet();
+        AllKeywords = OperatorKeywords.Concat(ConstantValueKeywords).Concat(CommandKeywords).Concat(JoinCommandKeywords).Concat(UnionCommandKeywords).ToHashSet();
 
-        JoinKeywordNodes = SqlKeywordBuilder.Build(JoinKeywords).ToDictionary(node => node.Keyword, node => node);
+        JoinCommandKeywordNodes = SqlKeywordBuilder.Build(JoinCommandKeywords).ToDictionary(node => node.Keyword, node => node);
+
+        UnionCommandKeywordNodes = SqlKeywordBuilder.Build(UnionCommandKeywords).ToDictionary(node => node.Keyword, node => node);
 
         CommandKeywordNodes = SqlKeywordBuilder.Build(CommandKeywords).ToDictionary(node => node.Keyword, node => node);
 
@@ -396,11 +403,13 @@ public static class SqlKeyword
 
     public static IReadOnlyDictionary<string, SqlKeywordNode> CommandKeywordNodes { get; }
 
+    public static IReadOnlyDictionary<string, SqlKeywordNode> UnionCommandKeywordNodes { get; }
+
     public static IReadOnlyDictionary<string, SqlKeywordNode> ConstantValueKeywordNodes { get; }
 
     public static IReadOnlyDictionary<string, SqlKeywordNode> OperatorKeywordNodes { get; }
 
-    public static IReadOnlyDictionary<string, SqlKeywordNode> JoinKeywordNodes { get; }
+    public static IReadOnlyDictionary<string, SqlKeywordNode> JoinCommandKeywordNodes { get; }
 
     public static IReadOnlyDictionary<string, SqlKeywordNode> AllKeywordNodes { get; }
 
@@ -414,7 +423,9 @@ public static class SqlKeyword
 
     public static HashSet<string> ConstantValueKeywords { get; }
 
-    public static HashSet<string> JoinKeywords { get; }
+    public static HashSet<string> JoinCommandKeywords { get; }
 
     public static HashSet<string> CommandKeywords { get; }
+
+    public static HashSet<string> UnionCommandKeywords { get; }
 }

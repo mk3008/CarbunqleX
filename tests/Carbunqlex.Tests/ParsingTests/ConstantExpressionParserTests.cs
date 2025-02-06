@@ -1,5 +1,5 @@
 ﻿using Carbunqlex.Parsing;
-using Carbunqlex.Parsing.ValueExpressionParsing;
+using Carbunqlex.Parsing.ValueExpression;
 using Carbunqlex.ValueExpressions;
 using Xunit.Abstractions;
 
@@ -107,7 +107,7 @@ public class ConstantExpressionParserTests
 
         // Act & Assert
         var exception = Assert.Throws<SqlParsingException>(() => ConstantExpressionParser.Parse(tokenizer));
-        Assert.Equal("Unexpected token type encountered. Expected: Constant, Actual: Command, Position: 6", exception.Message);
+        Assert.Equal("Unexpected token type encountered. Expected: Constant, Actual: Command(SELECT), Position: 6", exception.Message);
     }
 
     [Fact]

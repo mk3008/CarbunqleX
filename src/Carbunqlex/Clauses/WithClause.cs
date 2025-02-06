@@ -5,6 +5,7 @@ namespace Carbunqlex.Clauses;
 public class WithClause : ISqlComponent
 {
     public List<CommonTableClause> CommonTableClauses { get; }
+
     public bool IsRecursive => CommonTableClauses.Any(cte => cte.IsRecursive);
 
     public WithClause(params CommonTableClause[] commonTableClauses)
@@ -149,5 +150,15 @@ public class WithClause : ISqlComponent
 
         errorMessages = errors;
         return !errors.Any();
+    }
+
+    public void Add(CommonTableClause commonTableClause)
+    {
+        CommonTableClauses.Add(commonTableClause);
+    }
+
+    public void AddRange(IEnumerable<CommonTableClause> commonTableClauses)
+    {
+        CommonTableClauses.AddRange(commonTableClauses);
     }
 }

@@ -77,10 +77,17 @@ public interface IArgumentExpression : ISqlComponent
     IEnumerable<ColumnExpression> ExtractColumnExpressions();
 }
 
+/// <summary>
+/// Represents a list of values for a function or operator.
+/// </summary>
 public class ValueArguments : IArgumentExpression
 {
     public List<IValueExpression> Values { get; }
 
+    /// <summary>
+    /// Optional ORDER BY clause for the arguments.
+    /// e.g. array_agg(value order by sort_column)
+    /// </summary>
     public OrderByClause? OrderByClause { get; set; }
 
     public ValueArguments(params IValueExpression[] values)
@@ -101,6 +108,12 @@ public class ValueArguments : IArgumentExpression
         OrderByClause = null;
     }
 
+    /// <summary>
+    /// Constructor for ORDER BY clause.
+    /// e.g. array_agg(value order by sort_column)
+    /// </summary>
+    /// <param name="values"></param>
+    /// <param name="orderBy"></param>
     public ValueArguments(List<IValueExpression> values, OrderByClause orderBy)
     {
         Values = values;
@@ -152,44 +165,5 @@ public class ValueArguments : IArgumentExpression
             columns.AddRange(value.ExtractColumnExpressions());
         }
         return columns;
-    }
-}
-
-public class ScalarSubquery : IArgumentExpression
-{
-    public ISelectQuery Query { get; }
-
-    public ScalarSubquery(ISelectQuery query)
-    {
-        Query = query;
-    }
-
-    public bool MightHaveQueries => true;
-
-    public string ToSqlWithoutCte()
-    {
-        return Query.ToSqlWithoutCte();
-    }
-
-    public IEnumerable<Token> GenerateTokensWithoutCte()
-    {
-        var tokens = new List<Token>();
-        tokens.AddRange(Query.GenerateTokensWithoutCte());
-        return tokens;
-    }
-
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
-    {
-        return Query.GetCommonTableClauses();
-    }
-
-    public IEnumerable<ISelectQuery> GetQueries()
-    {
-        return new List<ISelectQuery> { Query };
-    }
-
-    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
-    {
-        return Enumerable.Empty<ColumnExpression>();
     }
 }

@@ -123,9 +123,21 @@ public static class ReadOnlyMemoryExtensions
             return new Token(TokenType.CloseBracket, "]", "]");
         }
 
-        // parameter @
-        if (memory.StartWith("@", p, out p))
+        // Postgres parameter $ (記号が連続出現する場合はパラメータとはみなさない)
+        if (memory.StartWith("$", p, out _) && !memory.IsMultipleSymbol(p + 1))
         {
+            p++;
+            memory.TryReadWord(p, out p, out var name);
+            memory.SkipWhiteSpacesAndComments(ref p);
+            var raw = memory.Slice(start, p - start).ToString();
+            end = p;
+            return new Token(TokenType.Parameter, "$" + name, raw, string.Empty);
+        }
+
+        // SQLServe parameter @ (記号が連続出現する場合はパラメータとはみなさない)
+        if (memory.StartWith("@", p, out _) && !memory.IsMultipleSymbol(p + 1))
+        {
+            p++;
             memory.TryReadWord(p, out p, out var name);
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
@@ -133,9 +145,10 @@ public static class ReadOnlyMemoryExtensions
             return new Token(TokenType.Parameter, "@" + name, raw, string.Empty);
         }
 
-        // parameter :
-        if (memory.StartWith(":", p, out p))
+        // Postgres parameter : (記号が連続出現する場合はパラメータとはみなさない)
+        if (memory.StartWith(":", p, out _) && !memory.IsMultipleSymbol(p + 1))
         {
+            p++;
             memory.TryReadWord(p, out p, out var name);
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
@@ -143,14 +156,14 @@ public static class ReadOnlyMemoryExtensions
             return new Token(TokenType.Parameter, ":" + name, raw, string.Empty);
         }
 
-        // parameter $
-        if (memory.StartWith("$", p, out p))
+        // SQLite parameter ? (記号のあとは空白または終端であること)
+        if (memory.StartWith("?", p, out _) && (memory.IsWhiteSpace(p + 1) || memory.IsEnd(p + 1)))
         {
-            memory.TryReadWord(p, out p, out var name);
+            p++;
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
             end = p;
-            return new Token(TokenType.Parameter, "$" + name, raw, string.Empty);
+            return new Token(TokenType.Parameter, "?", raw, string.Empty);
         }
 
         // symbol
@@ -186,9 +199,14 @@ public static class ReadOnlyMemoryExtensions
                 var node = SqlKeyword.ConstantValueKeywordNodes[normalized];
                 return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Constant, node, out end);
             }
-            else if (SqlKeyword.JoinKeywordNodes.ContainsKey(normalized))
+            else if (SqlKeyword.JoinCommandKeywordNodes.ContainsKey(normalized))
             {
-                var node = SqlKeyword.JoinKeywordNodes[normalized];
+                var node = SqlKeyword.JoinCommandKeywordNodes[normalized];
+                return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Command, node, out end);
+            }
+            else if (SqlKeyword.UnionCommandKeywordNodes.ContainsKey(normalized))
+            {
+                var node = SqlKeyword.UnionCommandKeywordNodes[normalized];
                 return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Command, node, out end);
             }
             else if (!SqlKeyword.CommandKeywordNodes.ContainsKey(normalized))
@@ -574,7 +592,7 @@ public static class ReadOnlyMemoryExtensions
         endPosition = start;
         var p = start;
 
-        if (memory.Span[p].IsSingleSymbols())
+        if (memory.Span[p].IsSingleSymbol())
         {
             p++;
             lexeme = memory.Slice(start, p - start).ToString();
@@ -582,13 +600,13 @@ public static class ReadOnlyMemoryExtensions
             return true;
         }
 
-        if (!memory.Span[p].IsMultipleSymbols())
+        if (!memory.Span[p].IsMultipleSymbol())
         {
             lexeme = string.Empty;
             return false;
         }
         p++;
-        while (p < memory.Length && memory.Span[p].IsMultipleSymbols())
+        while (p < memory.Length && memory.Span[p].IsMultipleSymbol())
         {
             p++;
         }
@@ -703,14 +721,14 @@ public static class ReadOnlyMemoryExtensions
         }
 
         // Check if the first character is not a letter
-        if (memory.Span[p].IsWhiteSpace() || memory.Span[p].IsSingleSymbols() || memory.Span[p].IsMultipleSymbols())
+        if (memory.Span[p].IsWhiteSpace() || memory.Span[p].IsSingleSymbol() || memory.Span[p].IsMultipleSymbol())
         {
             word = string.Empty;
             return false;
         }
 
         //　Read until a white space or symbol is found
-        while (p < memory.Length && !memory.Span[p].IsWhiteSpace() && !memory.Span[p].IsSingleSymbols() && !memory.Span[p].IsMultipleSymbols())
+        while (p < memory.Length && !memory.Span[p].IsWhiteSpace() && !memory.Span[p].IsSingleSymbol() && !memory.Span[p].IsMultipleSymbol())
         {
             p++;
         }
@@ -718,5 +736,28 @@ public static class ReadOnlyMemoryExtensions
         word = memory.Slice(start, p - start).ToString();
         endPosition = p;
         return true;
+    }
+
+    private static bool IsMultipleSymbol(this ReadOnlyMemory<char> memory, int position)
+    {
+        if (position >= memory.Length)
+        {
+            return false;
+        }
+        return memory.Span[position].IsMultipleSymbol();
+    }
+
+    private static bool IsWhiteSpace(this ReadOnlyMemory<char> memory, int position)
+    {
+        if (position >= memory.Length)
+        {
+            return false;
+        }
+        return memory.Span[position].IsWhiteSpace();
+    }
+
+    private static bool IsEnd(this ReadOnlyMemory<char> memory, int position)
+    {
+        return position >= memory.Length;
     }
 }

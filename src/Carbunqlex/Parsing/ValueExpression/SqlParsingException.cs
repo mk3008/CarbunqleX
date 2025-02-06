@@ -1,4 +1,4 @@
-﻿namespace Carbunqlex.Parsing.ValueExpressionParsing;
+﻿namespace Carbunqlex.Parsing.ValueExpression;
 
 public class SqlParsingException : Exception
 {
@@ -25,21 +25,21 @@ public static class SqlParsingExceptionBuilder
     }
     public static SqlParsingException UnexpectedTokenType(SqlTokenizer tokenizer, TokenType expectedType, Token actualToken)
     {
-        return new SqlParsingException($"Unexpected token type encountered. Expected: {expectedType}, Actual: {actualToken.Type}, Position: {tokenizer.Position}", tokenizer.Position, actualToken);
+        return new SqlParsingException($"Unexpected token type encountered. Expected: {expectedType}, Actual: {actualToken.Type}({actualToken.Value}), Position: {tokenizer.Position}", tokenizer.Position, actualToken);
     }
 
-    public static SqlParsingException UnexpectedTokenType(SqlTokenizer sqlTokenizer, TokenType[] expectedTokenTypes, Token actualToken)
+    public static SqlParsingException UnexpectedTokenType(SqlTokenizer sqlTokenizer, IEnumerable<TokenType> expectedTokenTypes, Token actualToken)
     {
-        return new SqlParsingException($"Unexpected token type encountered. Expected: {string.Join(" or ", expectedTokenTypes)}, Actual: {actualToken.Type}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, actualToken);
+        return new SqlParsingException($"Unexpected token type encountered. Expected: {string.Join(" or ", expectedTokenTypes)}({actualToken.Type}), Value: {actualToken.Value},Position: {sqlTokenizer.Position}", sqlTokenizer.Position, actualToken);
     }
 
     public static SqlParsingException UnexpectedToken(SqlTokenizer sqlTokenizer, string expectedToken, Token actualToken)
     {
-        return new SqlParsingException($"Unexpected token encountered. Expected: {expectedToken}, Actual: {actualToken.Type}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, actualToken);
+        return new SqlParsingException($"Unexpected token encountered. Expected: {expectedToken}, Actual: {actualToken.Value}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, actualToken);
     }
 
-    public static SqlParsingException UnexpectedToken(SqlTokenizer sqlTokenizer, string[] expectedTokens, Token actualToken)
+    public static SqlParsingException UnexpectedToken(SqlTokenizer sqlTokenizer, IEnumerable<string> expectedTokens, Token actualToken)
     {
-        return new SqlParsingException($"Unexpected token encountered. Expected: {string.Join(" or ", expectedTokens)}, Actual: {actualToken.Type}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, actualToken);
+        return new SqlParsingException($"Unexpected token encountered. Expected: {string.Join(" or ", expectedTokens)}, Actual: {actualToken.Value}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, actualToken);
     }
 }

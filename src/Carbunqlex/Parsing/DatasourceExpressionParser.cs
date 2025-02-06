@@ -39,7 +39,7 @@ public class DatasourceExpressionParser
 
     private static DatasourceExpression ParseWithAlias(SqlTokenizer tokenizer, IDatasource datasource)
     {
-        var alias = tokenizer.Read().Value;
+        var alias = tokenizer.Read(TokenType.Identifier).Value;
 
         if (tokenizer.IsEnd)
         {

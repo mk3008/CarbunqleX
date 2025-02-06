@@ -193,14 +193,14 @@ public class ReadOnlyMemoryExtensionsTests
         var memory = new ReadOnlyMemory<char>("select distinct 1".ToCharArray());
         var token = memory.ReadLexeme("", 0, out int end);
         Assert.Equal(TokenType.Command, token.Type);
-        Assert.Equal("select distinct", token.Value);
-        Assert.Equal("select distinct ", token.RawValue);
-        Assert.Equal(16, end);
+        Assert.Equal("select", token.Value);
+        Assert.Equal("select ", token.RawValue);
+        Assert.Equal(7, end);
 
         var nextToken = memory.ReadLexeme("", end, out end);
-        Assert.Equal(TokenType.Constant, nextToken.Type);
-        Assert.Equal("1", nextToken.Value);
-        Assert.Equal(17, end);
+        Assert.Equal(TokenType.Command, nextToken.Type);
+        Assert.Equal("distinct", nextToken.Value);
+        Assert.Equal(16, end);
     }
 
     [Fact]
@@ -209,9 +209,9 @@ public class ReadOnlyMemoryExtensionsTests
         var memory = new ReadOnlyMemory<char>("select distinct on ()".ToCharArray());
         var token = memory.ReadLexeme("", 0, out int end);
         Assert.Equal(TokenType.Command, token.Type);
-        Assert.Equal("select distinct on", token.Value);
-        Assert.Equal("select distinct on ", token.RawValue);
-        Assert.Equal(19, end);
+        Assert.Equal("select", token.Value);
+        Assert.Equal("select ", token.RawValue);
+        Assert.Equal(7, end);
     }
 
     [Fact]
@@ -220,9 +220,9 @@ public class ReadOnlyMemoryExtensionsTests
         var memory = new ReadOnlyMemory<char>("select\tdistinct\non ()".ToCharArray());
         var token = memory.ReadLexeme("", 0, out int end);
         Assert.Equal(TokenType.Command, token.Type);
-        Assert.Equal("select distinct on", token.Value);
-        Assert.Equal("select\tdistinct\non ", token.RawValue);
-        Assert.Equal(19, end);
+        Assert.Equal("select", token.Value);
+        Assert.Equal("select\t", token.RawValue);
+        Assert.Equal(7, end);
     }
 
     [Fact]
@@ -231,9 +231,9 @@ public class ReadOnlyMemoryExtensionsTests
         var memory = new ReadOnlyMemory<char>("select/*comment*/distinct--comment\non ()".ToCharArray());
         var token = memory.ReadLexeme("", 0, out int end);
         Assert.Equal(TokenType.Command, token.Type);
-        Assert.Equal("select distinct on", token.Value);
-        Assert.Equal("select/*comment*/distinct--comment\non ", token.RawValue);
-        Assert.Equal(38, end);
+        Assert.Equal("select", token.Value);
+        Assert.Equal("select/*comment*/", token.RawValue);
+        Assert.Equal(17, end);
     }
 
     [Fact]
@@ -253,10 +253,10 @@ public class ReadOnlyMemoryExtensionsTests
         var memory = new ReadOnlyMemory<char>("SELECT/*comment*/DISTINCT--comment\nON ()".ToCharArray());
         var token = memory.ReadLexeme("", 0, out int end);
         Assert.Equal(TokenType.Command, token.Type);
-        Assert.Equal("SELECT DISTINCT ON", token.Value);
-        Assert.Equal("SELECT/*comment*/DISTINCT--comment\nON ", token.RawValue);
-        Assert.Equal("select distinct on", token.CommandOrOperatorText);
-        Assert.Equal(38, end);
+        Assert.Equal("SELECT", token.Value);
+        Assert.Equal("SELECT/*comment*/", token.RawValue);
+        Assert.Equal("select", token.CommandOrOperatorText);
+        Assert.Equal(17, end);
     }
 
     [Fact]

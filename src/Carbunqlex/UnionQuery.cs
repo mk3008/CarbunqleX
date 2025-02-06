@@ -6,36 +6,14 @@ using System.Text;
 
 namespace Carbunqlex;
 
-public enum UnionType : byte
-{
-    Union,
-    UnionAll,
-    Intersect,
-    Except
-}
-
-internal static class UnionTypeExtensions
-{
-    public static string ToSqlString(this UnionType unionType)
-    {
-        return unionType switch
-        {
-            UnionType.Union => "union",
-            UnionType.UnionAll => "union all",
-            UnionType.Intersect => "intersect",
-            UnionType.Except => "except",
-            _ => throw new ArgumentOutOfRangeException(nameof(unionType), unionType, null)
-        };
-    }
-}
-
 public class UnionQuery : ISelectQuery
 {
     public ISelectQuery Left { get; }
     public ISelectQuery Right { get; }
-    public UnionType UnionType { get; }
+    public string UnionType { get; }
+    public bool MightHaveQueries => true;
 
-    public UnionQuery(UnionType unionType, ISelectQuery left, ISelectQuery right)
+    public UnionQuery(string unionType, ISelectQuery left, ISelectQuery right)
     {
         Left = left;
         Right = right;
@@ -62,7 +40,7 @@ public class UnionQuery : ISelectQuery
         // Combine Left and Right queries, excluding the WITH clause
         sb.Append(Left.ToSqlWithoutCte());
         sb.Append(" ");
-        sb.Append(UnionType.ToSqlString());
+        sb.Append(UnionType);
         sb.Append(" ");
         sb.Append(Right.ToSqlWithoutCte());
 
@@ -71,32 +49,32 @@ public class UnionQuery : ISelectQuery
 
     public IEnumerable<Token> GenerateTokens()
     {
-        var lefttokens = Left.GenerateTokens().ToList();
-        var righttokens = Right.GenerateTokens().ToList();
+        var leftTokens = Left.GenerateTokens().ToList();
+        var rightTokens = Right.GenerateTokens().ToList();
 
         // Initial capacity is set to accommodate the tokens from Left, Right, and the UnionType keyword.
-        var tokens = new List<Token>(lefttokens.Count + righttokens.Count + 1);
-        tokens.AddRange(lefttokens);
-        tokens.Add(new Token(TokenType.Command, UnionType.ToSqlString()));
-        tokens.AddRange(righttokens);
+        var tokens = new List<Token>(leftTokens.Count + rightTokens.Count + 1);
+        tokens.AddRange(leftTokens);
+        tokens.Add(new Token(TokenType.Command, UnionType));
+        tokens.AddRange(rightTokens);
         return tokens;
     }
 
     public string ToSqlWithoutCte()
     {
-        return $"{Left.ToSqlWithoutCte()} {UnionType.ToSqlString()} {Right.ToSqlWithoutCte()}";
+        return $"{Left.ToSqlWithoutCte()} {UnionType} {Right.ToSqlWithoutCte()}";
     }
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var lefttokens = Left.GenerateTokensWithoutCte().ToList();
-        var righttokens = Right.GenerateTokensWithoutCte().ToList();
+        var leftTokens = Left.GenerateTokensWithoutCte().ToList();
+        var rightTokens = Right.GenerateTokensWithoutCte().ToList();
 
         // Initial capacity is set to accommodate the tokens from Left, Right, and the UnionType keyword.
-        var tokens = new List<Token>(lefttokens.Count + righttokens.Count + 1);
-        tokens.AddRange(lefttokens);
-        tokens.Add(new Token(TokenType.Command, UnionType.ToSqlString()));
-        tokens.AddRange(righttokens);
+        var tokens = new List<Token>(leftTokens.Count + rightTokens.Count + 1);
+        tokens.AddRange(leftTokens);
+        tokens.Add(new Token(TokenType.Command, UnionType));
+        tokens.AddRange(rightTokens);
         return tokens;
     }
 
