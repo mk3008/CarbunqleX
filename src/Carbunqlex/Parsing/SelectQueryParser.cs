@@ -89,12 +89,7 @@ public static class SelectQueryParser
             selectQuery.WindowClause.AddRange(WindowClauseParser.ParseWindowExpressions(tokenizer));
         }
 
-        if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText == "for")
-        {
-            selectQuery.ForClause = ForClauseParser.Parse(tokenizer);
-        }
-
-        if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText is "limit" or "fetch")
+        if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText == "limit")
         {
             selectQuery.LimitClause = LimitClauseParser.Parse(tokenizer);
         }
@@ -102,6 +97,17 @@ public static class SelectQueryParser
         if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText == "offset")
         {
             selectQuery.OffsetClause = OffsetClauseParser.Parse(tokenizer);
+        }
+
+        if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText == "fetch")
+        {
+            // fetch も limit と同じクラスを使う
+            selectQuery.LimitClause = LimitClauseParser.Parse(tokenizer);
+        }
+
+        if (!tokenizer.IsEnd && tokenizer.Peek().CommandOrOperatorText == "for")
+        {
+            selectQuery.ForClause = ForClauseParser.Parse(tokenizer);
         }
 
         return selectQuery;

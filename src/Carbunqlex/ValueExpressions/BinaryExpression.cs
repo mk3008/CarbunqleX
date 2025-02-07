@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Carbunqlex.ValueExpressions;
+﻿namespace Carbunqlex.ValueExpressions;
 
 /// <summary>
 /// Represents a binary expression, which consists of a left operand, an operator, and a right operand.
@@ -38,13 +36,17 @@ public class BinaryExpression : IValueExpression
 
     public string ToSqlWithoutCte()
     {
-        var sb = new StringBuilder();
-        sb.Append(Left.ToSqlWithoutCte());
-        sb.Append(" ");
-        sb.Append(Operator);
-        sb.Append(" ");
-        sb.Append(Right.ToSqlWithoutCte());
-        return sb.ToString();
+        // If the operator is "::", then this is a Postgres type cast expression.
+        // Inserting spaces is not syntactically problematic,
+        // but it is generally written without spaces, so we follow that convention.
+        if (Operator == "::")
+        {
+            return $"{Left.ToSqlWithoutCte()}{Operator}{Right.ToSqlWithoutCte()}";
+        }
+        else
+        {
+            return $"{Left.ToSqlWithoutCte()} {Operator} {Right.ToSqlWithoutCte()}";
+        }
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

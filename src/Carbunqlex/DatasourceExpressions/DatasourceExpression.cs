@@ -44,6 +44,8 @@ public class DatasourceExpression : ISqlComponent, IDatasource
 
     public IColumnAliasClause? ColumnAliasClause { get; set; }
 
+    public TableSample? TableSample { get; set; }
+
     public string DefaultName => Datasource.DefaultName;
 
     public string TableFullName => Datasource.TableFullName;
@@ -138,5 +140,47 @@ public class DatasourceExpression : ISqlComponent, IDatasource
     public bool TryGetUnionQuerySource([NotNullWhen(true)] out UnionQuerySource? unionQuerySource)
     {
         return Datasource.TryGetUnionQuerySource(out unionQuerySource);
+    }
+}
+
+public class TableSample : ISqlComponent
+{
+    public TableSample(string sampleType, IValueExpression sampleCount)
+    {
+        SampleType = sampleType;
+        SampleCount = sampleCount;
+    }
+
+    /// <summary>
+    /// The type of sample.
+    /// e.g. BERNOULLI or SYSTEM
+    /// </summary>
+    public string SampleType { get; }
+
+    public IValueExpression SampleCount { get; }
+
+    public string ToSqlWithoutCte()
+    {
+        var sb = new StringBuilder("tablesample (");
+        sb.Append(SampleCount.ToSqlWithoutCte());
+        sb.Append(SampleType).Append(')');
+
+        return sb.ToString();
+    }
+    public IEnumerable<Token> GenerateTokensWithoutCte()
+    {
+        var tokens = new List<Token>
+        {
+            new Token(TokenType.Command, "tablesample"),
+            new Token(TokenType.OpenParen, "("),
+        };
+        tokens.AddRange(SampleCount.GenerateTokensWithoutCte());
+        tokens.Add(new Token(TokenType.Command, SampleType));
+        tokens.Add(new Token(TokenType.CloseParen, ")"));
+        return tokens;
+    }
+    public IEnumerable<ISelectQuery> GetQueries()
+    {
+        yield break;
     }
 }

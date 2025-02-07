@@ -92,6 +92,13 @@ public static class ValueExpressionParser
                 return ColumnExpressionParser.Parse(tokenizer, token);
             }
 
+            // array[]
+            if (tokenizer.TryPeek(out var nextToken3) && nextToken3.Value == "[]")
+            {
+                tokenizer.CommitPeek();
+                return new ConstantExpression(token.Value + nextToken3.Value);
+            }
+
             // column
             return ColumnExpressionParser.Parse(tokenizer, token);
         }

@@ -6,6 +6,8 @@ public class LimitClause : ILimitClause
 {
     public IValueExpression Limit { get; }
 
+    public bool IsLimit => true;
+
     public LimitClause(IValueExpression limit)
     {
         Limit = limit;

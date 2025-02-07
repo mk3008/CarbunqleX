@@ -13,6 +13,8 @@ public class FetchClause : ILimitClause
 
     public string FetchSuffix { get; }
 
+    public bool IsLimit => false;
+
     public FetchClause(string fetchType, IValueExpression fetchCount, bool isPercentage, string fetchSuffix)
     {
         FetchType = fetchType;

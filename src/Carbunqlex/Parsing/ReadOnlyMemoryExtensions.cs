@@ -14,7 +14,7 @@ public static class ReadOnlyMemoryExtensions
     /// <param name="end">The end position of the lexeme.</param>
     /// <returns>The read token.</returns>
     /// <exception cref="InvalidOperationException">Thrown when an invalid lexeme is encountered.</exception>
-    public static Token ReadLexeme(this ReadOnlyMemory<char> memory, string previousTokenCommandText, int start, out int end)
+    public static Token ReadLexeme(this ReadOnlyMemory<char> memory, Token? previousToken, int start, out int end)
     {
         end = start;
         var p = start;
@@ -83,7 +83,7 @@ public static class ReadOnlyMemoryExtensions
         }
 
         // square brackets (used as the escape symbol in SQL Server)
-        if (previousTokenCommandText != "array" && memory.TryReadEnclosedLexeme(p, '[', ']', out p, out lexeme))
+        if ((previousToken.HasValue == false || previousToken.Value.CommandOrOperatorText != "array") && memory.TryReadEnclosedLexeme(p, '[', ']', out p, out lexeme))
         {
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
@@ -160,6 +160,12 @@ public static class ReadOnlyMemoryExtensions
         if (memory.StartWith("?", p, out _) && (memory.IsWhiteSpace(p + 1) || memory.IsEnd(p + 1)))
         {
             p++;
+            // ただし、previous が identifier の 場合は 演算子として扱うこと
+            if (previousToken?.Type == TokenType.Identifier)
+            {
+                end = p;
+                return new Token(TokenType.Operator, "?");
+            }
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
             end = p;
@@ -189,7 +195,13 @@ public static class ReadOnlyMemoryExtensions
 
             var normalized = lexeme.ToLower();
 
-            if (SqlKeyword.OperatorKeywordNodes.ContainsKey(normalized))
+            if (SqlKeyword.IdentifierKeywordNodes.ContainsKey(normalized))
+            {
+                // e.g. double precision, timestamp with time zone
+                var node = SqlKeyword.IdentifierKeywordNodes[normalized];
+                return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Identifier, node, out end);
+            }
+            else if (SqlKeyword.OperatorKeywordNodes.ContainsKey(normalized))
             {
                 var node = SqlKeyword.OperatorKeywordNodes[normalized];
                 return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Operator, node, out end);

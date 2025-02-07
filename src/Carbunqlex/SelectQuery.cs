@@ -97,8 +97,9 @@ public class SelectQuery : ISelectQuery
             sb.Append(" ").Append(windowSql);
         }
 
-        if (LimitClause != null)
+        if (LimitClause != null && LimitClause.IsLimit)
         {
+            // Limit clause export before offset clause
             var limitSql = LimitClause.ToSqlWithoutCte();
             if (!string.IsNullOrEmpty(limitSql))
             {
@@ -115,6 +116,16 @@ public class SelectQuery : ISelectQuery
             }
         }
 
+        if (LimitClause != null && !LimitClause.IsLimit)
+        {
+            // Fetch clause export after offset clause
+            var limitSql = LimitClause.ToSqlWithoutCte();
+            if (!string.IsNullOrEmpty(limitSql))
+            {
+                sb.Append(" ").Append(limitSql);
+            }
+
+        }
         if (ForClause != null)
         {
             var forSql = ForClause.ToSqlWithoutCte();

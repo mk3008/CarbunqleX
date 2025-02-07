@@ -121,4 +121,15 @@ public class ValueParserTests
             E'Hello\nWorld'
             """, result.ToSqlWithoutCte());
     }
+
+    [Fact]
+    public void Parse_Extract()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("extract(year from birthdate)");
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+        Assert.Equal("extract(year from birthdate)", result.ToSqlWithoutCte());
+    }
 }

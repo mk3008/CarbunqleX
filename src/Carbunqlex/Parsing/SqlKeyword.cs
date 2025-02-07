@@ -57,15 +57,6 @@ public static class SqlKeyword
             "null",
             "true",
             "false",
-            "unknown",
-            "epoch",
-            "infinity",
-            "-infinity",
-            "now",
-            "today",
-            "yesterday",
-            "tomorrow",
-            "allballs",
             "current_date",
             "current_time",
             "current_timestamp",
@@ -85,6 +76,20 @@ public static class SqlKeyword
             "except",
             "except all",
             "except distinct",
+        };
+
+        // Multi-word keywords that are not commands. Specifically, type names.
+        // Since types can be user-defined, it is difficult to treat token types as types.
+        // Therefore, they are treated as Identifiers.
+        IdentifierKeywords = new HashSet<string>
+        {
+            //type
+            "double precision",
+            "character varying",
+            "time without time zone",
+            "time with time zone",
+            "timestamp without time zone",
+            "timestamp with time zone",
         };
 
         CommandKeywords = new HashSet<string>
@@ -208,6 +213,19 @@ public static class SqlKeyword
             "hour to minute",
             "hour to second",
             "minute to second",
+            // extract
+            "year from",
+            "month from",
+            "day from",
+            "hour from",
+            "minute from",
+            "second from",
+            "dow from",
+            "doy from",
+            "isodow from",
+            "quarter from",
+            "week from",
+            "epoch from",
             // cast
             "cast",
             // case
@@ -347,59 +365,25 @@ public static class SqlKeyword
             "disable row level security",
             "force row level security",
             "no force row level security",
-            //type
-            "smallint",
-            "integer",
-            "bigint",
-            "decimal",
-            "numeric",
-            "real",
-            "double precision",
-            "smallserial",
-            "serial",
-            "bigserial",
-            "character varying",
-            "varchar",
-            "character",
-            "char",
-            "text",
-            "date",
-            "time",
-            "time without time zone",
-            "time with time zone",
-            "timestamp",
-            "timestamp without time zone",
-            "timestamp with time zone",
-            "interval",
-            "boolean",
-            "enum",
             "array",
-            "json",
-            "jsonb",
-            "uuid",
-            "xml",
-            "bytea",
-            "inet",
-            "cidr",
-            "macaddr"
         };
 
-        // EscapeLiteralKeywords are treated as EscapedStringConstant, not Command,
-        // and are not included in AllKeywords
-        AllKeywords = OperatorKeywords.Concat(ConstantValueKeywords).Concat(CommandKeywords).Concat(JoinCommandKeywords).Concat(UnionCommandKeywords).ToHashSet();
-
+        // Command keywords
+        ConstantValueKeywordNodes = SqlKeywordBuilder.Build(ConstantValueKeywords).ToDictionary(node => node.Keyword, node => node);
+        CommandKeywordNodes = SqlKeywordBuilder.Build(CommandKeywords).ToDictionary(node => node.Keyword, node => node);
         JoinCommandKeywordNodes = SqlKeywordBuilder.Build(JoinCommandKeywords).ToDictionary(node => node.Keyword, node => node);
-
         UnionCommandKeywordNodes = SqlKeywordBuilder.Build(UnionCommandKeywords).ToDictionary(node => node.Keyword, node => node);
 
-        CommandKeywordNodes = SqlKeywordBuilder.Build(CommandKeywords).ToDictionary(node => node.Keyword, node => node);
+        // All command keywords
+        AllCommandKeywords = OperatorKeywords.Concat(ConstantValueKeywords).Concat(CommandKeywords).Concat(JoinCommandKeywords).Concat(UnionCommandKeywords).ToHashSet();
+        AllCommandKeywordNodes = SqlKeywordBuilder.Build(AllCommandKeywords).ToDictionary(node => node.Keyword, node => node);
 
-        ConstantValueKeywordNodes = SqlKeywordBuilder.Build(ConstantValueKeywords).ToDictionary(node => node.Keyword, node => node);
-
+        // Non-command keywords
         OperatorKeywordNodes = SqlKeywordBuilder.Build(OperatorKeywords).ToDictionary(node => node.Keyword, node => node);
-
-        AllKeywordNodes = SqlKeywordBuilder.Build(AllKeywords).ToDictionary(node => node.Keyword, node => node);
+        IdentifierKeywordNodes = SqlKeywordBuilder.Build(IdentifierKeywords).ToDictionary(node => node.Keyword, node => node);
     }
+
+    public static IReadOnlyDictionary<string, SqlKeywordNode> IdentifierKeywordNodes { get; }
 
     public static IReadOnlyDictionary<string, SqlKeywordNode> CommandKeywordNodes { get; }
 
@@ -411,9 +395,9 @@ public static class SqlKeyword
 
     public static IReadOnlyDictionary<string, SqlKeywordNode> JoinCommandKeywordNodes { get; }
 
-    public static IReadOnlyDictionary<string, SqlKeywordNode> AllKeywordNodes { get; }
+    public static IReadOnlyDictionary<string, SqlKeywordNode> AllCommandKeywordNodes { get; }
 
-    private static HashSet<string> AllKeywords { get; }
+    private static HashSet<string> AllCommandKeywords { get; }
 
     public static HashSet<string> NumericPrefixKeywords { get; }
 
@@ -428,4 +412,6 @@ public static class SqlKeyword
     public static HashSet<string> CommandKeywords { get; }
 
     public static HashSet<string> UnionCommandKeywords { get; }
+
+    public static HashSet<string> IdentifierKeywords { get; }
 }

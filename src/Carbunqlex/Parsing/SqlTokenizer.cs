@@ -9,7 +9,7 @@ public class SqlTokenizer
         ArgumentException.ThrowIfNullOrWhiteSpace(sql, nameof(sql));
 
         Memory = sql.AsMemory();
-        PreviousIdentifier = string.Empty;
+        PreviousToken = null;
         PeekPosition = 0;
     }
 
@@ -38,7 +38,7 @@ public class SqlTokenizer
     /// </summary>
     public bool IsEnd => Position >= Memory.Length;
 
-    public string PreviousIdentifier { get; private set; }
+    public Token? PreviousToken { get; private set; }
 
     public void CommitPeek()
     {
@@ -60,7 +60,7 @@ public class SqlTokenizer
         }
         if (!PeekToken.HasValue)
         {
-            PeekToken = Memory.ReadLexeme(PreviousIdentifier, Position, out PeekPosition);
+            PeekToken = Memory.ReadLexeme(PreviousToken, Position, out PeekPosition);
         }
         token = PeekToken.Value;
         return true;
@@ -132,7 +132,7 @@ public class SqlTokenizer
             return cache;
         }
 
-        var token = Memory.ReadLexeme(PreviousIdentifier, Position, out var p);
+        var token = Memory.ReadLexeme(PreviousToken, Position, out var p);
         Position = p;
         return token;
     }
@@ -140,7 +140,7 @@ public class SqlTokenizer
     public Token Read()
     {
         var token = ReadCore();
-        PreviousIdentifier = token.CommandOrOperatorText;
+        PreviousToken = token;
         return token;
     }
 
