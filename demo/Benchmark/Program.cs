@@ -116,24 +116,22 @@ public class SelectQueryParseBenchmark
     [Benchmark] public string SqModel_Parse_Short() => ParseWithSqModel(Short);
     [Benchmark] public string Carbunql_Parse_Short() => ParseWithCarbunql(Short);
     [Benchmark] public string Carbunqlex_Parse_Short() => ParseWithCarbunqlex(Short);
+    [Benchmark] public void Carbunqlex_ParseOnly_Short() => ParseOnlyWithCarbunqlex(Short);
 
     [Benchmark] public string SqModel_Parse_Middle() => ParseWithSqModel(Middle);
     [Benchmark] public string Carbunql_Parse_Middle() => ParseWithCarbunql(Middle);
     [Benchmark] public string Carbunqlex_Parse_Middle() => ParseWithCarbunqlex(Middle);
+    [Benchmark] public void Carbunqlex_ParseOnly_Middle() => ParseOnlyWithCarbunqlex(Middle);
 
     [Benchmark] public string SqModel_Parse_Long() => ParseWithSqModel(Long);
     [Benchmark] public string Carbunql_Parse_Long() => ParseWithCarbunql(Long);
     [Benchmark] public string Carbunqlex_Parse_Long() => ParseWithCarbunqlex(Long);
+    [Benchmark] public void Carbunqlex_ParseOnly_Long() => ParseOnlyWithCarbunqlex(Long);
 
     [Benchmark] public string SqModel_Parse_SuperLong() => ParseWithSqModel(SuperLong);
     [Benchmark] public string Carbunql_Parse_SuperLong() => ParseWithCarbunql(SuperLong);
     [Benchmark] public string Carbunqlex_Parse_SuperLong() => ParseWithCarbunqlex(SuperLong);
-
-    [Benchmark] public void Carbunqlex_ParseOnly_Short() => ParseOnlyWithCarbunqlex(Short);
-    [Benchmark] public void Carbunqlex_ParseOnly_Middle() => ParseOnlyWithCarbunqlex(Middle);
-    [Benchmark] public void Carbunqlex_ParseOnly_Long() => ParseOnlyWithCarbunqlex(Long);
     [Benchmark] public void Carbunqlex_ParseOnly_SuperLong() => ParseOnlyWithCarbunqlex(SuperLong);
-
 
     private void ParseOnlyWithCarbunqlex(string query)
     {
