@@ -22,7 +22,7 @@ public static class InExpressionParser
 
         if (next.CommandOrOperatorText == "select")
         {
-            var query = SelectQueryParser.Parse(tokenizer);
+            var query = SelectQueryParser.ParseWithoutEndCheck(tokenizer);
             tokenizer.Read(TokenType.CloseParen);
             return new InExpression(isNegated, left, query);
         }
@@ -70,7 +70,7 @@ public static class ExistsExpressionParser
         });
 
         tokenizer.Read(TokenType.OpenParen);
-        var query = SelectQueryParser.Parse(tokenizer);
+        var query = SelectQueryParser.ParseWithoutEndCheck(tokenizer);
         tokenizer.Read(TokenType.CloseParen);
 
         return new ExistsExpression(isNegated, query);

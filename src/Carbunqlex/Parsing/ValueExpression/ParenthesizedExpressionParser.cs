@@ -10,7 +10,7 @@ public class ParenthesizedExpressionParser
 
         if (tokenizer.Peek().CommandOrOperatorText == "select")
         {
-            var query = SelectQueryParser.Parse(tokenizer);
+            var query = SelectQueryParser.ParseWithoutEndCheck(tokenizer);
             tokenizer.Read(TokenType.CloseParen);
             return new InlineQuery(query);
         }

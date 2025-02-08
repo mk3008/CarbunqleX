@@ -67,7 +67,7 @@ public static class WithClauseParser
         });
 
         tokenizer.Read(TokenType.OpenParen);
-        var query = SelectQueryParser.Parse(tokenizer);
+        var query = SelectQueryParser.ParseWithoutEndCheck(tokenizer);
         tokenizer.Read(TokenType.CloseParen);
 
         return new CommonTableClause(query, name.Value, columnAliases, isMaterialized, isRecursive);

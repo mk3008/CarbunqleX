@@ -175,10 +175,21 @@ public static class ReadOnlyMemoryExtensions
         // symbol
         if (memory.TryReadSymbol(p, out p, out lexeme))
         {
-            memory.SkipWhiteSpacesAndComments(ref p);
-            var raw = memory.Slice(start, p - start).ToString();
-            end = p;
-            return new Token(TokenType.Operator, lexeme, raw, string.Empty);
+            if (previousToken?.Type == TokenType.Dot)
+            {
+                // Recognize `*` as an identifier for retrieving all columns
+                memory.SkipWhiteSpacesAndComments(ref p);
+                var raw = memory.Slice(start, p - start).ToString();
+                end = p;
+                return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
+            }
+            else
+            {
+                memory.SkipWhiteSpacesAndComments(ref p);
+                var raw = memory.Slice(start, p - start).ToString();
+                end = p;
+                return new Token(TokenType.Operator, lexeme, raw, string.Empty);
+            }
         }
 
         // escaped string (e.g. E'abc', U&'abc')

@@ -42,7 +42,7 @@ public class DatasourceParser
         if (next.Type == TokenType.OpenParen)
         {
             tokenizer.CommitPeek();
-            var query = SelectQueryParser.Parse(tokenizer);
+            var query = SelectQueryParser.ParseWithoutEndCheck(tokenizer);
             tokenizer.Read(TokenType.CloseParen);
             return new SubQuerySource(query);
         }

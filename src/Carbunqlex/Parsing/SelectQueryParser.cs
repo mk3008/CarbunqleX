@@ -6,7 +6,28 @@ namespace Carbunqlex.Parsing;
 
 public static class SelectQueryParser
 {
+    /// <summary>
+    /// Parse a SELECT query.
+    /// Throws an error if the end of the query is not reached.
+    /// </summary>
+    /// <param name="tokenizer"></param>
+    /// <returns></returns>
     public static ISelectQuery Parse(SqlTokenizer tokenizer)
+    {
+        var selectQuery = ParseWithoutEndCheck(tokenizer);
+        if (!tokenizer.IsEnd)
+        {
+            throw SqlParsingExceptionBuilder.Interrupted(tokenizer);
+        }
+        return selectQuery;
+    }
+
+    /// <summary>
+    /// Parse a SELECT query without checking the end of the query.
+    /// </summary>
+    /// <param name="tokenizer"></param>
+    /// <returns></returns>
+    internal static ISelectQuery ParseWithoutEndCheck(SqlTokenizer tokenizer)
     {
         var selectQuery = ParseCore(tokenizer);
 
@@ -185,7 +206,7 @@ public static class SelectQueryParser
     private static UnionQuery ParseUnion(SqlTokenizer tokenizer, ISelectQuery left)
     {
         var unionType = tokenizer.Read(SqlKeyword.UnionCommandKeywords).Value;
-        var right = Parse(tokenizer);
+        var right = ParseWithoutEndCheck(tokenizer);
         return new UnionQuery(unionType, left, right);
     }
 }

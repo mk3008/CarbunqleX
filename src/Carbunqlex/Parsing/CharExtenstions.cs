@@ -8,7 +8,9 @@
         private static readonly HashSet<char> CharacterSymbols = new HashSet<char>
         {
             '(', ')', '[', ']', '{', '}', // Brackets and braces
-            '`', '"', '\'' // Quotation marks
+            '`', '"', '\'', // Quotation marks
+            '*', // Select all
+            ';', // Statement terminator
         };
 
         /// <summary>
@@ -18,7 +20,7 @@
         {
             '+', '-', '*', '/', '%', // Arithmetic operators
             '~', '@', '#', '$', '^', '&', // Special symbols
-            '!', '?', ':', ';', ',', '.', '<', '>', '=', '|', '\\', // Other symbols
+            '!', '?', ':', ',', '.', '<', '>', '=', '|', '\\', // Other symbols
         };
 
         private static readonly HashSet<char> WhiteSpaces = new HashSet<char>

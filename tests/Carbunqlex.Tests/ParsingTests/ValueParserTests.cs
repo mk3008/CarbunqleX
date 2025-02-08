@@ -132,4 +132,17 @@ public class ValueParserTests
         Output.WriteLine(result.ToSqlWithoutCte());
         Assert.Equal("extract(year from birthdate)", result.ToSqlWithoutCte());
     }
+
+    [Fact]
+    public void Parse_Wildcard()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("table_a.*");
+
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+
+        Assert.Equal("table_a.*", result.ToSqlWithoutCte());
+    }
 }

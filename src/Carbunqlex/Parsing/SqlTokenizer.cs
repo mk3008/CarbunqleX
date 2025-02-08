@@ -36,7 +36,24 @@ public class SqlTokenizer
     /// <summary>
     /// Indicates if the tokenizer has reached the end of the input string.
     /// </summary>
-    public bool IsEnd => Position >= Memory.Length;
+    public bool IsEnd => IsEndLogic();
+
+    private bool IsEndLogic()
+    {
+        if (Position >= Memory.Length)
+        {
+            return true;
+        }
+
+        if (Memory.Span[Position] == ';')
+        {
+            // If the next token is a semicolon, move to the end of the text
+            Position = Memory.Length;
+            return true;
+        }
+
+        return false;
+    }
 
     public Token? PreviousToken { get; private set; }
 
@@ -47,6 +64,7 @@ public class SqlTokenizer
             return;
         }
         Position = PeekPosition;
+        PreviousToken = PeekToken;
         PeekPosition = 0;
         PeekToken = null;
     }
