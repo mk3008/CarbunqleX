@@ -1,6 +1,6 @@
 # CarbunqleX - SQL Parser and Modeler Tool
 
-CarbunqleX is a tool that dramatically improves the reusability and maintainability of RawSQL.
+**CarbunqleX** is a tool that dramatically improves the reusability and maintainability of RawSQL.
 
 Its key feature lies in its query parsing functionality. By leveraging existing RawSQL as a resource, reuse is effortless, and migration tasks require minimal effort.
 
