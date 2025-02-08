@@ -2,14 +2,14 @@
 
 public class SqlParsingException : Exception
 {
-    public SqlParsingException(string message, int position, Token? token) : base(message)
+    public SqlParsingException(string message, int position, Token token) : base(message)
     {
         Position = position;
         Token = token;
     }
 
     public int Position { get; }
-    public Token? Token { get; }
+    public Token Token { get; }
 }
 
 public static class SqlParsingExceptionBuilder
@@ -47,6 +47,6 @@ public static class SqlParsingExceptionBuilder
     {
         var queryLength = query.Length;
         var queryEnd = queryLength > 15 ? $"`...{query.Substring(queryLength - 15)}`" : query;
-        return new SqlParsingException($"Parsing has been interrupted. Query: {queryEnd}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, sqlTokenizer?.PreviousToken);
+        return new SqlParsingException($"Parsing has been interrupted. Query: {queryEnd}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, sqlTokenizer?.PreviousToken ?? Token.Empty);
     }
 }
