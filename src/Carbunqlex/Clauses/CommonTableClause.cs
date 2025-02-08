@@ -33,7 +33,7 @@ public class CommonTableClause : ISqlComponent
 
         if (IsMaterialized != null)
         {
-            sb.Append(IsMaterialized.Value ? " materialized " : " not materialized ");
+            sb.Append(IsMaterialized.Value ? " materialized" : " not materialized");
         }
 
         sb.Append(" (");

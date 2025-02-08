@@ -366,6 +366,10 @@ public static class SqlKeyword
             "force row level security",
             "no force row level security",
             "array",
+            //tablesample
+            "tablesample",
+            "system",
+            "bernoulli",
         };
 
         // Command keywords

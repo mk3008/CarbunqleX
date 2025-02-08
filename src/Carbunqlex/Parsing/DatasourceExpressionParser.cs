@@ -20,24 +20,50 @@ public class DatasourceExpressionParser
 
         var next = tokenizer.Peek();
 
-        if (next.CommandOrOperatorText == "as")
+        // Alias keyword pattern
+        // [dbo].[table] as alias
+        // [dbo].[table] alias
+        // [dbo].[table]
+        var expression = next.CommandOrOperatorText == "as"
+            ? ParseWithAliasKeyword(tokenizer, datasource)
+            : next.Type == TokenType.Identifier
+                ? ParseWithOutAliasKeyword(tokenizer, datasource)
+                : ParseNoAlias(tokenizer, datasource);
+
+        if (tokenizer.IsEnd)
         {
-            // Alias with AS keyword
-            tokenizer.CommitPeek();
-            return ParseWithAlias(tokenizer, datasource);
+            return expression;
         }
 
-        if (next.Type == TokenType.Identifier)
+        // table sample clause
+        var nextToken = tokenizer.Peek();
+        if (tokenizer.Peek().CommandOrOperatorText == "tablesample")
         {
-            // Alias without AS keyword
-            return ParseWithAlias(tokenizer, datasource);
+            expression.TableSample = ParseTableSample(tokenizer);
+            return expression;
         }
 
-        // No alias
+        return expression;
+    }
+
+    private static DatasourceExpression ParseNoAlias(SqlTokenizer tokenizer, IDatasource datasource)
+    {
+        if (tokenizer.IsEnd)
+        {
+            // No column alias clause and no condition
+            return new DatasourceExpression(datasource);
+        }
+        // No column alias clause
         return new DatasourceExpression(datasource);
     }
 
-    private static DatasourceExpression ParseWithAlias(SqlTokenizer tokenizer, IDatasource datasource)
+    private static DatasourceExpression ParseWithAliasKeyword(SqlTokenizer tokenizer, IDatasource datasource)
+    {
+        tokenizer.Read("as");
+        return ParseWithOutAliasKeyword(tokenizer, datasource);
+    }
+
+    private static DatasourceExpression ParseWithOutAliasKeyword(SqlTokenizer tokenizer, IDatasource datasource)
     {
         var alias = tokenizer.Read(TokenType.Identifier).Value;
 
@@ -56,5 +82,18 @@ public class DatasourceExpressionParser
 
         // No column alias clause
         return new DatasourceExpression(datasource, alias);
+    }
+
+    private static TableSample ParseTableSample(SqlTokenizer tokenizer)
+    {
+        tokenizer.Read("tablesample");
+
+        var system = tokenizer.Read(TokenType.Command).Value;
+
+        tokenizer.Read(TokenType.OpenParen);
+        var value = ValueExpressionParser.Parse(tokenizer);
+        tokenizer.Read(TokenType.CloseParen);
+
+        return new TableSample(system, value);
     }
 }

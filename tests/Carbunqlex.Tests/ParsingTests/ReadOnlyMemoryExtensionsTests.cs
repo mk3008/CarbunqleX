@@ -47,7 +47,7 @@ public class ReadOnlyMemoryExtensionsTests
     {
         var memory = new ReadOnlyMemory<char>("\"test\"".ToCharArray());
         var token = memory.ReadLexeme(null, 0, out int end);
-        Assert.Equal(TokenType.Constant, token.Type);
+        Assert.Equal(TokenType.Identifier, token.Type);
         Assert.Equal("\"test\"", token.Value);
         Assert.Equal(6, end);
     }

@@ -41,9 +41,12 @@ public class DatasourceParser
         // SubQuerySource or UnionQuerySource
         if (next.Type == TokenType.OpenParen)
         {
-            throw new NotImplementedException();
+            tokenizer.CommitPeek();
+            var query = SelectQueryParser.Parse(tokenizer);
+            tokenizer.Read(TokenType.CloseParen);
+            return new SubQuerySource(query);
         }
 
-        throw SqlParsingExceptionBuilder.UnexpectedTokenType(tokenizer, new[] { TokenType.Identifier, TokenType.OpenParen }, next);
+        throw SqlParsingExceptionBuilder.UnexpectedTokenType(tokenizer, [TokenType.Identifier, TokenType.OpenParen], next);
     }
 }

@@ -70,7 +70,7 @@ public static class ReadOnlyMemoryExtensions
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
             end = p;
-            return new Token(TokenType.Constant, lexeme, raw, string.Empty);
+            return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
         }
 
         // backticks (used as the escape symbol in MySQL)

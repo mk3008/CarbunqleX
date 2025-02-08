@@ -43,7 +43,7 @@ public class WithClause : ISqlComponent
         return string.Empty;
     }
 
-    public IEnumerable<Token> Generatetokens()
+    public IEnumerable<Token> GenerateTokens()
     {
         if (CommonTableClauses.Count == 0)
         {

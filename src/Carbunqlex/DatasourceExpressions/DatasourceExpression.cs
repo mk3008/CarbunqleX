@@ -52,54 +52,63 @@ public class DatasourceExpression : ISqlComponent, IDatasource
 
     public string ToSqlWithoutCte()
     {
-        if (string.IsNullOrWhiteSpace(Alias))
-        {
-            return Datasource.ToSqlWithoutCte();
-        }
-
-        if (Alias == Datasource.DefaultName && ColumnAliasClause == null)
-        {
-            return Datasource.ToSqlWithoutCte();
-        }
-
         var sb = new StringBuilder();
         sb.Append(Datasource.ToSqlWithoutCte());
-        sb.Append(" as ");
-        sb.Append(Alias);
 
-        if (ColumnAliasClause == null)
+        if (!string.IsNullOrWhiteSpace(Alias) && DefaultName != Alias)
         {
+            sb.Append(" as ");
+            sb.Append(Alias);
+            if (ColumnAliasClause != null)
+            {
+                sb.Append(ColumnAliasClause.ToSqlWithoutCte());
+            }
+
+            if (TableSample != null)
+            {
+                sb.Append(" ");
+                sb.Append(TableSample.ToSqlWithoutCte());
+            }
             return sb.ToString();
         }
-
-        sb.Append(ColumnAliasClause.ToSqlWithoutCte());
-        return sb.ToString();
+        else
+        {
+            if (TableSample != null)
+            {
+                sb.Append(" ");
+                sb.Append(TableSample.ToSqlWithoutCte());
+            }
+            return sb.ToString();
+        }
     }
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        if (string.IsNullOrWhiteSpace(Alias))
-        {
-            return Datasource.GenerateTokensWithoutCte();
-        }
-
-        if (Alias == Datasource.DefaultName && ColumnAliasClause == null)
-        {
-            return Datasource.GenerateTokensWithoutCte();
-        }
-
         var tokens = new List<Token>();
         tokens.AddRange(Datasource.GenerateTokensWithoutCte());
-        tokens.Add(new Token(TokenType.Command, "as"));
-        tokens.Add(new Token(TokenType.Identifier, Alias));
-
-        if (ColumnAliasClause == null)
+        if (!string.IsNullOrWhiteSpace(Alias))
         {
+            tokens.Add(new Token(TokenType.Command, "as"));
+            tokens.Add(new Token(TokenType.Identifier, Alias));
+            if (ColumnAliasClause != null)
+            {
+                tokens.AddRange(ColumnAliasClause.GenerateTokensWithoutCte());
+            }
+            if (TableSample != null)
+            {
+                tokens.AddRange(TableSample.GenerateTokensWithoutCte());
+            }
             return tokens;
         }
+        else
+        {
+            if (TableSample != null)
+            {
+                tokens.AddRange(TableSample.GenerateTokensWithoutCte());
+            }
+            return tokens;
 
-        tokens.AddRange(ColumnAliasClause.GenerateTokensWithoutCte());
-        return tokens;
+        }
     }
 
     public IEnumerable<ISelectQuery> GetQueries()
@@ -161,23 +170,23 @@ public class TableSample : ISqlComponent
 
     public string ToSqlWithoutCte()
     {
-        var sb = new StringBuilder("tablesample (");
+        var sb = new StringBuilder("tablesample ");
+        sb.Append(SampleType).Append('(');
         sb.Append(SampleCount.ToSqlWithoutCte());
-        sb.Append(SampleType).Append(')');
+        sb.Append(')');
 
         return sb.ToString();
     }
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var tokens = new List<Token>
+        yield return new Token(TokenType.Command, "tablesample");
+        yield return new Token(TokenType.Command, SampleType);
+        yield return new Token(TokenType.OpenParen, "(");
+        foreach (var token in SampleCount.GenerateTokensWithoutCte())
         {
-            new Token(TokenType.Command, "tablesample"),
-            new Token(TokenType.OpenParen, "("),
-        };
-        tokens.AddRange(SampleCount.GenerateTokensWithoutCte());
-        tokens.Add(new Token(TokenType.Command, SampleType));
-        tokens.Add(new Token(TokenType.CloseParen, ")"));
-        return tokens;
+            yield return token;
+        }
+        yield return new Token(TokenType.CloseParen, ")");
     }
     public IEnumerable<ISelectQuery> GetQueries()
     {

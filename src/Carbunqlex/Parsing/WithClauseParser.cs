@@ -17,7 +17,7 @@ public static class WithClauseParser
         while (true)
         {
             commonTables.Add(ParseCommonTable(tokenizer));
-            if (tokenizer.IsEnd || tokenizer.Peek().CommandOrOperatorText != ",")
+            if (tokenizer.IsEnd || tokenizer.Peek().Type != TokenType.Comma)
             {
                 break;
             }
