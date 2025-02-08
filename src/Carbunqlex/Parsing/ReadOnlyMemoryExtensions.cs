@@ -36,7 +36,7 @@ public static class ReadOnlyMemoryExtensions
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
             end = p;
-            return new Token(TokenType.Constant, lexeme, raw, string.Empty);
+            return new Token(TokenType.Literal, lexeme, raw, string.Empty);
         }
 
         // digit (Prioritize digit check over dot check because there are numbers that start with a dot)
@@ -45,7 +45,7 @@ public static class ReadOnlyMemoryExtensions
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
             end = p;
-            return new Token(TokenType.Constant, lexeme, raw, string.Empty);
+            return new Token(TokenType.Literal, lexeme, raw, string.Empty);
         }
 
         // dot
@@ -61,7 +61,7 @@ public static class ReadOnlyMemoryExtensions
             memory.SkipWhiteSpacesAndComments(ref p);
             var raw = memory.Slice(start, p - start).ToString();
             end = p;
-            return new Token(TokenType.Constant, lexeme, raw, string.Empty);
+            return new Token(TokenType.Literal, lexeme, raw, string.Empty);
         }
 
         // double quotes (used as the escape symbol in Postgres)
@@ -220,7 +220,7 @@ public static class ReadOnlyMemoryExtensions
             else if (SqlKeyword.ConstantValueKeywordNodes.ContainsKey(normalized))
             {
                 var node = SqlKeyword.ConstantValueKeywordNodes[normalized];
-                return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Constant, node, out end);
+                return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Literal, node, out end);
             }
             else if (SqlKeyword.JoinCommandKeywordNodes.ContainsKey(normalized))
             {

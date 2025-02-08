@@ -3,7 +3,7 @@
 public enum TokenType : byte
 {
     Unknown,
-    Constant,
+    Literal,
     Operator,
     OpenParen,
     CloseParen,

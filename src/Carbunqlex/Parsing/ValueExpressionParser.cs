@@ -64,10 +64,10 @@ public static class ValueExpressionParser
             return ModifierExpressionParser.Parse(tokenizer);
         }
 
-        // constant
-        if (token.Type == TokenType.Constant)
+        // literal
+        if (token.Type == TokenType.Literal)
         {
-            return ConstantExpressionParser.Parse(tokenizer);
+            return LiteralExpressionParser.Parse(tokenizer);
         }
 
         // escaped string constant
@@ -96,7 +96,7 @@ public static class ValueExpressionParser
             if (tokenizer.TryPeek(out var nextToken3) && nextToken3.Value == "[]")
             {
                 tokenizer.CommitPeek();
-                return new ConstantExpression(token.Value + nextToken3.Value);
+                return new LiteralExpression(token.Value + nextToken3.Value);
             }
 
             // column
@@ -119,7 +119,7 @@ public static class ValueExpressionParser
             {
                 // -infinity
                 tokenizer.CommitPeek();
-                return new ConstantExpression("-infinity");
+                return new LiteralExpression("-infinity");
             }
 
             return UnaryExpressionParser.Parse(tokenizer, token.Value);

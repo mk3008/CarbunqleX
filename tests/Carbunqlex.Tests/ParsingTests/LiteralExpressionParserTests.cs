@@ -5,9 +5,9 @@ using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ParsingTests;
 
-public class ConstantExpressionParserTests
+public class LiteralExpressionParserTests
 {
-    public ConstantExpressionParserTests(ITestOutputHelper output)
+    public LiteralExpressionParserTests(ITestOutputHelper output)
     {
         Output = output;
     }
@@ -22,12 +22,12 @@ public class ConstantExpressionParserTests
         var expectedValue = "123";
 
         // Act
-        var result = ConstantExpressionParser.Parse(tokenizer);
+        var result = LiteralExpressionParser.Parse(tokenizer);
         Output.WriteLine(result.ToSqlWithoutCte());
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<ConstantExpression>(result);
+        Assert.IsType<LiteralExpression>(result);
         Assert.Equal(expectedValue, result.Value);
     }
 
@@ -39,12 +39,12 @@ public class ConstantExpressionParserTests
         var expectedValue = "123.456";
 
         // Act
-        var result = ConstantExpressionParser.Parse(tokenizer);
+        var result = LiteralExpressionParser.Parse(tokenizer);
         Output.WriteLine(result.ToSqlWithoutCte());
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<ConstantExpression>(result);
+        Assert.IsType<LiteralExpression>(result);
         Assert.Equal(expectedValue, result.Value);
     }
 
@@ -56,12 +56,12 @@ public class ConstantExpressionParserTests
         var expectedValue = "true";
 
         // Act
-        var result = ConstantExpressionParser.Parse(tokenizer);
+        var result = LiteralExpressionParser.Parse(tokenizer);
         Output.WriteLine(result.ToSqlWithoutCte());
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<ConstantExpression>(result);
+        Assert.IsType<LiteralExpression>(result);
         Assert.Equal(expectedValue, result.Value);
     }
 
@@ -73,12 +73,12 @@ public class ConstantExpressionParserTests
         var expectedValue = "false";
 
         // Act
-        var result = ConstantExpressionParser.Parse(tokenizer);
+        var result = LiteralExpressionParser.Parse(tokenizer);
         Output.WriteLine(result.ToSqlWithoutCte());
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<ConstantExpression>(result);
+        Assert.IsType<LiteralExpression>(result);
         Assert.Equal(expectedValue, result.Value);
     }
 
@@ -90,12 +90,12 @@ public class ConstantExpressionParserTests
         var expectedValue = "null";
 
         // Act
-        var result = ConstantExpressionParser.Parse(tokenizer);
+        var result = LiteralExpressionParser.Parse(tokenizer);
         Output.WriteLine(result.ToSqlWithoutCte());
 
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<ConstantExpression>(result);
+        Assert.IsType<LiteralExpression>(result);
         Assert.Equal(expectedValue, result.Value);
     }
 
@@ -106,8 +106,8 @@ public class ConstantExpressionParserTests
         var tokenizer = new SqlTokenizer("SELECT");
 
         // Act & Assert
-        var exception = Assert.Throws<SqlParsingException>(() => ConstantExpressionParser.Parse(tokenizer));
-        Assert.Equal("Unexpected token type encountered. Expected: Constant, Actual: Command(SELECT), Position: 6", exception.Message);
+        var exception = Assert.Throws<SqlParsingException>(() => LiteralExpressionParser.Parse(tokenizer));
+        Assert.Equal("Unexpected token type encountered. Expected: Literal, Actual: Command(SELECT), Position: 6", exception.Message);
     }
 
     [Fact]

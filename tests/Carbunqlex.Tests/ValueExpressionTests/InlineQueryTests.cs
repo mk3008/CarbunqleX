@@ -44,7 +44,7 @@ public class InlineQueryTests(ITestOutputHelper output)
             new BinaryExpression(
                 "=",
                 new ColumnExpression("ColumnName1"),
-                new ConstantExpression(1)
+                new LiteralExpression(1)
                 )
             );
         var selectQuery = new SelectQuery(selectClause)

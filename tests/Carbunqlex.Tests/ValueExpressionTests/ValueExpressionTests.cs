@@ -11,7 +11,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     [Fact]
     public void ConstantValue_ToSql_ReturnsValueAsString()
     {
-        var constant = new ConstantExpression(42);
+        var constant = new LiteralExpression(42);
         var sql = constant.ToSqlWithoutCte();
         output.WriteLine(sql);
         Assert.Equal("42", sql);
@@ -20,7 +20,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     [Fact]
     public void UnaryExpression_ToSql_ReturnsCorrectSql()
     {
-        var operand = new ConstantExpression(42);
+        var operand = new LiteralExpression(42);
         var unary = new UnaryExpression("-", operand);
         var sql = unary.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -30,7 +30,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     [Fact]
     public void UnaryExpression_NotOperator_ReturnsCorrectSql()
     {
-        var operand = new ConstantExpression(true);
+        var operand = new LiteralExpression(true);
         var unary = new UnaryExpression("not", operand);
         var sql = unary.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -40,8 +40,8 @@ public class ValueExpressionTests(ITestOutputHelper output)
     [Fact]
     public void BinaryExpression_ToSql_ReturnsCorrectSql()
     {
-        var left = new ConstantExpression(42);
-        var right = new ConstantExpression(24);
+        var left = new LiteralExpression(42);
+        var right = new LiteralExpression(24);
         var binary = new BinaryExpression("+", left, right);
         var sql = binary.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -51,7 +51,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     [Fact]
     public void FunctionExpression_ToSql_ReturnsCorrectSql()
     {
-        var argument = new ConstantExpression(42);
+        var argument = new LiteralExpression(42);
         var function = ValueBuilder.Function("ABS", new[] { argument });
         var sql = function.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -70,9 +70,9 @@ public class ValueExpressionTests(ITestOutputHelper output)
     [Fact]
     public void BetweenExpression_ToSql_ReturnsCorrectSql()
     {
-        var left = new ConstantExpression(10);
-        var start = new ConstantExpression(5);
-        var end = new ConstantExpression(15);
+        var left = new LiteralExpression(10);
+        var start = new LiteralExpression(5);
+        var end = new LiteralExpression(15);
         var between = ValueBuilder.Between(left, start, end);
         var sql = between.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -82,9 +82,9 @@ public class ValueExpressionTests(ITestOutputHelper output)
     [Fact]
     public void BetweenExpression_NotBetween_ToSql_ReturnsCorrectSql()
     {
-        var left = new ConstantExpression(10);
-        var start = new ConstantExpression(5);
-        var end = new ConstantExpression(15);
+        var left = new LiteralExpression(10);
+        var start = new LiteralExpression(5);
+        var end = new LiteralExpression(15);
         var between = ValueBuilder.NotBetween(left, start, end);
         var sql = between.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -95,8 +95,8 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void InExpression_ToSql_ReturnsCorrectSql()
     {
         var left = new ColumnExpression("TableName", "ColumnName");
-        var right1 = new ConstantExpression(1);
-        var right2 = new ConstantExpression(2);
+        var right1 = new LiteralExpression(1);
+        var right2 = new LiteralExpression(2);
         var inExpression = ValueBuilder.In(left, new ValueArguments(right1, right2));
         var sql = inExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -107,8 +107,8 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void InExpression_NotIn_ToSql_ReturnsCorrectSql()
     {
         var left = new ColumnExpression("TableName", "ColumnName");
-        var right1 = new ConstantExpression(1);
-        var right2 = new ConstantExpression(2);
+        var right1 = new LiteralExpression(1);
+        var right2 = new LiteralExpression(2);
         var inExpression = ValueBuilder.NotIn(left, new ValueArguments(right1, right2));
         var sql = inExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -118,11 +118,11 @@ public class ValueExpressionTests(ITestOutputHelper output)
     [Fact]
     public void ParenthesizedExpression_ComplexExpression_ReturnsCorrectSql()
     {
-        var left = new ConstantExpression(1);
-        var right = new ConstantExpression(2);
+        var left = new LiteralExpression(1);
+        var right = new LiteralExpression(2);
         var addition = new BinaryExpression("+", left, right);
         var parenthesizedAddition = new ParenthesizedExpression(addition);
-        var three = new ConstantExpression(3);
+        var three = new LiteralExpression(3);
         var multiplication = new BinaryExpression("*", parenthesizedAddition, three);
         var sql = multiplication.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -165,9 +165,9 @@ public class ValueExpressionTests(ITestOutputHelper output)
     [Fact]
     public void CaseExpressionWithoutCase_ToSql_ReturnsCorrectSql()
     {
-        var when1 = new ConstantExpression(1);
+        var when1 = new LiteralExpression(1);
         var then1 = ValueBuilder.Constant("One");
-        var when2 = new ConstantExpression(2);
+        var when2 = new LiteralExpression(2);
         var then2 = ValueBuilder.Constant("Two");
         var elseExpr = ValueBuilder.Constant("Other");
 
@@ -189,9 +189,9 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void CaseExpressionWithCase_ToSql_ReturnsCorrectSql()
     {
         var caseExpr = new ColumnExpression("TableName", "ColumnName");
-        var when1 = new ConstantExpression(1);
+        var when1 = new LiteralExpression(1);
         var then1 = ValueBuilder.Constant("One");
-        var when2 = new ConstantExpression(2);
+        var when2 = new LiteralExpression(2);
         var then2 = ValueBuilder.Constant("Two");
         var elseExpr = ValueBuilder.Constant("Other");
 

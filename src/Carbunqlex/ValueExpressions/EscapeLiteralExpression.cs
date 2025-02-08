@@ -32,7 +32,7 @@ public class EscapeLiteralExpression : IValueExpression
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Constant, EscapedLiteral.ToString()!);
+        yield return new Token(TokenType.Literal, EscapedLiteral.ToString()!);
     }
 
     public string ToSqlWithoutCte()

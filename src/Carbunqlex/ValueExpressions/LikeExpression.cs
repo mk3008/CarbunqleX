@@ -66,7 +66,7 @@ public class LikeExpression : IValueExpression
         if (!string.IsNullOrEmpty(EscapeOption))
         {
             yield return new Token(TokenType.Command, "escape");
-            yield return new Token(TokenType.Constant, EscapeOption);
+            yield return new Token(TokenType.Literal, EscapeOption);
         }
     }
 

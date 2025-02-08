@@ -17,7 +17,7 @@ public class PagingClauseTests
     public void OffsetClause_ToSql_ReturnsCorrectSql()
     {
         // Arrange
-        var offset = new ConstantExpression(10);
+        var offset = new LiteralExpression(10);
         var offsetClause = new OffsetClause(offset);
 
         // Act
@@ -32,7 +32,7 @@ public class PagingClauseTests
     public void FetchClause_ToSql_ReturnsCorrectSql()
     {
         // Arrange
-        var fetch = new ConstantExpression(20);
+        var fetch = new LiteralExpression(20);
         var fetchClause = new FetchClause("next", fetch, false, string.Empty);
 
         // Act
@@ -47,7 +47,7 @@ public class PagingClauseTests
     public void LimitClause_ToSql_ReturnsCorrectSql()
     {
         // Arrange
-        var limit = new ConstantExpression(30);
+        var limit = new LiteralExpression(30);
         var limitClause = new LimitClause(limit);
 
         // Act

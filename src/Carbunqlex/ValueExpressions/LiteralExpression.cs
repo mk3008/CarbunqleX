@@ -1,10 +1,10 @@
 ﻿namespace Carbunqlex.ValueExpressions;
 
-public class ConstantExpression : IValueExpression
+public class LiteralExpression : IValueExpression
 {
     public object Value { get; set; }
 
-    public ConstantExpression(object value)
+    public LiteralExpression(object value)
     {
         Value = value;
     }
@@ -15,7 +15,7 @@ public class ConstantExpression : IValueExpression
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        yield return new Token(TokenType.Constant, Value.ToString()!);
+        yield return new Token(TokenType.Literal, Value.ToString()!);
     }
 
     public string ToSqlWithoutCte()

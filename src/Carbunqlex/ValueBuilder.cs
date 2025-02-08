@@ -6,9 +6,9 @@ namespace Carbunqlex;
 
 public static class ValueBuilder
 {
-    public static ConstantExpression Null = new ConstantExpression("null");
+    public static LiteralExpression Null = new LiteralExpression("null");
 
-    public static ConstantExpression Constant(object value)
+    public static LiteralExpression Constant(object value)
     {
         string columnValue;
         if (value is DateTime dateTimeValue)
@@ -27,7 +27,7 @@ public static class ValueBuilder
         {
             columnValue = value?.ToString() ?? "null";
         }
-        return new ConstantExpression(columnValue);
+        return new LiteralExpression(columnValue);
     }
 
     public static BetweenExpression Between(IValueExpression left, IValueExpression start, IValueExpression end)
@@ -155,6 +155,6 @@ public static class ValueBuilder
 
     public static IValueExpression Keyword(string v)
     {
-        return new ConstantExpression(v);
+        return new LiteralExpression(v);
     }
 }

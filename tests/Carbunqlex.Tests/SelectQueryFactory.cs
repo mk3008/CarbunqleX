@@ -105,8 +105,8 @@ public static class SelectQueryFactory
                 new ColumnExpression("s", "sale_date"),
                 new BinaryExpression(
                     "-",
-                    new ConstantExpression("CURRENT_DATE"),
-                    new ModifierExpression("INTERVAL", new ConstantExpression("'7 days'"))
+                    new LiteralExpression("CURRENT_DATE"),
+                    new ModifierExpression("INTERVAL", new LiteralExpression("'7 days'"))
                 )
             )
         );
@@ -170,8 +170,8 @@ public static class SelectQueryFactory
                 new ColumnExpression("s", "sale_date"),
                 new BinaryExpression(
                     "-",
-                    new ConstantExpression("CURRENT_DATE"),
-                    new ModifierExpression("INTERVAL", new ConstantExpression("7 days"))
+                    new LiteralExpression("CURRENT_DATE"),
+                    new ModifierExpression("INTERVAL", new LiteralExpression("7 days"))
                 )
             )
         );
@@ -341,8 +341,8 @@ public static class SelectQueryFactory
                 new ColumnExpression("s", "sale_date"),
                 new BinaryExpression(
                     "-",
-                    new ConstantExpression("CURRENT_DATE"),
-                    new ModifierExpression("INTERVAL", new ConstantExpression("7 days"))
+                    new LiteralExpression("CURRENT_DATE"),
+                    new ModifierExpression("INTERVAL", new LiteralExpression("7 days"))
                 )
             )
         );
@@ -377,7 +377,7 @@ public static class SelectQueryFactory
             new BinaryExpression(
                 "=",
                 new ColumnExpression("ColumnName1"),
-                new ConstantExpression(1)
+                new LiteralExpression(1)
             )
         );
 
@@ -390,7 +390,7 @@ public static class SelectQueryFactory
             new BinaryExpression(
                 ">",
                 new ColumnExpression("ColumnName1"),
-                new ConstantExpression(10)
+                new LiteralExpression(10)
             )
         );
 
@@ -415,8 +415,8 @@ public static class SelectQueryFactory
 
         var forClause = new ForClause("update");
 
-        var offsetClause = new OffsetClause(new ConstantExpression(10));
-        var fetchClause = new FetchClause("next", new ConstantExpression(20), false, string.Empty);
+        var offsetClause = new OffsetClause(new LiteralExpression(10));
+        var fetchClause = new FetchClause("next", new LiteralExpression(20), false, string.Empty);
 
         var selectQuery = new SelectQuery(selectClause)
         {
@@ -439,7 +439,7 @@ public static class SelectQueryFactory
         // Define the recursive CTE query
         var recursiveQueryPrimary = new SelectQuery(
             new SelectClause(
-                new SelectExpression(new ConstantExpression(1), "number")
+                new SelectExpression(new LiteralExpression(1), "number")
             )
         );
         var recursiveQuerySecondary = new SelectQuery(
@@ -448,7 +448,7 @@ public static class SelectQueryFactory
                     new BinaryExpression(
                         "+",
                         new ColumnExpression("number"),
-                        new ConstantExpression(1)
+                        new LiteralExpression(1)
                     ),
                     "number"
                 )
@@ -459,7 +459,7 @@ public static class SelectQueryFactory
             new BinaryExpression(
                 "<",
                 new ColumnExpression("number"),
-                new ConstantExpression(10)
+                new LiteralExpression(10)
                 )
             );
         recursiveQuerySecondary.WhereClause.Add(WhereClause.Condition!);

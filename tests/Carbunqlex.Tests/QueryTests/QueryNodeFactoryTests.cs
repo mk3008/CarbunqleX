@@ -137,7 +137,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
             new BinaryExpression(
                 ">",
                 new ColumnExpression("t1", "ColumnName1"),
-                new ConstantExpression(100)
+                new LiteralExpression(100)
             )
         );
 

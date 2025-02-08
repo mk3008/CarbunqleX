@@ -14,7 +14,7 @@ public class FunctionSourceTests(ITestOutputHelper output)
     {
         // Arrange
         var functionName = "TestFunction";
-        var arguments = new List<IValueExpression> { new ConstantExpression(1), new ConstantExpression(2) };
+        var arguments = new List<IValueExpression> { new LiteralExpression(1), new LiteralExpression(2) };
         var alias = "TestAlias";
         var columnAliases = new ColumnAliasClause(new List<string> { "col1", "col2" });
         var functionSource = new DatasourceExpression(new FunctionSource(functionName, arguments), alias, columnAliases);
@@ -33,7 +33,7 @@ public class FunctionSourceTests(ITestOutputHelper output)
     {
         // Arrange
         var functionName = "TestFunction";
-        var arguments = new List<IValueExpression> { new ConstantExpression(1), new ConstantExpression(2) };
+        var arguments = new List<IValueExpression> { new LiteralExpression(1), new LiteralExpression(2) };
         var alias = "TestAlias";
         var columnAliases = new ColumnAliasClause(new List<string> { "col1", "col2" });
         var functionSource = new DatasourceExpression(new FunctionSource(functionName, arguments), alias, columnAliases);
@@ -59,7 +59,7 @@ public class FunctionSourceTests(ITestOutputHelper output)
     {
         // Arrange
         var functionName = "TestFunction";
-        var arguments = new List<IValueExpression> { new ConstantExpression(1), new ConstantExpression(2) };
+        var arguments = new List<IValueExpression> { new LiteralExpression(1), new LiteralExpression(2) };
         var alias = "TestAlias";
         var functionSource = new DatasourceExpression(new FunctionSource(functionName, arguments), alias);
 

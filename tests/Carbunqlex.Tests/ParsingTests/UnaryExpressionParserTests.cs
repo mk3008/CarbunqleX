@@ -23,7 +23,7 @@ public class UnaryExpressionParserTests
         Output.WriteLine(result.ToSqlWithoutCte());
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<ConstantExpression>(result);
+        Assert.IsType<LiteralExpression>(result);
         Assert.Equal("-infinity", result.ToSqlWithoutCte());
     }
 

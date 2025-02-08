@@ -16,7 +16,7 @@ public class SubQuerySourceTests(ITestOutputHelper output)
         var query = new SelectQuery(
             new SelectClause(
                 new SelectExpression(
-                    new ConstantExpression(1)
+                    new LiteralExpression(1)
                     )
                 )
             );

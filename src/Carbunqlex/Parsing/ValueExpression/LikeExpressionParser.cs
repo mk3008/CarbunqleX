@@ -23,7 +23,7 @@ public static class LikeExpressionParser
         if (tokenizer.Peek(static t => t.CommandOrOperatorText == "escape" ? true : false, false))
         {
             tokenizer.CommitPeek();
-            var escapeOption = tokenizer.Read(TokenType.Constant).Value;
+            var escapeOption = tokenizer.Read(TokenType.Literal).Value;
             return new LikeExpression(isNegated, keyword, left, right, escapeOption);
         }
 
