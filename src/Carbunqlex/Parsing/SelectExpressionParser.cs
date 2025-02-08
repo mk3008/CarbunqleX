@@ -14,7 +14,7 @@ public static class SelectExpressionParser
         }
 
         var next = tokenizer.Peek();
-        if (next.Value == "as")
+        if (next.CommandOrOperatorText == "as")
         {
             // have "as" keyword
             tokenizer.CommitPeek();

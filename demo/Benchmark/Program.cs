@@ -13,15 +13,41 @@ public class Program
 }
 public class SelectQueryParseBenchmark
 {
-    private readonly string ShortSelect = "select id, name from users";
-    private readonly string JoinSelect = "select u.id, o.total from users u join orders o on u.id = o.user_id";
-    private readonly string GroupBySelect = "select category, count(*) from products group by category having count(*) > 10";
-    private readonly string SubquerySelect = "select id, (select count(*) from orders o where o.user_id = u.id) as order_count from users u";
-    private readonly string CteSelect = "with cte as (select id from users where active = true) select * from cte";
-    private readonly string UnionSelect = "select id, name from users union select id, name from admins";
-    private readonly string OrderBySelect = "select id, name from users order by created_at desc limit 10";
+    private readonly string Short = """
+        SELECT id, name, email, age, created_at, updated_at, status, role, last_login, country 
+        FROM users 
+        WHERE id = :id;
+        """;
+    private readonly string Middle = """
+        SELECT 
+            u.id, u.name, u.email, u.age, u.status, u.role, 
+            o.id AS order_id, o.total, o.order_date, o.status AS order_status 
+        FROM users AS u 
+        JOIN orders AS o ON u.id = o.user_id 
+        WHERE u.age > :age AND o.status = 'completed' 
+        ORDER BY o.order_date DESC 
+        LIMIT 10;
+        """;
 
-    private readonly string LongQuery = """
+    private readonly string Long = """
+        WITH recent_orders AS (
+            SELECT user_id, MAX(order_date) AS last_order 
+            FROM orders 
+            GROUP BY user_id
+        )
+        SELECT 
+            u.id, u.name, u.email, u.age, u.status, u.role, u.created_at, u.updated_at, 
+            r.last_order, SUM(o.total) AS total_spent 
+        FROM users AS u
+        JOIN orders AS o ON u.id = o.user_id
+        JOIN recent_orders AS r ON u.id = r.user_id
+        WHERE u.status = 'active'
+        GROUP BY u.id, u.name, u.email, u.age, u.status, u.role, u.created_at, u.updated_at, r.last_order
+        HAVING SUM(o.total) > :threshold
+        ORDER BY total_spent DESC;        
+        """;
+
+    private readonly string SuperLong = """
         with
         detail as (
             select  
@@ -87,37 +113,33 @@ public class SelectQueryParseBenchmark
             line_id
         """;
 
-    [Benchmark] public string SqModel_Shor() => ParseWithSqModel(ShortSelect);
-    [Benchmark] public string Carbunql_Short() => ParseWithCarbunql(ShortSelect);
-    [Benchmark] public string Carbunqlex_Short() => ParseWithCarbunqlex(ShortSelect);
+    [Benchmark] public string SqModel_Parse_Short() => ParseWithSqModel(Short);
+    [Benchmark] public string Carbunql_Parse_Short() => ParseWithCarbunql(Short);
+    [Benchmark] public string Carbunqlex_Parse_Short() => ParseWithCarbunqlex(Short);
 
-    [Benchmark] public string SqModel_Join() => ParseWithSqModel(JoinSelect);
-    [Benchmark] public string Carbunql_Join() => ParseWithCarbunql(JoinSelect);
-    [Benchmark] public string Carbunqlex_Join() => ParseWithCarbunqlex(JoinSelect);
+    [Benchmark] public string SqModel_Parse_Middle() => ParseWithSqModel(Middle);
+    [Benchmark] public string Carbunql_Parse_Middle() => ParseWithCarbunql(Middle);
+    [Benchmark] public string Carbunqlex_Parse_Middle() => ParseWithCarbunqlex(Middle);
 
-    [Benchmark] public string SqModel_GroupBy() => ParseWithSqModel(GroupBySelect);
-    [Benchmark] public string Carbunql_GroupBy() => ParseWithCarbunql(GroupBySelect);
-    [Benchmark] public string Carbunqlex_GroupBy() => ParseWithCarbunqlex(GroupBySelect);
+    [Benchmark] public string SqModel_Parse_Long() => ParseWithSqModel(Long);
+    [Benchmark] public string Carbunql_Parse_Long() => ParseWithCarbunql(Long);
+    [Benchmark] public string Carbunqlex_Parse_Long() => ParseWithCarbunqlex(Long);
 
-    [Benchmark] public string SqModel_Subquery() => ParseWithSqModel(SubquerySelect);
-    [Benchmark] public string Carbunql_Subquery() => ParseWithCarbunql(SubquerySelect);
-    [Benchmark] public string Carbunqlex_Subquery() => ParseWithCarbunqlex(SubquerySelect);
+    [Benchmark] public string SqModel_Parse_SuperLong() => ParseWithSqModel(SuperLong);
+    [Benchmark] public string Carbunql_Parse_SuperLong() => ParseWithCarbunql(SuperLong);
+    [Benchmark] public string Carbunqlex_Parse_SuperLong() => ParseWithCarbunqlex(SuperLong);
 
-    [Benchmark] public string SqModel_Cte() => ParseWithSqModel(CteSelect);
-    [Benchmark] public string Carbunql_Cte() => ParseWithCarbunql(CteSelect);
-    [Benchmark] public string Carbunqlex_Cte() => ParseWithCarbunqlex(CteSelect);
+    [Benchmark] public void Carbunqlex_ParseOnly_Short() => ParseOnlyWithCarbunqlex(Short);
+    [Benchmark] public void Carbunqlex_ParseOnly_Middle() => ParseOnlyWithCarbunqlex(Middle);
+    [Benchmark] public void Carbunqlex_ParseOnly_Long() => ParseOnlyWithCarbunqlex(Long);
+    [Benchmark] public void Carbunqlex_ParseOnly_SuperLong() => ParseOnlyWithCarbunqlex(SuperLong);
 
-    [Benchmark] public string SqModel_Union() => ParseWithSqModel(UnionSelect);
-    [Benchmark] public string Carbunql_Union() => ParseWithCarbunql(UnionSelect);
-    [Benchmark] public string Carbunqlex_Union() => ParseWithCarbunqlex(UnionSelect);
 
-    [Benchmark] public string SqModel_OrderBy() => ParseWithSqModel(OrderBySelect);
-    [Benchmark] public string Carbunql_OrderBy() => ParseWithCarbunql(OrderBySelect);
-    [Benchmark] public string Carbunqlex_OrderBy() => ParseWithCarbunqlex(OrderBySelect);
-
-    [Benchmark] public string SqModel_Long() => ParseWithSqModel(LongQuery);
-    [Benchmark] public string Carbunql_Long() => ParseWithCarbunql(LongQuery);
-    [Benchmark] public string Carbunqlex_Long() => ParseWithCarbunqlex(LongQuery);
+    private void ParseOnlyWithCarbunqlex(string query)
+    {
+        var tokenizer = new SqlTokenizer(query);
+        var sq = SelectQueryParser.Parse(tokenizer);
+    }
 
     private string ParseWithSqModel(string query)
     {
@@ -138,4 +160,3 @@ public class SelectQueryParseBenchmark
         return sq.ToSql();
     }
 }
-

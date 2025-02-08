@@ -130,7 +130,23 @@ public class SelectQueryParserTests
     }
 
     [Fact]
-    public void LongQueryParse()
+    public void SemiColonCheck()
+    {
+        var sql = "select 1;";
+
+        // Arrange
+        var tokenizer = new SqlTokenizer(sql);
+        // Act
+        var result = SelectQueryParser.Parse(tokenizer);
+        var actual = result.ToSql();
+        Output.WriteLine(actual);
+
+        // remove the semicolon
+        Assert.Equal("select 1", actual);
+    }
+
+    [Fact]
+    public void BenchmarkQuery_SuperLong()
     {
         var sql = """
             with
@@ -208,9 +224,17 @@ public class SelectQueryParserTests
     }
 
     [Fact]
-    public void SemiColonCheck()
+    public void BenchmarkQuery_Middle()
     {
-        var sql = "select 1;";
+        var sql = """
+            SELECT 
+                o.id AS order_id, o.total, o.order_date, o.status AS order_status 
+            FROM users AS u 
+            JOIN orders AS o ON u.id = o.user_id 
+            WHERE u.age > :age AND o.status = 'completed' 
+            ORDER BY o.order_date DESC 
+            LIMIT 10;
+            """;
 
         // Arrange
         var tokenizer = new SqlTokenizer(sql);
@@ -219,7 +243,6 @@ public class SelectQueryParserTests
         var actual = result.ToSql();
         Output.WriteLine(actual);
 
-        // remove the semicolon
-        Assert.Equal("select 1", actual);
+        Assert.Equal("select o.id as order_id, o.total, o.order_date, o.status as order_status from users as u join orders as o on u.id = o.user_id where u.age > :age AND o.status = 'completed' order by o.order_date desc limit 10", actual);
     }
 }

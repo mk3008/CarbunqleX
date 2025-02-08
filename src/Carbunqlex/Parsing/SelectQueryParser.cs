@@ -17,7 +17,7 @@ public static class SelectQueryParser
         var selectQuery = ParseWithoutEndCheck(tokenizer);
         if (!tokenizer.IsEnd)
         {
-            throw SqlParsingExceptionBuilder.Interrupted(tokenizer);
+            throw SqlParsingExceptionBuilder.Interrupted(tokenizer, selectQuery.ToSql());
         }
         return selectQuery;
     }

@@ -11,12 +11,12 @@ public static class FunctionExpressionParser
         // support for distinct, all keyword
         var next = tokenizer.Peek();
         var prefixModifier = string.Empty;
-        if (next.Value == "distinct")
+        if (next.CommandOrOperatorText == "distinct")
         {
             tokenizer.Read();
             prefixModifier = next.Value;
         }
-        else if (next.Value == "all")
+        else if (next.CommandOrOperatorText == "all")
         {
             tokenizer.Read();
         }
