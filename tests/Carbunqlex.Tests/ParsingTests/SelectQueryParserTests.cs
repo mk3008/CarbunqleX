@@ -110,7 +110,6 @@ public class SelectQueryParserTests
     [InlineData("positional parameter Postgres", "select id, name from users where id = $1")]
     [InlineData("positional parameters Postgres", "select id, name from users where id = $1 and age > $2")]
     [InlineData("positional parameter MySQL", "select id, name from users where id = ?")]
-    [InlineData("Excessive parentheses in subqueries", "select id from ((select id from users) union (select id from users)) as d")]
     [InlineData("identifier escape symbol Postgres", "select \"columnName\" from \"tableName\"")]
     [InlineData("identifier escape symbol MySQL", "select `columnName` from `tableName`")]
     [InlineData("identifier escape symbol SQL Server", "select [columnName] from [tableName]")]
@@ -244,5 +243,19 @@ public class SelectQueryParserTests
         Output.WriteLine(actual);
 
         Assert.Equal("select o.id as order_id, o.total, o.order_date, o.status as order_status from users as u join orders as o on u.id = o.user_id where u.age > :age AND o.status = 'completed' order by o.order_date desc limit 10", actual);
+    }
+
+    [Fact]
+    public void RemoveExcessiveParentheses()
+    {
+        var sql = "select id from ((select id from users) union (select id from users)) as d";
+        // Arrange
+        var tokenizer = new SqlTokenizer(sql);
+        // Act
+        var result = SelectQueryParser.Parse(tokenizer);
+        var actual = result.ToSql();
+        Output.WriteLine(actual);
+        // remove the excessive parentheses
+        Assert.Equal("select id from (select id from users union select id from users) as d", actual);
     }
 }

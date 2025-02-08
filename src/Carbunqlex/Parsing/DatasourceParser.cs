@@ -41,9 +41,7 @@ public class DatasourceParser
         // SubQuerySource or UnionQuerySource
         if (next.Type == TokenType.OpenParen)
         {
-            tokenizer.CommitPeek();
-            var query = SelectQueryParser.ParseWithoutEndCheck(tokenizer);
-            tokenizer.Read(TokenType.CloseParen);
+            var query = SelectQueryParser.ParseSubQuery(tokenizer);
             return new SubQuerySource(query);
         }
 

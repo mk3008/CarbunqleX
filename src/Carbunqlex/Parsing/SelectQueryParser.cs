@@ -4,6 +4,9 @@ using Carbunqlex.ValueExpressions;
 
 namespace Carbunqlex.Parsing;
 
+/// <summary>
+/// Parses a SELECT query.
+/// </summary>
 public static class SelectQueryParser
 {
     /// <summary>
@@ -203,10 +206,54 @@ public static class SelectQueryParser
         }
     }
 
-    private static UnionQuery ParseUnion(SqlTokenizer tokenizer, ISelectQuery left)
+    /// <summary>
+    /// Parses a UNION query.
+    /// Removes parentheses if enclosed.
+    /// </summary>
+    /// <param name="tokenizer"></param>
+    /// <param name="left"></param>
+    /// <returns></returns>
+    internal static UnionQuery ParseUnion(SqlTokenizer tokenizer, ISelectQuery left)
     {
         var unionType = tokenizer.Read(SqlKeyword.UnionCommandKeywords).Value;
-        var right = ParseWithoutEndCheck(tokenizer);
-        return new UnionQuery(unionType, left, right);
+
+        if (tokenizer.Peek().CommandOrOperatorText == "select")
+        {
+            var right = ParseWithoutEndCheck(tokenizer);
+            return new UnionQuery(unionType, left, right);
+        }
+        else
+        {
+            var right = ParseSubQuery(tokenizer);
+            return new UnionQuery(unionType, left, right);
+        }
+    }
+
+    /// <summary>
+    /// Parses a subquery enclosed in parentheses. 
+    /// Removes excessive parentheses if used.
+    /// </summary>
+    /// <param name="tokenizer"></param>
+    /// <returns></returns>
+    internal static ISelectQuery ParseSubQuery(SqlTokenizer tokenizer)
+    {
+        tokenizer.Read(TokenType.OpenParen);
+
+        if (tokenizer.Peek().CommandOrOperatorText == "select")
+        {
+            var query = ParseWithoutEndCheck(tokenizer);
+            tokenizer.Read(TokenType.CloseParen);
+            return query;
+        }
+        else
+        {
+            var query = ParseSubQuery(tokenizer);
+            if (SqlKeyword.UnionCommandKeywords.Contains(tokenizer.Peek().CommandOrOperatorText))
+            {
+                query = ParseUnion(tokenizer, query);
+            }
+            tokenizer.Read(TokenType.CloseParen);
+            return query;
+        }
     }
 }
