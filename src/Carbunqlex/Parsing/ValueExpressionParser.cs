@@ -6,6 +6,12 @@ namespace Carbunqlex.Parsing;
 
 public static class ValueExpressionParser
 {
+    public static IValueExpression Parse(string commandText)
+    {
+        var tokenizer = new SqlTokenizer(commandText);
+        return Parse(tokenizer);
+    }
+
     public static IValueExpression Parse(SqlTokenizer tokenizer, string[]? ignoreOperators = null)
     {
         var current = ParseAsCurrent(tokenizer);

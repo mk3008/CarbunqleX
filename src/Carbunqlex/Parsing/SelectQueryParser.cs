@@ -13,6 +13,17 @@ public static class SelectQueryParser
     /// Parse a SELECT query.
     /// Throws an error if the end of the query is not reached.
     /// </summary>
+    /// <param name="sql"></param>
+    /// <returns></returns>
+    public static ISelectQuery Parse(string sql)
+    {
+        return Parse(new SqlTokenizer(sql));
+    }
+
+    /// <summary>
+    /// Parse a SELECT query.
+    /// Throws an error if the end of the query is not reached.
+    /// </summary>
     /// <param name="tokenizer"></param>
     /// <returns></returns>
     public static ISelectQuery Parse(SqlTokenizer tokenizer)

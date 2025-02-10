@@ -1,4 +1,6 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.Parsing;
 using Carbunqlex.ValueExpressions;
 using System.Collections.ObjectModel;
 using System.Text;
@@ -71,7 +73,7 @@ public class QueryNode : ISqlComponent
         }
     }
 
-    public QueryNode Select(string columnName, Action<SelectEditor> action)
+    public QueryNode Override(string columnName, Action<SelectEditor> action)
     {
         if (MustRefresh) Refresh();
 
@@ -134,6 +136,196 @@ public class QueryNode : ISqlComponent
 
         if (result.Any()) MustRefresh = true;
 
+        return this;
+    }
+
+    public QueryNode GroupBy(string columnName)
+    {
+        if (MustRefresh) Refresh();
+
+        // The processing target is only the terminal SelectQuery
+        if (Query is not SelectQuery sq)
+        {
+            throw new InvalidOperationException("GroupBy can only be used on a SelectQuery");
+        }
+
+        var lst = SelectExpressionMap.Where(x => x.Key == columnName.ToLowerInvariant()).Select(x => x.Value.Value).ToList();
+
+        sq.GroupByClause.AddRange(lst);
+
+        return this;
+    }
+
+    public QueryNode ToSubQuery(string alias = "d")
+    {
+        if (MustRefresh) Refresh();
+
+        var selectExpressions = SelectExpressionMap.Select(x => new SelectExpression(new ColumnExpression(alias, x.Key))).ToList();
+
+        Query = new SelectQuery(
+            new SelectClause(selectExpressions),
+            new FromClause(new DatasourceExpression(new SubQuerySource(Query), alias))
+            );
+
+        MustRefresh = true;
+        return this;
+    }
+
+    public QueryNode InitializeSerializer()
+    {
+        if (MustRefresh) Refresh();
+
+        // The processing target is only the terminal SelectQuery
+        if (Query is not SelectQuery sq)
+        {
+            throw new InvalidOperationException("ToSelectJson can only be used on a SelectQuery");
+        }
+
+        // columns
+        var columns = SelectExpressionMap
+            .Where(x => x.Value.Value is ColumnExpression ce);
+
+        foreach (var column in columns)
+        {
+            var ce = (ColumnExpression)column.Value.Value;
+            column.Value.Alias = $"{ce.NamespaceFullName}_{column.Value.Alias}";
+        }
+        MustRefresh = true;
+        return this;
+    }
+
+    public QueryNode AddJsonColumn(string datasourceName, string objectName, bool removeNotStructColumn = true, Func<string, string> propertyBuilder = null)
+    {
+        if (MustRefresh) Refresh();
+
+        // The processing target is only the terminal SelectQuery
+        if (Query is not SelectQuery sq)
+        {
+            throw new InvalidOperationException("ToSelectJson can only be used on a SelectQuery");
+        }
+
+        // datasource
+        var ds = sq.GetDatasources().Where(x => x.Alias.Equals(datasourceName, StringComparison.InvariantCultureIgnoreCase)).First();
+
+        // columns
+        var columns = SelectExpressionMap
+            .Where(x => x.Value.Value is ColumnExpression ce && ce.NamespaceFullName.Equals(datasourceName, StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+        if (columns.Count() == 0)
+        {
+            throw new InvalidOperationException($"No columns found for datasource '{datasourceName}'");
+        }
+
+        if (removeNotStructColumn)
+        {
+            foreach (var column in columns)
+            {
+                sq.SelectClause.Expressions.Remove(column.Value);
+            }
+        }
+
+        var columnStrings = columns
+            .Select(col => $"'{propertyBuilder?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
+            .ToList();
+
+        var exp = $"json_build_object({string.Join(", ", columnStrings)}) AS {objectName}";
+
+        sq.SelectClause.Expressions.Add(SelectExpressionParser.Parse(exp));
+
+        MustRefresh = true;
+
+        return this;
+    }
+
+
+    public QueryNode Serialize(string prefix, string objectName, bool removeNotStructColumn = true, Func<string, string>? propertyBuilder = null, bool removePrefix = true)
+    {
+        if (MustRefresh) Refresh();
+
+        // The processing target is only the terminal SelectQuery
+        if (Query is not SelectQuery sq)
+        {
+            throw new InvalidOperationException("ToSelectJson can only be used on a SelectQuery");
+        }
+
+        // columns
+        var columns = SelectExpressionMap
+            .Where(x => x.Key.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase) && x.Value.Value is ColumnExpression ce).ToList();
+
+        if (columns.Count() == 0)
+        {
+            throw new InvalidOperationException($"No columns found for prefix '{prefix}'");
+        }
+
+        if (removePrefix)
+        {
+            foreach (var column in columns)
+            {
+                column.Value.Alias = column.Key.Substring(prefix.Length);
+            }
+        }
+
+        if (removeNotStructColumn)
+        {
+            foreach (var column in columns)
+            {
+                sq.SelectClause.Expressions.Remove(column.Value);
+            }
+        }
+
+        var columnStrings = columns
+            .Select(col => $"'{propertyBuilder?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
+            .ToList();
+
+        var exp = $"json_build_object({string.Join(", ", columnStrings)}) AS {objectName}";
+
+        sq.SelectClause.Expressions.Add(SelectExpressionParser.Parse(exp));
+
+        MustRefresh = true;
+
+        return this;
+    }
+
+    public QueryNode ToJson()
+    {
+        if (MustRefresh) Refresh();
+
+        // The processing target is only the terminal SelectQuery
+        if (Query is not SelectQuery sq)
+        {
+            throw new InvalidOperationException("ToJson can only be used on a SelectQuery");
+        }
+
+        var text = "row_to_json(d)";
+        var newQuery = new SelectQuery(
+            new SelectClause(SelectExpressionParser.Parse(text)),
+            new FromClause(new DatasourceExpression(new SubQuerySource(sq), "d"))
+            );
+        newQuery.LimitClause = new LimitClause(new LiteralExpression("1"));
+
+        Query = newQuery;
+        MustRefresh = true;
+        return this;
+    }
+
+    public QueryNode ToJsonArray()
+    {
+        if (MustRefresh) Refresh();
+
+        // The processing target is only the terminal SelectQuery
+        if (Query is not SelectQuery sq)
+        {
+            throw new InvalidOperationException("ToJson can only be used on a SelectQuery");
+        }
+
+        var text = "json_agg(row_to_json(d))";
+        var newQuery = new SelectQuery(
+            new SelectClause(SelectExpressionParser.Parse(text)),
+            new FromClause(new DatasourceExpression(new SubQuerySource(sq), "d"))
+            );
+
+        Query = newQuery;
+        MustRefresh = true;
         return this;
     }
 
@@ -259,7 +451,7 @@ public class QueryNode : ISqlComponent
         return Query.ToSql();
     }
 
-    public IEnumerable<Token> Generatetokens()
+    public IEnumerable<Token> GenerateTokens()
     {
         return Query.GenerateTokens();
     }

@@ -4,6 +4,11 @@ namespace Carbunqlex.Parsing;
 
 public static class SelectExpressionParser
 {
+    public static SelectExpression Parse(string sql)
+    {
+        return Parse(new SqlTokenizer(sql));
+    }
+
     public static SelectExpression Parse(SqlTokenizer tokenizer)
     {
         var expression = ValueExpressionParser.Parse(tokenizer);

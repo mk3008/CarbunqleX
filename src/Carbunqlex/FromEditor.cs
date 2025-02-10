@@ -10,19 +10,19 @@ public class FromEditor(ISelectQuery query, IReadOnlyDictionary<string, IValueEx
 
     private readonly ISelectQuery Query = query;
 
-    public DatasourceModifier Join(string joinType, DatasourceExpression datasource, IValueExpression? condition = null)
+    public DatasourceEditor Join(string joinType, DatasourceExpression datasource, IValueExpression? condition = null)
     {
         if (condition == null)
         {
             var joinClause = new JoinClause(datasource, joinType);
             Query.AddJoin(joinClause);
-            return new DatasourceModifier(Query, datasource.Alias);
+            return new DatasourceEditor(Query, datasource.Alias);
         }
         else
         {
             var joinClause = new JoinClause(datasource, joinType, condition);
             Query.AddJoin(joinClause);
-            return new DatasourceModifier(Query, datasource.Alias);
+            return new DatasourceEditor(Query, datasource.Alias);
         }
     }
 
@@ -44,28 +44,28 @@ public class FromEditor(ISelectQuery query, IReadOnlyDictionary<string, IValueEx
         return condition;
     }
 
-    public DatasourceModifier InnerJoin(string tableName, string alias)
+    public DatasourceEditor InnerJoin(string tableName, string alias)
     {
         var condition = BuildJoinCondition(alias);
         var datasource = new DatasourceExpression(new TableSource(tableName), alias);
         return Join("inner join", datasource, condition);
     }
 
-    public DatasourceModifier LeftJoin(string tableName, string alias)
+    public DatasourceEditor LeftJoin(string tableName, string alias)
     {
         var condition = BuildJoinCondition(alias);
         var datasource = new DatasourceExpression(new TableSource(tableName), alias);
         return Join("left join", datasource, condition);
     }
 
-    public DatasourceModifier RightJoin(string tableName, string alias)
+    public DatasourceEditor RightJoin(string tableName, string alias)
     {
         var condition = BuildJoinCondition(alias);
         var datasource = new DatasourceExpression(new TableSource(tableName), alias);
         return Join("right join", datasource, condition);
     }
 
-    public DatasourceModifier CrossJoin(string tableName, string alias)
+    public DatasourceEditor CrossJoin(string tableName, string alias)
     {
         var datasource = new DatasourceExpression(new TableSource(tableName), alias);
         return Join("cross join", datasource);

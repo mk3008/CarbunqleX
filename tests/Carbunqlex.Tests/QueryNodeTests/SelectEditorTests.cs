@@ -16,7 +16,7 @@ public class SelectEditorTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.Select("value", static value => value.Greatest(1).Least(10));
+        queryNode.Override("value", static value => value.Greatest(1).Least(10));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -35,7 +35,7 @@ public class SelectEditorTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.Select("value", static value => value.Coalesce(1, 2, 3));
+        queryNode.Override("value", static value => value.Coalesce(1, 2, 3));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);

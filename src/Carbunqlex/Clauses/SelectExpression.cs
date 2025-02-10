@@ -5,7 +5,7 @@ namespace Carbunqlex.Clauses;
 public class SelectExpression : ISqlComponent
 {
     public IValueExpression Value { get; internal set; }
-    public string Alias { get; }
+    public string Alias { get; set; }
 
     public SelectExpression(IValueExpression expression)
     {
