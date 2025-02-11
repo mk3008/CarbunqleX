@@ -246,8 +246,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
 
         var query = SelectQueryParser.Parse(sql);
         var queryNode = QueryNodeFactory.Create(query);
-        queryNode
-            .NormalizeSelectClause()
+        queryNode.NormalizeSelectClause()
             .Serialize("organizations", objectName: "organization")
             .Serialize("users", objectName: "user")
             .Serialize("blogs", objectName: "blog", include: ["organization"])

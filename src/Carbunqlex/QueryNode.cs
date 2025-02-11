@@ -50,21 +50,26 @@ public class QueryNode : ISqlComponent
     private void AppendTreeString(StringBuilder sb, int indentLevel)
     {
         var indent = new string(' ', indentLevel * 2);
-        sb.AppendLine($"{indent}*Query");
-        sb.AppendLine($"{indent} Type: {Query.GetType().Name}");
-        sb.AppendLine($"{indent} Current: {Query.ToSqlWithoutCte()}");
-        sb.AppendLine($"{indent} SelectedColumns: {string.Join(", ", SelectExpressionMap.Select(x => x.Key))}");
+
+        if (sb.Length > 0)
+        {
+            sb.Append("\r\n");
+        }
+        sb.Append($"{indent}*Query");
+        sb.Append($"\r\n{indent} Type: {Query.GetType().Name}");
+        sb.Append($"\r\n{indent} Current: {Query.ToSqlWithoutCte()}");
+        sb.Append($"\r\n{indent} SelectedColumns: {string.Join(", ", SelectExpressionMap.Select(x => x.Key))}");
 
         indentLevel++;
         indent = new string(' ', indentLevel * 2);
 
         foreach (var datasourceNode in DatasourceNodeMap)
         {
-            sb.AppendLine($"{indent}*Datasource");
-            sb.AppendLine($"{indent} Type: {datasourceNode.Value.DatasourceType}");
-            sb.AppendLine($"{indent} Name: {datasourceNode.Value.Name}");
-            sb.AppendLine($"{indent} Table: {datasourceNode.Value.TableFullName}");
-            sb.AppendLine($"{indent} Columns: {string.Join(", ", datasourceNode.Value.Columns.Select(x => x.Key))}");
+            sb.Append($"\r\n{indent}*Datasource");
+            sb.Append($"\r\n{indent} Type: {datasourceNode.Value.DatasourceType}");
+            sb.Append($"\r\n{indent} Name: {datasourceNode.Value.Name}");
+            sb.Append($"\r\n{indent} Table: {datasourceNode.Value.TableFullName}");
+            sb.Append($"\r\n{indent} Columns: {string.Join(", ", datasourceNode.Value.Columns.Select(x => x.Key))}");
 
             foreach (var childQueryNode in datasourceNode.Value.ChildQueryNodes)
             {
