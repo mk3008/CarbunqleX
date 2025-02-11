@@ -36,7 +36,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.InitializeSerializer();
+        queryNode.NormalizeSelectClause();
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -55,7 +55,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.InitializeSerializer();
+        queryNode.NormalizeSelectClause();
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -157,7 +157,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
 
-        var expected = "select json_build_object('_id', users.user_id, '_name', users.name) as user from users";
+        var expected = "select json_build_object('id', users.user_id, 'name', users.name) as user from users";
         Assert.Equal(expected, actual);
     }
 
@@ -178,7 +178,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
 
-        var expected = "select json_build_object('_ID', users.user_id, '_NAME', users.name) as user from users";
+        var expected = "select json_build_object('ID', users.user_id, 'NAME', users.name) as user from users";
         Assert.Equal(expected, actual);
     }
 
@@ -247,18 +247,18 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse(sql);
         var queryNode = QueryNodeFactory.Create(query);
         queryNode
-            .InitializeSerializer()
-            .Serialize("organizations_", "blogs_organization")
-            .ToSubQuery()
-            .Serialize("users_", "user")
-            .Serialize("blogs_", "blog")
+            .NormalizeSelectClause()
+            .Serialize("organizations", objectName: "organization")
+            .Serialize("users", objectName: "user")
+            .Serialize("blogs", objectName: "blog", include: ["organization"])
+            .Serialize("posts", objectName: "post", include: ["user", "blog"])
             .ToJson();
 
         var actual = queryNode.Query.ToSql();
 
         output.WriteLine(actual);
 
-        var expected = "select row_to_json(d) from (select d.posts_post_id, d.posts_title, d.posts_content, d.posts_created_at, json_build_object('user_id', d.users_user_id, 'user_name', d.users_user_name) as user, json_build_object('blog_id', d.blogs_blog_id, 'blog_name', d.blogs_blog_name, 'organization', d.blogs_organization) as blog from (select posts.post_id as posts_post_id, posts.title as posts_title, posts.content as posts_content, posts.created_at as posts_created_at, users.user_id as users_user_id, users.name as users_user_name, blogs.blog_id as blogs_blog_id, blogs.name as blogs_blog_name, json_build_object('organization_id', organizations.organization_id, 'organization_name', organizations.name) as blogs_organization from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id where posts.post_id = :post_id) as d) as d limit 1";
+        var expected = "select row_to_json(d) from (select json_build_object('post_id', posts.post_id, 'title', posts.title, 'content', posts.content, 'created_at', posts.created_at, 'user', json_build_object('user_id', users.user_id, 'user_name', users.name), 'blog', json_build_object('blog_id', blogs.blog_id, 'blog_name', blogs.name, 'organization', json_build_object('organization_id', organizations.organization_id, 'organization_name', organizations.name))) as post from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id where posts.post_id = :post_id) as d limit 1";
         Assert.Equal(expected, actual);
     }
 }

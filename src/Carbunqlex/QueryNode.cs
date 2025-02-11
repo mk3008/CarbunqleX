@@ -171,7 +171,7 @@ public class QueryNode : ISqlComponent
         return this;
     }
 
-    public QueryNode InitializeSerializer()
+    public QueryNode NormalizeSelectClause()
     {
         if (MustRefresh) Refresh();
 
@@ -238,9 +238,14 @@ public class QueryNode : ISqlComponent
     }
 
 
-    public QueryNode Serialize(string prefix, string objectName, bool removeNotStructColumn = true, Func<string, string>? propertyBuilder = null, bool removePrefix = true)
+    public QueryNode Serialize(string datasource, string objectName = "", IEnumerable<string>? include = null, bool removePropertyColumn = true, Func<string, string>? propertyBuilder = null, bool removePrefix = true)
     {
         if (MustRefresh) Refresh();
+
+        if (string.IsNullOrEmpty(objectName))
+        {
+            objectName = datasource;
+        }
 
         // The processing target is only the terminal SelectQuery
         if (Query is not SelectQuery sq)
@@ -249,35 +254,44 @@ public class QueryNode : ISqlComponent
         }
 
         // columns
-        var columns = SelectExpressionMap
-            .Where(x => x.Key.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase) && x.Value.Value is ColumnExpression ce).ToList();
+        var propertyColumns = SelectExpressionMap
+            .Where(x => x.Key.StartsWith(datasource + '_', StringComparison.InvariantCultureIgnoreCase)).ToList();
 
-        if (columns.Count() == 0)
+        if (propertyColumns.Count() == 0)
         {
-            throw new InvalidOperationException($"No columns found for prefix '{prefix}'");
+            throw new InvalidOperationException($"No columns found for prefix '{datasource}'");
         }
 
         if (removePrefix)
         {
-            foreach (var column in columns)
+            foreach (var column in propertyColumns)
             {
-                column.Value.Alias = column.Key.Substring(prefix.Length);
+                column.Value.Alias = column.Key.Substring(datasource.Length + 1);
             }
         }
 
-        if (removeNotStructColumn)
+        if (include != null)
         {
-            foreach (var column in columns)
+            foreach (var parentName in include)
+            {
+                var parent = SelectExpressionMap.Where(x => x.Key.Equals(parentName, StringComparison.InvariantCultureIgnoreCase)).First();
+                propertyColumns.Add(parent);
+            }
+        }
+
+        if (removePropertyColumn)
+        {
+            foreach (var column in propertyColumns)
             {
                 sq.SelectClause.Expressions.Remove(column.Value);
             }
         }
 
-        var columnStrings = columns
+        var columnStrings = propertyColumns
             .Select(col => $"'{propertyBuilder?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
             .ToList();
 
-        var exp = $"json_build_object({string.Join(", ", columnStrings)}) AS {objectName}";
+        var exp = $"json_build_object({string.Join(", ", columnStrings)}) as {objectName}";
 
         sq.SelectClause.Expressions.Add(SelectExpressionParser.Parse(exp));
 
