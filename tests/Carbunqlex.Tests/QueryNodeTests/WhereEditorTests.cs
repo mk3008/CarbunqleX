@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using Carbunqlex.Parsing;
+using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.QueryNodeTests;
 
@@ -10,7 +11,7 @@ public class WhereEditorTests(ITestOutputHelper output)
     public void EqualAndNotEqualTest()
     {
         // Arrange
-        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
         var queryNode = QueryNodeFactory.Create(query);
@@ -29,7 +30,7 @@ public class WhereEditorTests(ITestOutputHelper output)
     public void GreaterThanAndGreaterThanOrEqualTest()
     {
         // Arrange
-        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
         var queryNode = QueryNodeFactory.Create(query);
@@ -48,7 +49,7 @@ public class WhereEditorTests(ITestOutputHelper output)
     public void LessThanAndLessThanOrEqualTest()
     {
         // Arrange
-        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
         var queryNode = QueryNodeFactory.Create(query);
@@ -67,7 +68,7 @@ public class WhereEditorTests(ITestOutputHelper output)
     public void InAndNotInTest()
     {
         // Arrange
-        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
         var queryNode = QueryNodeFactory.Create(query);
@@ -86,7 +87,7 @@ public class WhereEditorTests(ITestOutputHelper output)
     public void LikeAndNotLikeTest()
     {
         // Arrange
-        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
         var queryNode = QueryNodeFactory.Create(query);
@@ -104,7 +105,7 @@ public class WhereEditorTests(ITestOutputHelper output)
     public void AnyTest()
     {
         // Arrange
-        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
         var queryNode = QueryNodeFactory.Create(query);
@@ -124,7 +125,7 @@ public class WhereEditorTests(ITestOutputHelper output)
     public void IsNullTest()
     {
         // Arrange
-        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
         var queryNode = QueryNodeFactory.Create(query);
@@ -143,7 +144,7 @@ public class WhereEditorTests(ITestOutputHelper output)
     public void BetweenTest()
     {
         // Arrange
-        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
         var queryNode = QueryNodeFactory.Create(query);
@@ -162,7 +163,7 @@ public class WhereEditorTests(ITestOutputHelper output)
     public void ValueModifiedTest()
     {
         // Arrange
-        var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
         var queryNode = QueryNodeFactory.Create(query);
@@ -174,6 +175,104 @@ public class WhereEditorTests(ITestOutputHelper output)
         output.WriteLine(actual);
 
         var expected = "select a.table_a_id, a.value from table_a as a where coalesce(a.table_a_id, 0) >= 0";
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void SubQueryTest()
+    {
+        var query = SelectQueryParser.Parse("select d.user_id, d.users_name from (select u.user_id, u.users_name from users as u) as d");
+
+        // Act
+        var queryNode = QueryNodeFactory.Create(query);
+        output.WriteLine(queryNode.Query.ToSql());
+
+        queryNode.Where("user_id", static value => value.Equal(10));
+
+        var actual = queryNode.Query.ToSql();
+        output.WriteLine(actual);
+
+        var expected = "select d.user_id, d.users_name from (select u.user_id, u.users_name from users as u where u.user_id = 10) as d";
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void CommonQueryTest()
+    {
+        var query = SelectQueryParser.Parse("with d as (select u.user_id, u.users_name from users as u) select d.user_id, d.users_name from d");
+
+        // Act
+        var queryNode = QueryNodeFactory.Create(query);
+        output.WriteLine(queryNode.Query.ToSql());
+
+        queryNode.Where("user_id", static value => value.Equal(10));
+
+        var actual = queryNode.Query.ToSql();
+        output.WriteLine(actual);
+
+        var expected = "with d as (select u.user_id, u.users_name from users as u where u.user_id = 10) select d.user_id, d.users_name from d";
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void UnionQueryTest()
+    {
+        var query = SelectQueryParser.Parse("""
+            select u.user_id, u.users_name from users as u
+            union 
+            select u.user_id, u.users_name from users as u
+            union all
+            select u.user_id, u.users_name from users as u
+            """);
+
+        // Act
+        var queryNode = QueryNodeFactory.Create(query);
+        output.WriteLine(queryNode.Query.ToSql());
+
+        queryNode.Where("user_id", static value => value.Equal(10));
+
+        var actual = queryNode.Query.ToSql();
+        output.WriteLine(actual);
+        //output.WriteLine(queryNode.ToTreeString());
+
+        var expected = "select u.user_id, u.users_name from users as u where u.user_id = 10 union select u.user_id, u.users_name from users as u where u.user_id = 10 union all select u.user_id, u.users_name from users as u where u.user_id = 10";
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void ComplexQueryTest()
+    {
+        var query = SelectQueryParser.Parse("""
+            with cte as (select u.user_id, u.users_name from users as u)
+            -- standard
+            select u.user_id, u.users_name from users as u
+            union 
+            -- subquery
+            select d.user_id, d.users_name from (select u.user_id, u.users_name from users as u) as d
+            union all
+            -- subquery and cte
+            select d.user_id, d.users_name from (select u.user_id, u.users_name from cte as u) as d
+            union all
+            -- cte
+            select c1.user_id, c1.users_name from cte as c1
+            union all
+            -- cte
+            select c2.user_id, c2.users_name from cte as c2
+            union all
+            -- subquery and union
+            select d.user_id, d.users_name from (select u1.user_id, u1.users_name from users as u1 union all select u2.user_id, u2.users_name from users as u2) as d
+            """);
+
+        // Act
+        var queryNode = QueryNodeFactory.Create(query);
+        output.WriteLine(queryNode.Query.ToSql());
+
+        queryNode.Where("user_id", static value => value.Equal(10));
+
+        var actual = queryNode.Query.ToSql();
+        output.WriteLine(actual);
+
+        var expected = "with cte as (select u.user_id, u.users_name from users as u where u.user_id = 10) select u.user_id, u.users_name from users as u where u.user_id = 10 union select d.user_id, d.users_name from (select u.user_id, u.users_name from users as u where u.user_id = 10) as d union all select d.user_id, d.users_name from (select u.user_id, u.users_name from cte as u) as d union all select c1.user_id, c1.users_name from cte as c1 union all select c2.user_id, c2.users_name from cte as c2 union all select d.user_id, d.users_name from (select u1.user_id, u1.users_name from users as u1 where u1.user_id = 10 union all select u2.user_id, u2.users_name from users as u2 where u2.user_id = 10) as d";
         Assert.Equal(expected, actual);
     }
 }

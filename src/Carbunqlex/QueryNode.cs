@@ -117,6 +117,9 @@ public class QueryNode : ISqlComponent
 
         var result = GetColumnEditors(columnName, isSelectableOnly: false);
 
+        // TODO : distinct x.Value is used to remove duplicates
+        result = result.GroupBy(x => x.Value).Select(g => g.First()).ToList();
+
         foreach (var columnModifier in result)
         {
             var editor = new WhereEditor(columnModifier);
@@ -388,6 +391,8 @@ public class QueryNode : ISqlComponent
 
     private void WhenRecursive(QueryNode node, string columnName, bool isSelectableOnly, List<ColumnEditor> result)
     {
+        var beforeCount = result.Count;
+
         // Search child nodes first
         foreach (var datasourceNode in node.DatasourceNodeMap.Values)
         {
@@ -397,7 +402,7 @@ public class QueryNode : ISqlComponent
             }
         }
 
-        if (result.Any())
+        if (result.Count != beforeCount)
         {
             return;
         }

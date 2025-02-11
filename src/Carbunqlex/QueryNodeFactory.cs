@@ -7,10 +7,10 @@ public class QueryNodeFactory
     public static QueryNode Create(ISelectQuery query)
     {
         var ctes = query.GetCommonTableClauses().ToList();
-        return Create(ctes, query);
+        return CreateCore(ctes, query);
     }
 
-    public static QueryNode Create(IList<CommonTableClause> ctes, ISelectQuery query)
+    private static QueryNode CreateCore(IList<CommonTableClause> ctes, ISelectQuery query)
     {
         var datasourceNodes = new List<DatasourceNode>();
 
@@ -22,7 +22,7 @@ public class QueryNodeFactory
             if (datasource.TryGetSubQuery(out var subQuery))
             {
                 // If the datasource is a subquery, recursively generate query nodes
-                var child = Create(subQuery);
+                var child = CreateCore(ctes, subQuery);
                 childQueryNodes.Add(child);
 
                 var datasourceColumns = subQuery.GetSelectExpressions().Select(static expr => expr.Alias).Where(static x => x != "*").ToList();
@@ -43,7 +43,7 @@ public class QueryNodeFactory
             else if (datasource.TryGetUnionQuerySource(out var unionQuerySource))
             {
                 // If the datasource is a union query, recursively generate query nodes
-                var child = Create(unionQuerySource.Query);
+                var child = CreateCore(ctes, unionQuerySource.Query);
                 childQueryNodes.Add(child);
 
                 var datasourceColumns = datasource.GetSelectableColumns();
@@ -55,7 +55,7 @@ public class QueryNodeFactory
             {
                 // If the datasource is a CTE, recursively generate query nodes
                 var cte = ctes.Where(cte => cte.Alias == table).First();
-                childQueryNodes.Add(Create(ctes, cte.Query));
+                childQueryNodes.Add(CreateCore(ctes, cte.Query));
 
                 var columnAliases = cte.ColumnAliasClause?.ColumnAliases;
                 if (columnAliases != null)
