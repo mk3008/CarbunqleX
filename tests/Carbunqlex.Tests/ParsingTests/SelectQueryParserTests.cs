@@ -258,4 +258,29 @@ public class SelectQueryParserTests
         // remove the excessive parentheses
         Assert.Equal("select id from (select id from users union select id from users) as d", actual);
     }
+
+    [Fact]
+    public void ParseSelectQueryWithCteInSubquery()
+    {
+        // Although not syntactically correct in SQL, Carbunqlex allows CTEs within subqueries.
+        // However, when written back to SQL, the CTE will be output in its proper position.
+        var sql = """
+            select 
+                id
+            from (
+                with max_users as (select max(user_id) as max_id from users)
+                select 
+                    max_id as id
+                from
+                    max_users
+                ) as d
+            """;
+        // Arrange
+        var tokenizer = new SqlTokenizer(sql);
+        // Act
+        var result = SelectQueryParser.Parse(tokenizer);
+        var actual = result.ToSql();
+        Output.WriteLine(actual);
+        Assert.Equal("with max_users as (select max(user_id) as max_id from users) select id from (select max_id as id from max_users) as d", actual);
+    }
 }

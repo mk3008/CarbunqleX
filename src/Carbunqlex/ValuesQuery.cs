@@ -8,9 +8,23 @@ namespace Carbunqlex;
 
 public class ValuesQuery : ISelectQuery
 {
-    public readonly List<ValuesRow> Rows = new();
+    public readonly List<ValuesRow> Rows;
     private int? columnCount;
     public bool MightHaveQueries => false;
+
+    public ValuesQuery(List<ValuesRow> rows)
+    {
+        Rows = rows;
+        if (rows.Count != 0)
+        {
+            columnCount = rows[0].Columns.Count;
+        }
+    }
+
+    public ValuesQuery()
+    {
+        Rows = new List<ValuesRow>();
+    }
 
     public void AddRow(IEnumerable<IValueExpression> columns)
     {
@@ -29,7 +43,15 @@ public class ValuesQuery : ISelectQuery
 
     public string ToSql()
     {
-        var sb = new StringBuilder("values ");
+        var sb = new StringBuilder();
+
+        var withSql = new WithClause(GetCommonTableClauses()).ToSql();
+        if (!string.IsNullOrEmpty(withSql))
+        {
+            sb.Append(withSql).Append(" ");
+        }
+
+        sb.Append("values ");
         for (int i = 0; i < Rows.Count; i++)
         {
             sb.Append(Rows[i].ToSqlWithoutCte());
@@ -72,9 +94,9 @@ public class ValuesQuery : ISelectQuery
     {
         var commonTableClauses = new List<CommonTableClause>();
 
-        foreach (var query in GetQueries())
+        foreach (var row in Rows)
         {
-            commonTableClauses.AddRange(query.GetCommonTableClauses());
+            commonTableClauses.AddRange(row.GetQueries().SelectMany(x => x.GetCommonTableClauses()));
         }
 
         return commonTableClauses
