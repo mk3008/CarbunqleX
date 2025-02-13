@@ -8,7 +8,7 @@ public class ParenthesizedExpressionParser
     {
         tokenizer.Read(TokenType.OpenParen);
 
-        if (tokenizer.Peek().CommandOrOperatorText == "select")
+        if (tokenizer.Peek().CommandOrOperatorText is "select" or "with" or "values")
         {
             var query = SelectQueryParser.ParseWithoutEndCheck(tokenizer);
             tokenizer.Read(TokenType.CloseParen);

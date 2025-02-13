@@ -59,7 +59,7 @@ public static class SelectQueryParser
         return selectQuery;
     }
 
-    private static SelectQuery ParseCore(SqlTokenizer tokenizer)
+    private static ISelectQuery ParseCore(SqlTokenizer tokenizer)
     {
         var next = tokenizer.Peek();
 
@@ -75,8 +75,55 @@ public static class SelectQueryParser
         {
             return ParseWithoutCte(tokenizer);
         }
+        else if (next.CommandOrOperatorText == "values")
+        {
+            return ParseValuesQuery(tokenizer);
+        }
 
-        throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["select", "with"], next);
+        throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["select", "with", "values"], next);
+    }
+
+    private static ISelectQuery ParseValuesQuery(SqlTokenizer tokenizer)
+    {
+        tokenizer.Read("values");
+        var rows = ParseValuesRows(tokenizer).ToList();
+        return new ValuesQuery(rows);
+    }
+
+    private static IEnumerable<ValuesRow> ParseValuesRows(SqlTokenizer tokenizer)
+    {
+        while (true)
+        {
+            yield return ParseValuesRow(tokenizer);
+            if (tokenizer.IsEnd)
+            {
+                break;
+            }
+            if (tokenizer.Peek().Type == TokenType.Comma)
+            {
+                tokenizer.CommitPeek();
+                continue;
+            };
+            break;
+        }
+    }
+
+    private static ValuesRow ParseValuesRow(SqlTokenizer tokenizer)
+    {
+        tokenizer.Read(TokenType.OpenParen);
+        var columns = new List<IValueExpression>();
+        while (true)
+        {
+            columns.Add(ValueExpressionParser.Parse(tokenizer));
+            if (tokenizer.Peek().Type == TokenType.Comma)
+            {
+                tokenizer.CommitPeek();
+                continue;
+            }
+            break;
+        }
+        tokenizer.Read(TokenType.CloseParen);
+        return new ValuesRow(columns);
     }
 
     public static SelectQuery ParseWithoutCte(SqlTokenizer tokenizer)
@@ -228,16 +275,17 @@ public static class SelectQueryParser
     {
         var unionType = tokenizer.Read(SqlKeyword.UnionCommandKeywords).Value;
 
-        if (tokenizer.Peek().CommandOrOperatorText == "select")
+        if (tokenizer.Peek().CommandOrOperatorText is "select" or "with" or "values")
         {
             var right = ParseWithoutEndCheck(tokenizer);
             return new UnionQuery(unionType, left, right);
         }
-        else
+        else if (tokenizer.Peek().Type == TokenType.OpenParen)
         {
             var right = ParseSubQuery(tokenizer);
             return new UnionQuery(unionType, left, right);
         }
+        throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["select", "with", "values"], tokenizer.Peek());
     }
 
     /// <summary>
@@ -250,13 +298,13 @@ public static class SelectQueryParser
     {
         tokenizer.Read(TokenType.OpenParen);
 
-        if (tokenizer.Peek().CommandOrOperatorText == "select")
+        if (tokenizer.Peek().CommandOrOperatorText is "select" or "with" or "values")
         {
             var query = ParseWithoutEndCheck(tokenizer);
             tokenizer.Read(TokenType.CloseParen);
             return query;
         }
-        else
+        else if (tokenizer.Peek().Type == TokenType.OpenParen)
         {
             var query = ParseSubQuery(tokenizer);
             if (SqlKeyword.UnionCommandKeywords.Contains(tokenizer.Peek().CommandOrOperatorText))
@@ -266,5 +314,6 @@ public static class SelectQueryParser
             tokenizer.Read(TokenType.CloseParen);
             return query;
         }
+        throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["select", "with", "values"], tokenizer.Peek());
     }
 }
