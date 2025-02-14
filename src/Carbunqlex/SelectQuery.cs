@@ -20,6 +20,10 @@ public class SelectQuery : ISelectQuery
     public OffsetClause? OffsetClause { get; set; }
     public IForClause? ForClause { get; set; }
 
+    public Dictionary<string, object?> Parameters { get; } = new();
+
+    public bool MightHaveQueries => true;
+
     public SelectQuery(SelectClause selectClause)
     {
         SelectClause = selectClause;
@@ -200,9 +204,6 @@ public class SelectQuery : ISelectQuery
 
         return queries;
     }
-
-    public Dictionary<string, object?> Parameters { get; } = new();
-    public bool MightHaveQueries => true;
 
     public IDictionary<string, object?> GetParameters()
     {

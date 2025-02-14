@@ -103,7 +103,7 @@ public static class SelectQueryParser
             {
                 tokenizer.CommitPeek();
                 continue;
-            };
+            }
             break;
         }
     }
