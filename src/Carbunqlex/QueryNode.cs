@@ -78,6 +78,26 @@ public class QueryNode : ISqlComponent
         }
     }
 
+    public InsertQuery ToInsertQuery(string tableName, bool hasReturning = false, params string[] sequenceColumns)
+    {
+        if (MustRefresh) Refresh();
+
+        var tableSource = TableDatasourceParser.Parse(tableName);
+        var columns = SelectExpressionMap.Keys.ToList();
+
+        if (!hasReturning)
+        {
+            return new InsertQuery(new InsertClause(tableSource, columns), Query);
+        }
+        else
+        {
+            var sequenceColumnsExp = sequenceColumns.ToList().Select(x => new SelectExpression(new ColumnExpression(x)));
+            var columnsExp = columns.ToList().Select(x => new SelectExpression(new ColumnExpression(x)));
+            var exp = sequenceColumnsExp.Concat(columnsExp).Distinct().ToList();
+            return new InsertQuery(new InsertClause(tableSource, columns), Query, new ReturningClause(exp));
+        }
+    }
+
     public QueryNode Override(string columnName, Action<SelectEditor> action)
     {
         if (MustRefresh) Refresh();
@@ -202,7 +222,7 @@ public class QueryNode : ISqlComponent
         return this;
     }
 
-    public QueryNode AddJsonColumn(string datasourceName, string objectName, bool removeNotStructColumn = true, Func<string, string> propertyBuilder = null)
+    public QueryNode AddJsonColumn(string datasourceName, string objectName, bool removeNotStructColumn = true, Func<string, string>? propertyBuilder = null)
     {
         if (MustRefresh) Refresh();
 
