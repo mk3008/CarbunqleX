@@ -9,6 +9,12 @@ namespace Carbunqlex.Parsing;
 /// </summary>
 public class TableDatasourceParser
 {
+    public static TableSource Parse(string sql)
+    {
+        var tokenizer = new SqlTokenizer(sql);
+        return Parse(tokenizer);
+    }
+
     public static TableSource Parse(SqlTokenizer tokenizer)
     {
         var next = tokenizer.Peek();
