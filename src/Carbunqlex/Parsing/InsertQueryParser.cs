@@ -1,5 +1,4 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.DatasourceExpressions;
 using Carbunqlex.Parsing.ValueExpression;
 
 namespace Carbunqlex.Parsing;
@@ -41,8 +40,7 @@ public static class InsertQueryParser
         }
         else if (tokenizer.Peek().CommandOrOperatorText == "returning")
         {
-            tokenizer.CommitPeek();
-            var returning = ParseReturningClause(tokenizer);
+            var returning = ReturningClauseParser.Parse(tokenizer);
 
             var insertQuery = new InsertQuery(insertClause, selectQuery, returning);
             if (tokenizer.IsEnd)
@@ -68,7 +66,7 @@ public static class InsertQueryParser
     private static InsertClause ParseInsertClause(SqlTokenizer tokenizer)
     {
         // Parse table name and column names
-        var tableSource = ParseTableSource(tokenizer);
+        var tableSource = TableSourceParser.Parse(tokenizer);
 
         // Read column names (optional)
         var columnNames = new List<string>();
@@ -96,61 +94,5 @@ public static class InsertQueryParser
 
         // Create InsertClause
         return new InsertClause(tableSource, columnNames);
-    }
-
-    /// <summary>
-    /// Parse table source
-    /// </summary>
-    /// <param name="tokenizer"></param>
-    /// <returns></returns>
-    private static TableSource ParseTableSource(SqlTokenizer tokenizer)
-    {
-        var items = new List<string>();
-
-        while (true)
-        {
-            var identifier = tokenizer.Read(TokenType.Identifier).Value;
-            items.Add(identifier);
-            if (tokenizer.Peek().Type == TokenType.Dot)
-            {
-                tokenizer.CommitPeek();
-                continue;
-            }
-            break;
-        }
-
-        if (items.Count == 0)
-        {
-            throw SqlParsingExceptionBuilder.UnexpectedTokenType(tokenizer, TokenType.Identifier, tokenizer.Peek());
-        }
-        else if (items.Count == 1)
-        {
-            return new TableSource(items[0]);
-        }
-        else
-        {
-            return new TableSource(items.Take(items.Count - 1).ToList(), items.Last());
-        }
-    }
-
-    private static ReturningClause ParseReturningClause(SqlTokenizer tokenizer)
-    {
-        // Parse expressions
-        var expressions = new List<SelectExpression>();
-        while (true)
-        {
-            expressions.Add(SelectExpressionParser.Parse(tokenizer));
-            if (tokenizer.IsEnd)
-            {
-                break;
-            }
-            if (tokenizer.Peek().Type == TokenType.Comma)
-            {
-                tokenizer.CommitPeek();
-                continue;
-            }
-            break;
-        }
-        return new ReturningClause(expressions);
     }
 }
