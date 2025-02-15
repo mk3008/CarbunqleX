@@ -42,7 +42,7 @@ public static class WithClauseParser
 
         ColumnAliasClause? columnAliases = tokenizer.Peek(static (r, t) =>
         {
-            if (t.CommandOrOperatorText == "(")
+            if (t.Type == TokenType.OpenParen)
             {
                 return ColumnAliasClauseParser.Parse(r);
             }
