@@ -78,6 +78,16 @@ public class QueryNode : ISqlComponent
         }
     }
 
+    public CreateTableAsQuery ToCreateTableQuery(string tableName, bool isTemporary)
+    {
+        if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException(nameof(tableName));
+
+        if (MustRefresh) Refresh();
+
+        var tableSource = TableDatasourceParser.Parse(tableName);
+        return new CreateTableAsQuery(tableSource, Query, isTemporary);
+    }
+
     public DeleteQuery ToDeleteQuery(string tableName, string subQueryAlias = "", bool hasReturning = false, IEnumerable<string>? keyColumns = null)
     {
         if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException(nameof(tableName));

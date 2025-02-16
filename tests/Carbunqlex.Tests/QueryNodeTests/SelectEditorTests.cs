@@ -184,4 +184,34 @@ public class SelectEditorTests(ITestOutputHelper output)
         var expected = "delete from table_b where table_b.table_a_id in (select q.table_a_id from (select a.table_a_id, a.value from table_a as a where a.table_a_id = 1) as q)";
         Assert.Equal(expected, actual);
     }
+
+    [Fact]
+    public void ToCreateTableQueryTest()
+    {
+        // Arrange
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
+        // Act
+        var queryNode = QueryNodeFactory.Create(query);
+        output.WriteLine(queryNode.Query.ToSql());
+        var createTableAsQuery = queryNode.ToCreateTableQuery("table_b", false);
+        var actual = createTableAsQuery.ToSql();
+        output.WriteLine(actual);
+        var expected = "create table table_b as select a.table_a_id, a.value from table_a as a";
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void ToCreateTemporaryTableQueryTest()
+    {
+        // Arrange
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
+        // Act
+        var queryNode = QueryNodeFactory.Create(query);
+        output.WriteLine(queryNode.Query.ToSql());
+        var createTableAsQuery = queryNode.ToCreateTableQuery("table_b", true);
+        var actual = createTableAsQuery.ToSql();
+        output.WriteLine(actual);
+        var expected = "create temporary table table_b as select a.table_a_id, a.value from table_a as a";
+        Assert.Equal(expected, actual);
+    }
 }
