@@ -60,7 +60,7 @@ public static class DeleteQueryParser
         }
 
         // Error if there are unparsed tokens left
-        throw SqlParsingExceptionBuilder.Interrupted(tokenizer, new DeleteQuery(withClause, deleteClause, usingClause, whereClause, returningClause).ToSql());
+        throw SqlParsingExceptionBuilder.Interrupted(tokenizer);
     }
 
     private static DeleteClause ParseDeleteClause(SqlTokenizer tokenizer)

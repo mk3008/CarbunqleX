@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.Parsing;
+﻿using Carbunqlex.Parsing.ValueExpression;
+
+namespace Carbunqlex.Parsing;
 
 
 public class CreateTableAsQueryParser
@@ -20,6 +22,10 @@ public class CreateTableAsQueryParser
 
         var selectQuery = SelectQueryParser.Parse(tokenizer);
 
-        return new CreateTableAsQuery(tableSource, selectQuery, isTemporary);
+        if (tokenizer.IsEnd)
+        {
+            return new CreateTableAsQuery(tableSource, selectQuery, isTemporary);
+        }
+        throw SqlParsingExceptionBuilder.Interrupted(tokenizer);
     }
 }

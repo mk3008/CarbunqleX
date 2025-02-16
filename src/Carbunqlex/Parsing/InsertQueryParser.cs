@@ -48,13 +48,12 @@ public static class InsertQueryParser
                 return insertQuery;
             }
             // Error if there are unparsed tokens left
-            throw SqlParsingExceptionBuilder.Interrupted(tokenizer, insertQuery.ToSql());
+            throw SqlParsingExceptionBuilder.Interrupted(tokenizer);
         }
         else
         {
-            var insertQuery = new InsertQuery(insertClause, selectQuery);
             // Error if there are unparsed tokens left
-            throw SqlParsingExceptionBuilder.Interrupted(tokenizer, insertQuery.ToSql());
+            throw SqlParsingExceptionBuilder.Interrupted(tokenizer);
         }
     }
 

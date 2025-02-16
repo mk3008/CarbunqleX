@@ -43,10 +43,10 @@ public static class SqlParsingExceptionBuilder
         return new SqlParsingException($"Unexpected token encountered. Expected: {string.Join(" or ", expectedTokens)}, Actual: {actualToken.Value}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, actualToken);
     }
 
-    public static SqlParsingException Interrupted(SqlTokenizer sqlTokenizer, string query)
+    public static SqlParsingException Interrupted(SqlTokenizer sqlTokenizer)
     {
-        var queryLength = query.Length;
-        var queryEnd = queryLength > 15 ? $"`...{query.Substring(queryLength - 15)}`" : query;
-        return new SqlParsingException($"Parsing has been interrupted. Query: {queryEnd}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, sqlTokenizer?.PreviousToken ?? Token.Empty);
+        var previous = sqlTokenizer.PreviousToken ?? Token.Empty;
+        var next = sqlTokenizer.Peek();
+        return new SqlParsingException($"Parsing has been interrupted. Previous: {previous.Value}, Next: {next.Value}, Position: {sqlTokenizer.Position}", sqlTokenizer.Position, previous);
     }
 }
