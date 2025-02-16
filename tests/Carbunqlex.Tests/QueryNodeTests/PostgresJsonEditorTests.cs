@@ -17,9 +17,10 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.ToSubQuery("d");
 
-        var actual = queryNode.Query.ToSql();
+        var newQueryNode = queryNode.ToSubQuery("d");
+
+        var actual = newQueryNode.Query.ToSql();
         output.WriteLine(actual);
 
         var expected = "select d.user_id, d.name from (select users.user_id, users.name from users) as d";

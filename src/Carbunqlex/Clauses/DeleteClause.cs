@@ -11,7 +11,9 @@ public class DeleteClause : ISqlComponent
     public DeleteClause(TableSource tableSource, string alias)
     {
         TableSource = tableSource;
-        Alias = alias;
+        Alias = string.IsNullOrEmpty(alias)
+            ? tableSource.DefaultName
+            : alias;
     }
 
     public DeleteClause(TableSource tableSource)

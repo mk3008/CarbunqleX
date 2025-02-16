@@ -1,9 +1,16 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.Parsing;
 
 namespace Carbunqlex;
 
 public class QueryNodeFactory
 {
+    public static QueryNode Create(string sql)
+    {
+        var query = SelectQueryParser.Parse(sql);
+        return Create(query);
+    }
+
     public static QueryNode Create(ISelectQuery query)
     {
         var ctes = query.GetCommonTableClauses().ToList();
