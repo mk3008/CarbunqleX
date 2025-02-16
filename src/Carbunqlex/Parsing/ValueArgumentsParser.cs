@@ -5,7 +5,7 @@ namespace Carbunqlex.Parsing;
 
 public static class ValueArgumentsParser
 {
-    public static ValueArguments Parse(SqlTokenizer tokenizer, TokenType openToken, TokenType closeToken)
+    public static ArgumentExpression Parse(SqlTokenizer tokenizer, TokenType openToken, TokenType closeToken)
     {
         tokenizer.Read(openToken);
 
@@ -27,13 +27,13 @@ public static class ValueArgumentsParser
             if (token.Type == closeToken)
             {
                 tokenizer.Read();
-                return new ValueArguments(args);
+                return new ArgumentExpression(args);
             }
 
             if (token.CommandOrOperatorText == "order by")
             {
                 var orderByClause = OrderByClauseParser.Parse(tokenizer);
-                var expression = new ValueArguments(args) { OrderByClause = orderByClause };
+                var expression = new ArgumentExpression(args) { OrderByClause = orderByClause };
                 tokenizer.Read(closeToken);
                 return expression;
             }

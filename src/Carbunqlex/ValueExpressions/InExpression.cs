@@ -1,22 +1,28 @@
-﻿using Carbunqlex.Clauses;
-using System.Text;
+﻿using System.Text;
 
 namespace Carbunqlex.ValueExpressions;
 
 public class InExpression : IValueExpression
 {
-    public IValueExpression Left { get; set; }
-    public IArgumentExpression Right { get; set; }
+    public IValueGroupExpression Left { get; set; }
+    public IValueGroupExpression Right { get; set; }
     public bool IsNegated { get; set; }
 
-    public InExpression(bool isNegated, IValueExpression left, IArgumentExpression right)
+    public InExpression(bool isNegated, IValueExpression left, IValueGroupExpression right)
+    {
+        IsNegated = isNegated;
+        Left = new InValueGroupExpression(new List<IValueExpression>() { left });
+        Right = right;
+    }
+
+    public InExpression(bool isNegated, IValueGroupExpression left, IValueGroupExpression right)
     {
         IsNegated = isNegated;
         Left = left;
         Right = right;
     }
 
-    public string DefaultName => Left.DefaultName;
+    public string DefaultName => string.Empty;
 
     public bool MightHaveQueries => Left.MightHaveQueries || Right.MightHaveQueries;
 
@@ -27,23 +33,18 @@ public class InExpression : IValueExpression
             yield return lexeme;
         }
         yield return new Token(TokenType.Operator, IsNegated ? "not in" : "in");
-        yield return new Token(TokenType.OpenParen, "(");
-
         foreach (var lexeme in Right.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
-
-        yield return new Token(TokenType.CloseParen, ")");
     }
 
     public string ToSqlWithoutCte()
     {
         var sb = new StringBuilder();
         sb.Append(Left.ToSqlWithoutCte());
-        sb.Append(IsNegated ? " not in (" : " in (");
+        sb.Append(IsNegated ? " not in " : " in ");
         sb.Append(Right.ToSqlWithoutCte());
-        sb.Append(")");
         return sb.ToString();
     }
 
@@ -55,7 +56,10 @@ public class InExpression : IValueExpression
         {
             queries.AddRange(Left.GetQueries());
         }
-        queries.AddRange(Right.GetQueries());
+        if (Right.MightHaveQueries)
+        {
+            queries.AddRange(Right.GetQueries());
+        }
 
         return queries;
     }
@@ -67,103 +71,6 @@ public class InExpression : IValueExpression
         columns.AddRange(Left.ExtractColumnExpressions());
         columns.AddRange(Right.ExtractColumnExpressions());
 
-        return columns;
-    }
-}
-
-public interface IArgumentExpression : ISqlComponent
-{
-    bool MightHaveQueries { get; }
-    IEnumerable<ColumnExpression> ExtractColumnExpressions();
-}
-
-/// <summary>
-/// Represents a list of values for a function or operator.
-/// </summary>
-public class ValueArguments : IArgumentExpression
-{
-    public List<IValueExpression> Values { get; }
-
-    /// <summary>
-    /// Optional ORDER BY clause for the arguments.
-    /// e.g. array_agg(value order by sort_column)
-    /// </summary>
-    public OrderByClause? OrderByClause { get; set; }
-
-    public ValueArguments(params IValueExpression[] values)
-    {
-        Values = values.ToList();
-        OrderByClause = null;
-    }
-
-    public ValueArguments(IEnumerable<IValueExpression> values)
-    {
-        Values = values.ToList();
-        OrderByClause = null;
-    }
-
-    public ValueArguments(List<IValueExpression> values)
-    {
-        Values = values;
-        OrderByClause = null;
-    }
-
-    /// <summary>
-    /// Constructor for ORDER BY clause.
-    /// e.g. array_agg(value order by sort_column)
-    /// </summary>
-    /// <param name="values"></param>
-    /// <param name="orderBy"></param>
-    public ValueArguments(List<IValueExpression> values, OrderByClause orderBy)
-    {
-        Values = values;
-        OrderByClause = orderBy;
-    }
-
-    public bool MightHaveQueries => Values.Any(v => v.MightHaveQueries);
-
-    public string ToSqlWithoutCte()
-    {
-        var sb = new StringBuilder();
-        sb.Append(string.Join(", ", Values.Select(v => v.ToSqlWithoutCte())));
-        if (OrderByClause != null)
-        {
-            sb.Append(" ").Append(OrderByClause.ToSqlWithoutCte());
-        }
-        return sb.ToString();
-    }
-
-    public IEnumerable<Token> GenerateTokensWithoutCte()
-    {
-        foreach (var value in Values)
-        {
-            foreach (var lexeme in value.GenerateTokensWithoutCte())
-            {
-                yield return lexeme;
-            }
-        }
-    }
-
-    public IEnumerable<ISelectQuery> GetQueries()
-    {
-        var queries = new List<ISelectQuery>();
-        foreach (var value in Values)
-        {
-            if (value.MightHaveQueries)
-            {
-                queries.AddRange(value.GetQueries());
-            }
-        }
-        return queries;
-    }
-
-    public IEnumerable<ColumnExpression> ExtractColumnExpressions()
-    {
-        var columns = new List<ColumnExpression>();
-        foreach (var value in Values)
-        {
-            columns.AddRange(value.ExtractColumnExpressions());
-        }
         return columns;
     }
 }

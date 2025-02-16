@@ -50,12 +50,12 @@ public static class FunctionExpressionParser
         return new FunctionExpression(function.Value, prefixModifier, args);
     }
 
-    private static ValueArguments ParseArguments(SqlTokenizer tokenizer)
+    private static ArgumentExpression ParseArguments(SqlTokenizer tokenizer)
     {
         // no arguments
         if (tokenizer.Peek().Type == TokenType.CloseParen)
         {
-            return new ValueArguments();
+            return new ArgumentExpression();
         }
 
         var args = new List<IValueExpression>();
@@ -78,9 +78,9 @@ public static class FunctionExpressionParser
         if (next.CommandOrOperatorText == "order by")
         {
             var orderBy = OrderByClauseParser.Parse(tokenizer);
-            return new ValueArguments(args, orderBy);
+            return new ArgumentExpression(args, orderBy);
         }
 
-        return new ValueArguments(args);
+        return new ArgumentExpression(args);
     }
 }
