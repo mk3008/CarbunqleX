@@ -18,7 +18,7 @@ public class InsertQueryParserTest
     {
         var sql = "insert into table_name(column1, column2) values (1, 'value')";
         var result = InsertQueryParser.Parse(sql);
-        var actual = result.ToSqlWithoutCte();
+        var actual = result.ToSql();
         Output.WriteLine(actual);
         Assert.Equal("insert into table_name(column1, column2) values (1, 'value')", actual);
     }
@@ -28,7 +28,7 @@ public class InsertQueryParserTest
     {
         var sql = "insert into table_name(column1, column2) values (1, 'value') returning id";
         var result = InsertQueryParser.Parse(sql);
-        var actual = result.ToSqlWithoutCte();
+        var actual = result.ToSql();
         Output.WriteLine(actual);
         Assert.Equal("insert into table_name(column1, column2) values (1, 'value') returning id", actual);
     }
@@ -38,7 +38,7 @@ public class InsertQueryParserTest
     {
         var sql = "insert into table_name(column1, column2) select column1, column2 from other_table";
         var result = InsertQueryParser.Parse(sql);
-        var actual = result.ToSqlWithoutCte();
+        var actual = result.ToSql();
         Output.WriteLine(actual);
         Assert.Equal("insert into table_name(column1, column2) select column1, column2 from other_table", actual);
     }

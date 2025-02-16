@@ -78,6 +78,58 @@ public class QueryNode : ISqlComponent
         }
     }
 
+    public UpdateQuery ToUpdateQuery(string tableName, IList<string> keyColumns, IList<string>? valueColumns = null, string subQueryAlias = "", bool hasReturning = false)
+    {
+        if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException(nameof(tableName));
+
+        if (MustRefresh) Refresh();
+
+        var subAlias = string.IsNullOrEmpty(subQueryAlias) ? "q" : subQueryAlias;
+
+        // get key columns
+        var keys = SelectExpressionMap.Where(x => keyColumns.Contains(x.Key));
+        if (keys.Count() != keyColumns.Count())
+        {
+            throw new InvalidOperationException("Key columns are not found in the subquery");
+        }
+
+        // get value columns
+        var values = SelectExpressionMap.Where(x => !keyColumns.Contains(x.Key));
+        if (valueColumns != null && values.Any())
+        {
+            values = values.Where(x => valueColumns.Contains(x.Key));
+        }
+        if (!values.Any())
+        {
+            throw new InvalidOperationException("No columns to update");
+        }
+
+        var updateClause = new UpdateClause(TableDatasourceParser.Parse(tableName));
+
+        // from clause
+        var datasource = new DatasourceExpression(new SubQuerySource(Query), subAlias);
+        var fromClause = new FromClause(datasource);
+
+        // add key columns to where clause
+        var whereClause = new WhereClause();
+        var keyBinaries = keys.Select(x => new BinaryExpression("=", new ColumnExpression(updateClause.Alias, x.Key), new ColumnExpression(datasource.Alias, x.Key))).ToList();
+        keyBinaries.ForEach(whereClause.Add);
+
+        // add non-key columns to set clause
+        var setClause = new SetClause();
+        var nonKeyBinaries = values.Select(x => new SetExpression(x.Key, new ColumnExpression(datasource.Alias, x.Key))).ToList();
+        nonKeyBinaries.ForEach(setClause.Add);
+
+        return new UpdateQuery(
+            null,
+            updateClause,
+            setClause,
+            fromClause,
+            whereClause,
+            hasReturning ? new ReturningClause() : null
+        );
+    }
+
     public CreateTableAsQuery ToCreateTableQuery(string tableName, bool isTemporary)
     {
         if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException(nameof(tableName));
@@ -88,7 +140,7 @@ public class QueryNode : ISqlComponent
         return new CreateTableAsQuery(tableSource, Query, isTemporary);
     }
 
-    public DeleteQuery ToDeleteQuery(string tableName, string subQueryAlias = "", bool hasReturning = false, IEnumerable<string>? keyColumns = null)
+    public DeleteQuery ToDeleteQuery(string tableName, IEnumerable<string>? keyColumns = null, string subQueryAlias = "", bool hasReturning = false)
     {
         if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException(nameof(tableName));
 
@@ -117,23 +169,55 @@ public class QueryNode : ISqlComponent
         }
     }
 
-    public InsertQuery ToInsertQuery(string tableName, bool hasReturning = false, params string[] sequenceColumns)
+    public InsertQuery ToInsertQuery(string tableName, IList<string>? sequenceColumns = null, IList<string>? valueColumns = null, string subQueryAlias = "", bool hasReturning = false)
     {
         if (MustRefresh) Refresh();
 
         var tableSource = TableDatasourceParser.Parse(tableName);
-        var columns = SelectExpressionMap.Keys.ToList();
 
-        if (!hasReturning)
+        // create subquery
+        ISelectQuery query;
+        var alias = string.IsNullOrEmpty(subQueryAlias) ? "q" : subQueryAlias;
+        var columns = SelectExpressionMap.Select(x => x.Key);
+        if (sequenceColumns != null && sequenceColumns.Any() && valueColumns != null && valueColumns.Any())
         {
-            return new InsertQuery(new InsertClause(tableSource, columns), Query);
+            var allowedColumns = sequenceColumns.Concat(valueColumns);
+            columns = columns.Where(allowedColumns.Contains);
+            query = ToSubQuery(alias, columns).Query;
+        }
+        else if (valueColumns != null && valueColumns.Any())
+        {
+            columns = columns.Where(valueColumns.Contains);
+            query = ToSubQuery(alias, columns).Query;
         }
         else
         {
-            var sequenceColumnsExp = sequenceColumns.ToList().Select(x => new SelectExpression(new ColumnExpression(x)));
-            var columnsExp = columns.ToList().Select(x => new SelectExpression(new ColumnExpression(x)));
-            var exp = sequenceColumnsExp.Concat(columnsExp).Distinct().ToList();
-            return new InsertQuery(new InsertClause(tableSource, columns), Query, new ReturningClause(exp));
+            query = Query;
+        }
+
+        if (!columns.Any())
+        {
+            throw new InvalidOperationException("No columns to update");
+        }
+
+        if (!hasReturning)
+        {
+            return new InsertQuery(new InsertClause(tableSource, columns.ToList()), query);
+        }
+        else
+        {
+            if (sequenceColumns == null)
+            {
+                return new InsertQuery(new InsertClause(tableSource, columns.ToList()), query, new ReturningClause());
+
+            }
+            else
+            {
+                var sequenceColumnsExp = sequenceColumns.ToList().Select(x => new SelectExpression(new ColumnExpression(x)));
+                var columnsExp = columns.ToList().Select(x => new SelectExpression(new ColumnExpression(x)));
+                var exp = sequenceColumnsExp.Concat(columnsExp).Distinct().ToList();
+                return new InsertQuery(new InsertClause(tableSource, columns.ToList()), query, new ReturningClause(exp));
+            }
         }
     }
 

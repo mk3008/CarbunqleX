@@ -53,7 +53,21 @@ public class DeleteQuery : IQuery
             sb.Append(withSql).Append(" ");
         }
 
-        sb.Append(ToSqlWithoutCte());
+        sb.Append(DeleteClause.ToSqlWithoutCte());
+        if (UsingClause != null)
+        {
+            sb.Append(" ").Append(UsingClause.ToSqlWithoutCte());
+        }
+        var whereSql = WhereClause.ToSqlWithoutCte();
+        if (!string.IsNullOrEmpty(whereSql))
+        {
+            sb.Append(" ").Append(whereSql);
+        }
+        if (ReturningClause != null)
+        {
+            sb.Append(" ").Append(ReturningClause.ToSqlWithoutCte());
+        }
+
         return sb.ToString();
     }
 
@@ -113,41 +127,12 @@ public class DeleteQuery : IQuery
 
     public string ToSqlWithoutCte()
     {
-        var sb = new StringBuilder($"{DeleteClause.ToSqlWithoutCte()}");
-        if (UsingClause != null)
-        {
-            sb.Append(" ").Append(UsingClause.ToSqlWithoutCte());
-        }
-        var whereSql = WhereClause.ToSqlWithoutCte();
-        if (!string.IsNullOrEmpty(whereSql))
-        {
-            sb.Append(" ").Append(whereSql);
-        }
-        if (ReturningClause != null)
-        {
-            sb.Append(" ").Append(ReturningClause.ToSqlWithoutCte());
-        }
-
-        return sb.ToString();
+        throw new InvalidOperationException("If CTEs are omitted, the query may be incomplete. Please use the ToSql method.");
     }
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        foreach (var token in DeleteClause.GenerateTokensWithoutCte())
-        {
-            yield return token;
-        }
-        foreach (var token in WhereClause.GenerateTokensWithoutCte())
-        {
-            yield return token;
-        }
-        if (ReturningClause != null)
-        {
-            foreach (var token in ReturningClause.GenerateTokensWithoutCte())
-            {
-                yield return token;
-            }
-        }
+        throw new InvalidOperationException("If CTEs are omitted, the query may be incomplete. Please use the ToSql method.");
     }
 
     public IEnumerable<ISelectQuery> GetQueries()

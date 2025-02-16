@@ -23,31 +23,12 @@ public class InsertQuery : IQuery
 
     public string ToSqlWithoutCte()
     {
-        var sb = new StringBuilder($"{InsertClause.ToSqlWithoutCte()} {SelectQuery.ToSqlWithoutCte()}");
-        if (Returning != null)
-        {
-            sb.Append($" {Returning.ToSqlWithoutCte()}");
-        }
-        return sb.ToString();
+        throw new InvalidOperationException("If CTEs are omitted, the query may be incomplete. Please use the ToSql method.");
     }
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        foreach (var token in InsertClause.GenerateTokensWithoutCte())
-        {
-            yield return token;
-        }
-        foreach (var token in SelectQuery.GenerateTokensWithoutCte())
-        {
-            yield return token;
-        }
-        if (Returning != null)
-        {
-            foreach (var token in Returning.GenerateTokensWithoutCte())
-            {
-                yield return token;
-            }
-        }
+        throw new InvalidOperationException("If CTEs are omitted, the query may be incomplete. Please use the ToSql method.");
     }
 
     public IEnumerable<ISelectQuery> GetQueries()
@@ -57,43 +38,47 @@ public class InsertQuery : IQuery
 
     public string ToSql()
     {
-        var sb = new StringBuilder();
-        var cteClauses = GetCommonTableClauses().ToList();
-        if (cteClauses.Any())
+        var sb = new StringBuilder(InsertClause.ToSqlWithoutCte());
+
+        // with clause
+        sb.Append(" ");
+        var withSql = new WithClause(GetCommonTableClauses()).ToSql();
+        if (!string.IsNullOrEmpty(withSql))
         {
-            sb.Append("with ");
-            sb.Append(string.Join(", ", cteClauses.Select(cte => cte.ToSqlWithoutCte())));
-            sb.Append(" ");
+            sb.Append(withSql).Append(" ");
         }
-        sb.Append(ToSqlWithoutCte());
+
+        // other clauses
+        sb.Append(SelectQuery.ToSqlWithoutCte());
+        if (Returning != null)
+        {
+            sb.Append($" {Returning.ToSqlWithoutCte()}");
+        }
         return sb.ToString();
     }
 
     public IEnumerable<Token> GenerateTokens()
     {
+        var tokens = new List<Token>();
+        tokens.AddRange(InsertClause.GenerateTokensWithoutCte());
+
         var cteClauses = GetCommonTableClauses().ToList();
         if (cteClauses.Any())
         {
-            yield return new Token(TokenType.Command, "with");
+            tokens.Add(new Token(TokenType.Command, "with"));
             foreach (var cte in cteClauses)
             {
-                foreach (var token in cte.GenerateTokensWithoutCte())
-                {
-                    yield return token;
-                }
+                tokens.AddRange(cte.GenerateTokensWithoutCte());
             }
         }
-        foreach (var token in GenerateTokensWithoutCte())
-        {
-            yield return token;
-        }
+        tokens.AddRange(SelectQuery.GenerateTokensWithoutCte());
+
         if (Returning != null)
         {
-            foreach (var token in Returning.GenerateTokensWithoutCte())
-            {
-                yield return token;
-            }
+            tokens.AddRange(Returning.GenerateTokensWithoutCte());
         }
+
+        return tokens;
     }
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()

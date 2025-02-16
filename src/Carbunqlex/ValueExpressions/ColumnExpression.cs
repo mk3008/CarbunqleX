@@ -17,7 +17,14 @@ public class ColumnExpression : IValueExpression
 
     public ColumnExpression(string tableName, string columnName)
     {
-        Namespaces = new List<string> { tableName };
+        if (!string.IsNullOrEmpty(tableName))
+        {
+            Namespaces = new List<string> { tableName };
+        }
+        else
+        {
+            Namespaces = new List<string>();
+        }
         ColumnName = columnName;
     }
 
