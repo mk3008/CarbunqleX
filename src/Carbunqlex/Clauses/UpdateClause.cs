@@ -9,6 +9,12 @@ public class UpdateClause : ISqlComponent
 
     public string Alias { get; set; }
 
+    public UpdateClause(TableSource tableSource)
+    {
+        TableSource = tableSource;
+        Alias = tableSource.DefaultName;
+    }
+
     public UpdateClause(TableSource tableSource, string alias)
     {
         TableSource = tableSource;
@@ -46,6 +52,11 @@ public class SetClause : ISqlComponent
 {
     public List<SetExpression> SetExpressions { get; set; }
 
+    public SetClause()
+    {
+        SetExpressions = new List<SetExpression>();
+    }
+
     public SetClause(List<SetExpression> setExpressions)
     {
         SetExpressions = setExpressions;
@@ -77,6 +88,11 @@ public class SetClause : ISqlComponent
                 yield return query;
             }
         }
+    }
+
+    public void Add(SetExpression setExpression)
+    {
+        SetExpressions.Add(setExpression);
     }
 }
 

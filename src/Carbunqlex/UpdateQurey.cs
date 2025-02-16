@@ -28,42 +28,54 @@ public class UpdateQuery : IQuery
     public string ToSql()
     {
         var sb = new StringBuilder();
-        var cteClauses = GetCommonTableClauses().ToList();
-        if (cteClauses.Any())
+        var withSql = new WithClause(GetCommonTableClauses()).ToSql();
+        if (!string.IsNullOrEmpty(withSql))
         {
-            sb.Append("with ");
-            sb.Append(string.Join(", ", cteClauses.Select(cte => cte.ToSqlWithoutCte())));
-            sb.Append(" ");
+            sb.Append(withSql).Append(" ");
         }
-        sb.Append(ToSqlWithoutCte());
+
+        sb.Append(UpdateClause.ToSqlWithoutCte());
+        sb.Append(" ");
+        sb.Append(SetClause.ToSqlWithoutCte());
+
+        var from = FromClause.ToSqlWithoutCte();
+        if (!string.IsNullOrEmpty(from))
+        {
+            sb.Append(" ");
+            sb.Append(from);
+        }
+        var where = WhereClause.ToSqlWithoutCte();
+        if (!string.IsNullOrEmpty(where))
+        {
+            sb.Append(" ");
+            sb.Append(where);
+        }
+        if (Returning != null)
+        {
+            sb.Append(" ");
+            sb.Append(Returning.ToSqlWithoutCte());
+        }
+
         return sb.ToString();
     }
 
     public IEnumerable<Token> GenerateTokens()
     {
         var cteClauses = GetCommonTableClauses().ToList();
+        var tokens = new List<Token>();
         if (cteClauses.Any())
         {
-            yield return new Token(TokenType.Command, "with");
-            foreach (var cte in cteClauses)
-            {
-                foreach (var token in cte.GenerateTokensWithoutCte())
-                {
-                    yield return token;
-                }
-            }
+            tokens.AddRange(cteClauses.SelectMany(cte => cte.GenerateTokensWithoutCte()));
         }
-        foreach (var token in GenerateTokensWithoutCte())
-        {
-            yield return token;
-        }
+        tokens.AddRange(UpdateClause.GenerateTokensWithoutCte());
+        tokens.AddRange(SetClause.GenerateTokensWithoutCte());
+        tokens.AddRange(FromClause.GenerateTokensWithoutCte());
+        tokens.AddRange(WhereClause.GenerateTokensWithoutCte());
         if (Returning != null)
         {
-            foreach (var token in Returning.GenerateTokensWithoutCte())
-            {
-                yield return token;
-            }
+            tokens.AddRange(Returning.GenerateTokensWithoutCte());
         }
+        return tokens;
     }
 
     public IEnumerable<CommonTableClause> GetCommonTableClauses()
@@ -95,43 +107,12 @@ public class UpdateQuery : IQuery
 
     public string ToSqlWithoutCte()
     {
-        var sb = new StringBuilder();
-        sb.Append(UpdateClause.ToSqlWithoutCte());
-        sb.Append(" ");
-        sb.Append(SetClause.ToSqlWithoutCte());
-
-        var from = FromClause.ToSqlWithoutCte();
-        if (string.IsNullOrEmpty(from) == false)
-        {
-            sb.Append(" ");
-            sb.Append(from);
-        }
-        var where = WhereClause.ToSqlWithoutCte();
-        if (string.IsNullOrEmpty(where) == false)
-        {
-            sb.Append(" ");
-            sb.Append(where);
-        }
-        if (Returning != null)
-        {
-            sb.Append(" ");
-            sb.Append(Returning.ToSqlWithoutCte());
-        }
-        return sb.ToString();
+        throw new InvalidOperationException("If CTEs are omitted, the query may be incomplete. Please use the ToSql method.");
     }
 
     public IEnumerable<Token> GenerateTokensWithoutCte()
     {
-        var tokens = new List<Token>();
-        tokens.AddRange(UpdateClause.GenerateTokensWithoutCte());
-        tokens.AddRange(SetClause.GenerateTokensWithoutCte());
-        tokens.AddRange(FromClause.GenerateTokensWithoutCte());
-        tokens.AddRange(WhereClause.GenerateTokensWithoutCte());
-        if (Returning != null)
-        {
-            tokens.AddRange(Returning.GenerateTokensWithoutCte());
-        }
-        return tokens;
+        throw new InvalidOperationException("If CTEs are omitted, the query may be incomplete. Please use the ToSql method.");
     }
 
     public IEnumerable<ISelectQuery> GetQueries()
