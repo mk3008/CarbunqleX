@@ -78,6 +78,35 @@ public class QueryNode : ISqlComponent
         }
     }
 
+    public DeleteQuery ToDeleteQuery(string tableName, string subQueryAlias = "", bool hasReturning = false, IEnumerable<string>? keyColumns = null)
+    {
+        if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException(nameof(tableName));
+
+        if (MustRefresh) Refresh();
+
+        var tableSource = TableDatasourceParser.Parse(tableName);
+        var deleteClause = new DeleteClause(tableSource);
+
+        var subAlias = string.IsNullOrEmpty(subQueryAlias) ? "q" : subQueryAlias;
+        var sq = ToSubQuery(subAlias, keyColumns);
+
+        var left = sq.SelectExpressionMap.Keys.Select(x => (IValueExpression)new ColumnExpression(deleteClause.Alias, x)).ToList();
+        var right = new SubQueryExpression(sq.Query);
+
+        var where = new WhereClause();
+        where.Add(new InExpression(false, new InValueGroupExpression(left), right));
+
+        if (!hasReturning)
+        {
+            return new DeleteQuery(new DeleteClause(tableSource), where);
+        }
+        else
+        {
+            // return all columns 
+            return new DeleteQuery(null, new DeleteClause(tableSource), null, where, new ReturningClause());
+        }
+    }
+
     public InsertQuery ToInsertQuery(string tableName, bool hasReturning = false, params string[] sequenceColumns)
     {
         if (MustRefresh) Refresh();
@@ -184,19 +213,24 @@ public class QueryNode : ISqlComponent
         return this;
     }
 
-    public QueryNode ToSubQuery(string alias = "d")
+    public QueryNode ToSubQuery(string alias = "d", IEnumerable<string>? selectColumns = null)
     {
         if (MustRefresh) Refresh();
 
-        var selectExpressions = SelectExpressionMap.Select(x => new SelectExpression(new ColumnExpression(alias, x.Key))).ToList();
+        var selectExpressions = SelectExpressionMap.Select(x => new SelectExpression(new ColumnExpression(alias, x.Key)));
 
-        Query = new SelectQuery(
-            new SelectClause(selectExpressions),
+        if (selectColumns != null && selectColumns.Any())
+        {
+            selectExpressions = selectExpressions
+                .Where(x => selectColumns.Contains(x.Alias, StringComparer.InvariantCultureIgnoreCase));
+        }
+
+        var sq = new SelectQuery(
+            new SelectClause(selectExpressions.ToList()),
             new FromClause(new DatasourceExpression(new SubQuerySource(Query), alias))
             );
 
-        MustRefresh = true;
-        return this;
+        return QueryNodeFactory.Create(sq);
     }
 
     public QueryNode NormalizeSelectClause()

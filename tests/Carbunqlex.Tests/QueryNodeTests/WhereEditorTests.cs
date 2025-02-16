@@ -74,7 +74,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         var queryNode = QueryNodeFactory.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.Where("table_a_id", static value => value.In(1, 2, 3).NotIn(4, 5, 6));
+        queryNode.Where("table_a_id", static value => value.In([1, 2, 3]).NotIn([4, 5, 6]));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);

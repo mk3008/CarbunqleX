@@ -58,23 +58,23 @@ public static class IValueExpressionExtensions
     public static LikeExpression NotLike(this IValueExpression left, object right) =>
         NotLike(left, ValueBuilder.Constant(right));
 
-    public static InExpression In(this IValueExpression left, IArgumentExpression right) =>
-        ValueBuilder.In(left, right);
+    public static InExpression In(this IValueExpression left, IValueGroupExpression right) =>
+        ValueBuilder.In(new InValueGroupExpression(left), right);
 
-    public static InExpression In(this IValueExpression left, params object[] values) =>
-        ValueBuilder.In(left, ValueBuilder.ConstantSet(values));
+    public static InExpression In(this IValueExpression left, IEnumerable<object> values) =>
+        ValueBuilder.In(new InValueGroupExpression(left), ValueBuilder.CreateInClauseValueExpression(values));
 
     public static InExpression In(this IValueExpression left, ISelectQuery right) =>
-        ValueBuilder.In(left, right);
+        ValueBuilder.In(new InValueGroupExpression(left), new SubQueryExpression(right));
 
-    public static InExpression NotIn(this IValueExpression left, IArgumentExpression right) =>
-        ValueBuilder.NotIn(left, right);
+    public static InExpression NotIn(this IValueExpression left, IValueGroupExpression right) =>
+        ValueBuilder.NotIn(new InValueGroupExpression(left), right);
 
-    public static InExpression NotIn(this IValueExpression left, params object[] values) =>
-        ValueBuilder.NotIn(left, ValueBuilder.ConstantSet(values));
+    public static InExpression NotIn(this IValueExpression left, IEnumerable<object> values) =>
+        ValueBuilder.NotIn(new InValueGroupExpression(left), ValueBuilder.CreateInClauseValueExpression(values));
 
     public static InExpression NotIn(this IValueExpression left, ISelectQuery right) =>
-        ValueBuilder.NotIn(left, right);
+        ValueBuilder.NotIn(new InValueGroupExpression(left), new SubQueryExpression(right));
 
     public static BinaryExpression IsNull(this IValueExpression expression) =>
         new BinaryExpression("is", expression, ValueBuilder.Null);
@@ -131,7 +131,7 @@ public static class IValueExpressionExtensions
     }
 
     public static FunctionExpression Greatest(this IValueExpression left, params IValueExpression[] values) =>
-        Greatest(left, new ValueArguments(values));
+        Greatest(left, new ArgumentExpression(values));
 
     public static FunctionExpression Least(this IValueExpression left, params object[] values)
     {
@@ -139,5 +139,5 @@ public static class IValueExpressionExtensions
     }
 
     public static FunctionExpression Least(this IValueExpression left, params IValueExpression[] values) =>
-        Least(left, new ValueArguments(values));
+        Least(left, new ArgumentExpression(values));
 }

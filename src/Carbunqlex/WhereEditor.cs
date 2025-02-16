@@ -91,7 +91,7 @@ public class WhereEditor
         return this;
     }
 
-    public WhereEditor In(params object[] values)
+    public WhereEditor In(IEnumerable<object> values)
     {
         AddCondition(Value.In(values));
         return this;
@@ -103,13 +103,13 @@ public class WhereEditor
         return this;
     }
 
-    public WhereEditor In(IArgumentExpression rightValue)
+    public WhereEditor In(IValueGroupExpression rightValue)
     {
         AddCondition(Value.In(rightValue));
         return this;
     }
 
-    public WhereEditor NotIn(params object[] values)
+    public WhereEditor NotIn(IEnumerable<object> values)
     {
         AddCondition(Value.NotIn(values));
         return this;
@@ -121,7 +121,7 @@ public class WhereEditor
         return this;
     }
 
-    public WhereEditor NotIn(IArgumentExpression rightValue)
+    public WhereEditor NotIn(IValueGroupExpression rightValue)
     {
         AddCondition(Value.NotIn(rightValue));
         return this;

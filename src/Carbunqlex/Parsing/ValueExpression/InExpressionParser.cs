@@ -24,7 +24,7 @@ public static class InExpressionParser
         {
             var query = SelectQueryParser.ParseWithoutEndCheck(tokenizer);
             tokenizer.Read(TokenType.CloseParen);
-            return new InExpression(isNegated, left, query);
+            return new InExpression(isNegated, left, new SubQueryExpression(query));
         }
         else
         {
@@ -34,7 +34,7 @@ public static class InExpressionParser
         }
     }
 
-    public static ValueArguments ParseAsArguments(SqlTokenizer tokenizer)
+    private static InValueGroupExpression ParseAsArguments(SqlTokenizer tokenizer)
     {
         var args = new List<IValueExpression>();
         while (true)
@@ -49,30 +49,6 @@ public static class InExpressionParser
             break;
         }
 
-        return new ValueArguments(args);
-    }
-}
-
-
-
-public static class ExistsExpressionParser
-{
-    public static ExistsExpression Parse(SqlTokenizer tokenizer)
-    {
-        var isNegated = tokenizer.Read(TokenType.Command, token =>
-        {
-            return token.CommandOrOperatorText switch
-            {
-                "exists" => false,
-                "not exists" => true,
-                _ => throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, ["exists", "not exists"], token)
-            };
-        });
-
-        tokenizer.Read(TokenType.OpenParen);
-        var query = SelectQueryParser.ParseWithoutEndCheck(tokenizer);
-        tokenizer.Read(TokenType.CloseParen);
-
-        return new ExistsExpression(isNegated, query);
+        return new InValueGroupExpression(args);
     }
 }

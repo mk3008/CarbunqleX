@@ -139,4 +139,49 @@ public class SelectEditorTests(ITestOutputHelper output)
         var expected = "insert into table_b(id, val) select a.table_a_id as id, a.value as val from table_a as a returning sequence_column1, id, val";
         Assert.Equal(expected, actual);
     }
+
+    [Fact]
+    public void ToDeleteQueryTest()
+    {
+        // Arrange
+        var query = SelectQueryParser.Parse("select a.v1 as value_1, a.value_2 from table_a as a where a.price = 1");
+        // Act
+        var queryNode = QueryNodeFactory.Create(query);
+        output.WriteLine(queryNode.Query.ToSql());
+        var deleteQuery = queryNode.ToDeleteQuery("table_x");
+        var actual = deleteQuery.ToSqlWithoutCte();
+        output.WriteLine(actual);
+        var expected = "delete from table_x where (table_x.value_1, table_x.value_2) in (select q.value_1, q.value_2 from (select a.v1 as value_1, a.value_2 from table_a as a where a.price = 1) as q)";
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void ToDeleteQueryWithReturningTest()
+    {
+        // Arrange
+        var query = SelectQueryParser.Parse("select a.v1 as value_1, a.value_2 from table_a as a where a.price = 1");
+        // Act
+        var queryNode = QueryNodeFactory.Create(query);
+        output.WriteLine(queryNode.Query.ToSql());
+        var updateQuery = queryNode.ToDeleteQuery("table_x", hasReturning: true);
+        var actual = updateQuery.ToSqlWithoutCte();
+        output.WriteLine(actual);
+        var expected = "delete from table_x where (table_x.value_1, table_x.value_2) in (select q.value_1, q.value_2 from (select a.v1 as value_1, a.value_2 from table_a as a where a.price = 1) as q) returning *";
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void ToDeleteQueryWithKeyColumnTest()
+    {
+        // Arrange
+        var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a where a.table_a_id = 1");
+        // Act
+        var queryNode = QueryNodeFactory.Create(query);
+        output.WriteLine(queryNode.Query.ToSql());
+        var deleteQuery = queryNode.ToDeleteQuery("table_b", keyColumns: ["table_a_id"]);
+        var actual = deleteQuery.ToSqlWithoutCte();
+        output.WriteLine(actual);
+        var expected = "delete from table_b where table_b.table_a_id in (select q.table_a_id from (select a.table_a_id, a.value from table_a as a where a.table_a_id = 1) as q)";
+        Assert.Equal(expected, actual);
+    }
 }

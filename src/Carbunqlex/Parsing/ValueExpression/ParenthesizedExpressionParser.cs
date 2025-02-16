@@ -16,9 +16,23 @@ public class ParenthesizedExpressionParser
         }
         else
         {
-            var value = ValueExpressionParser.Parse(tokenizer);
+            var values = new List<IValueExpression>() {
+                ValueExpressionParser.Parse(tokenizer)
+            };
+            while (tokenizer.TryPeek(out var comma) && comma.Type == TokenType.Comma)
+            {
+                tokenizer.CommitPeek();
+                values.Add(ValueExpressionParser.Parse(tokenizer));
+            }
             tokenizer.Read(TokenType.CloseParen);
-            return new ParenthesizedExpression(value);
+            if (values.Count == 1)
+            {
+                return new ParenthesizedExpression(values[0]);
+            }
+            else
+            {
+                return new InValueGroupExpression(values);
+            }
         }
     }
 }
