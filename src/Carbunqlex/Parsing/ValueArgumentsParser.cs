@@ -17,28 +17,26 @@ public static class ValueArgumentsParser
             if (tokenizer.TryPeek(out var comma) && comma.Type == TokenType.Comma)
             {
                 tokenizer.Read();
-                continue; ;
+                continue;
             }
             break;
         }
 
-        return tokenizer.Peek(token =>
+        var next = tokenizer.Peek();
+
+        if (next.Type == closeToken)
         {
-            if (token.Type == closeToken)
-            {
-                tokenizer.Read();
-                return new ArgumentExpression(args);
-            }
+            tokenizer.Read();
+            return new ArgumentExpression(args);
+        }
 
-            if (token.CommandOrOperatorText == "order by")
-            {
-                var orderByClause = OrderByClauseParser.Parse(tokenizer);
-                var expression = new ArgumentExpression(args) { OrderByClause = orderByClause };
-                tokenizer.Read(closeToken);
-                return expression;
-            }
+        if (next.CommandOrOperatorText == "order by")
+        {
+            var orderByClause = OrderByClauseParser.Parse(tokenizer);
+            tokenizer.Read(closeToken);
+            return new ArgumentExpression(args) { OrderByClause = orderByClause };
+        }
 
-            throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, [closeToken.ToString(), "order by"], token);
-        });
+        throw SqlParsingExceptionBuilder.UnexpectedToken(tokenizer, [closeToken.ToString(), "order by"], next);
     }
 }

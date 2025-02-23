@@ -23,14 +23,8 @@ public static class ReadOnlyMemoryExtensions
         // Skip white spaces and comments
         memory.SkipWhiteSpacesAndComments(ref p);
 
-        // comma
-        if (memory.StartWith(",", p, out p))
-        {
-            end = p;
-            return new Token(TokenType.Comma, ",", ",");
-        }
-
         // numeric prefix (0x, 0b, 0o)
+        // Perform this before digit check
         if (memory.TryReadNumericPrefix(p, out p, out lexeme))
         {
             memory.SkipWhiteSpacesAndComments(ref p);
@@ -48,128 +42,110 @@ public static class ReadOnlyMemoryExtensions
             return new Token(TokenType.Literal, lexeme, raw, string.Empty);
         }
 
-        // dot
-        if (memory.StartWith(".", p, out p))
+        // Use a switch statement for better performance on common cases
+        switch (memory.Span[p])
         {
-            end = p;
-            return new Token(TokenType.Dot, ".", ".");
-        }
-
-        // single quote 
-        if (memory.TryReadSingleQuoteLexeme(p, out p, out lexeme))
-        {
-            memory.SkipWhiteSpacesAndComments(ref p);
-            var raw = memory.Slice(start, p - start).ToString();
-            end = p;
-            return new Token(TokenType.Literal, lexeme, raw, string.Empty);
-        }
-
-        // double quotes (used as the escape symbol in Postgres)
-        if (memory.TryReadEnclosedLexeme(p, '"', '"', out p, out lexeme))
-        {
-            memory.SkipWhiteSpacesAndComments(ref p);
-            var raw = memory.Slice(start, p - start).ToString();
-            end = p;
-            return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
-        }
-
-        // backticks (used as the escape symbol in MySQL)
-        if (memory.TryReadEnclosedLexeme(p, '`', '`', out p, out lexeme))
-        {
-            memory.SkipWhiteSpacesAndComments(ref p);
-            var raw = memory.Slice(start, p - start).ToString();
-            end = p;
-            return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
-        }
-
-        // square brackets (used as the escape symbol in SQL Server)
-        if ((previousToken.HasValue == false || previousToken.Value.CommandOrOperatorText != "array") && memory.TryReadEnclosedLexeme(p, '[', ']', out p, out lexeme))
-        {
-            memory.SkipWhiteSpacesAndComments(ref p);
-            var raw = memory.Slice(start, p - start).ToString();
-            end = p;
-            return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
-        }
-
-        // open parenthesis
-        if (memory.StartWith("(", p, out p))
-        {
-            memory.SkipWhiteSpacesAndComments(ref p);
-            end = p;
-            return new Token(TokenType.OpenParen, "(", "(");
-        }
-
-        // close parenthesis
-        if (memory.StartWith(")", p, out p))
-        {
-            memory.SkipWhiteSpacesAndComments(ref p);
-            end = p;
-            return new Token(TokenType.CloseParen, ")", ")");
-        }
-
-        // open bracket
-        if (memory.StartWith("[", p, out p))
-        {
-            memory.SkipWhiteSpacesAndComments(ref p);
-            end = p;
-            return new Token(TokenType.OpenBracket, "[", "[");
-        }
-
-        // close bracket
-        if (memory.StartWith("]", p, out p))
-        {
-            memory.SkipWhiteSpacesAndComments(ref p);
-            end = p;
-            return new Token(TokenType.CloseBracket, "]", "]");
-        }
-
-        // Postgres parameter $ (記号が連続出現する場合はパラメータとはみなさない)
-        if (memory.StartWith("$", p, out _) && !memory.IsMultipleSymbol(p + 1))
-        {
-            p++;
-            memory.TryReadWord(p, out p, out var name);
-            memory.SkipWhiteSpacesAndComments(ref p);
-            var raw = memory.Slice(start, p - start).ToString();
-            end = p;
-            return new Token(TokenType.Parameter, "$" + name, raw, string.Empty);
-        }
-
-        // SQLServe parameter @ (記号が連続出現する場合はパラメータとはみなさない)
-        if (memory.StartWith("@", p, out _) && !memory.IsMultipleSymbol(p + 1))
-        {
-            p++;
-            memory.TryReadWord(p, out p, out var name);
-            memory.SkipWhiteSpacesAndComments(ref p);
-            var raw = memory.Slice(start, p - start).ToString();
-            end = p;
-            return new Token(TokenType.Parameter, "@" + name, raw, string.Empty);
-        }
-
-        // Postgres parameter : (記号が連続出現する場合はパラメータとはみなさない)
-        if (memory.StartWith(":", p, out _) && !memory.IsMultipleSymbol(p + 1))
-        {
-            p++;
-            memory.TryReadWord(p, out p, out var name);
-            memory.SkipWhiteSpacesAndComments(ref p);
-            var raw = memory.Slice(start, p - start).ToString();
-            end = p;
-            return new Token(TokenType.Parameter, ":" + name, raw, string.Empty);
-        }
-
-        // SQLite parameter ? (記号のあとは空白または終端であること)
-        if (memory.StartWith("?", p, out _) && (memory.IsWhiteSpace(p + 1) || memory.IsEnd(p + 1)))
-        {
-            p++;
-            // ただし、previous が identifier の 場合は 演算子として扱うこと
-            if (previousToken?.Type == TokenType.Identifier)
-            {
-                end = p;
-                return new Token(TokenType.Operator, "?");
-            }
-            memory.SkipWhiteSpacesAndComments(ref p);
-            var raw = memory.Slice(start, p - start).ToString();
-            end = p;
-            return new Token(TokenType.Parameter, "?", raw, string.Empty);
+            case ',':
+                end = ++p;
+                return new Token(TokenType.Comma, ",", ",");
+            case '.':
+                end = ++p;
+                return new Token(TokenType.Dot, ".", ".");
+            case '(':
+                end = ++p;
+                return new Token(TokenType.OpenParen, "(", "(");
+            case ')':
+                end = ++p;
+                return new Token(TokenType.CloseParen, ")", ")");
+            case '[':
+                // square brackets (used as the escape symbol in SQL Server)
+                if ((previousToken.HasValue == false || previousToken.Value.CommandOrOperatorText != "array") && memory.TryReadEnclosedLexeme(p, '[', ']', out p, out lexeme))
+                {
+                    memory.SkipWhiteSpacesAndComments(ref p);
+                    var raw = memory.Slice(start, p - start).ToString();
+                    end = p;
+                    return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
+                }
+                end = ++p;
+                return new Token(TokenType.OpenBracket, "[", "[");
+            case ']':
+                end = ++p;
+                return new Token(TokenType.CloseBracket, "]", "]");
+            case '\'':
+                if (memory.TryReadSingleQuoteLexeme(p, out p, out lexeme))
+                {
+                    memory.SkipWhiteSpacesAndComments(ref p);
+                    var raw = memory.Slice(start, p - start).ToString();
+                    end = p;
+                    return new Token(TokenType.Literal, lexeme, raw, string.Empty);
+                }
+                break;
+            case '"':
+                if (memory.TryReadEnclosedLexeme(p, '"', '"', out p, out lexeme))
+                {
+                    memory.SkipWhiteSpacesAndComments(ref p);
+                    var raw = memory.Slice(start, p - start).ToString();
+                    end = p;
+                    return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
+                }
+                break;
+            case '`':
+                if (memory.TryReadEnclosedLexeme(p, '`', '`', out p, out lexeme))
+                {
+                    memory.SkipWhiteSpacesAndComments(ref p);
+                    var raw = memory.Slice(start, p - start).ToString();
+                    end = p;
+                    return new Token(TokenType.Identifier, lexeme, raw, string.Empty);
+                }
+                break;
+            case '$':
+                if (!memory.IsMultipleSymbol(p + 1))
+                {
+                    p++;
+                    memory.TryReadWord(p, out p, out var name);
+                    memory.SkipWhiteSpacesAndComments(ref p);
+                    var raw = memory.Slice(start, p - start).ToString();
+                    end = p;
+                    return new Token(TokenType.Parameter, "$" + name, raw, string.Empty);
+                }
+                break;
+            case '@':
+                if (!memory.IsMultipleSymbol(p + 1))
+                {
+                    p++;
+                    memory.TryReadWord(p, out p, out var name);
+                    memory.SkipWhiteSpacesAndComments(ref p);
+                    var raw = memory.Slice(start, p - start).ToString();
+                    end = p;
+                    return new Token(TokenType.Parameter, "@" + name, raw, string.Empty);
+                }
+                break;
+            case ':':
+                if (!memory.IsMultipleSymbol(p + 1))
+                {
+                    p++;
+                    memory.TryReadWord(p, out p, out var name);
+                    memory.SkipWhiteSpacesAndComments(ref p);
+                    var raw = memory.Slice(start, p - start).ToString();
+                    end = p;
+                    return new Token(TokenType.Parameter, ":" + name, raw, string.Empty);
+                }
+                break;
+            case '?':
+                if (memory.IsWhiteSpace(p + 1) || memory.IsEnd(p + 1))
+                {
+                    p++;
+                    if (previousToken?.Type == TokenType.Identifier)
+                    {
+                        end = p;
+                        return new Token(TokenType.Operator, "?");
+                    }
+                    memory.SkipWhiteSpacesAndComments(ref p);
+                    var raw = memory.Slice(start, p - start).ToString();
+                    end = p;
+                    return new Token(TokenType.Parameter, "?", raw, string.Empty);
+                }
+                break;
         }
 
         // symbol
@@ -177,7 +153,6 @@ public static class ReadOnlyMemoryExtensions
         {
             if (previousToken?.Type == TokenType.Dot)
             {
-                // Recognize `*` as an identifier for retrieving all columns
                 memory.SkipWhiteSpacesAndComments(ref p);
                 var raw = memory.Slice(start, p - start).ToString();
                 end = p;
@@ -208,7 +183,6 @@ public static class ReadOnlyMemoryExtensions
 
             if (SqlKeyword.IdentifierKeywordNodes.ContainsKey(normalized))
             {
-                // e.g. double precision, timestamp with time zone
                 var node = SqlKeyword.IdentifierKeywordNodes[normalized];
                 return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Identifier, node, out end);
             }
@@ -241,7 +215,6 @@ public static class ReadOnlyMemoryExtensions
             }
             else
             {
-                // Check if the command consists of multiple words
                 var node = SqlKeyword.CommandKeywordNodes[normalized];
                 return memory.ParseKeywordLexeme(start, p, lexeme, TokenType.Command, node, out end);
             }
@@ -782,5 +755,20 @@ public static class ReadOnlyMemoryExtensions
     private static bool IsEnd(this ReadOnlyMemory<char> memory, int position)
     {
         return position >= memory.Length;
+    }
+
+    internal static bool IsEndOrTerminated(this ReadOnlyMemory<char> memory, int position)
+    {
+        if (position >= memory.Length)
+        {
+            return true;
+        }
+        if (memory.Span[position] == ';')
+        {
+            // find the end of the statement
+            return true;
+        }
+
+        return false;
     }
 }

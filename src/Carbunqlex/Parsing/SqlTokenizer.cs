@@ -8,65 +8,35 @@ public class SqlTokenizer
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sql, nameof(sql));
 
-        Memory = sql.AsMemory();
-        PreviousToken = null;
-        PeekPosition = 0;
+        var memory = sql.AsMemory();
+        var position = 0;
+        Token? current = null;
+        Tokens = new List<(int, Token)>(sql.Length / 5); // Pre-allocate list with an estimated size
+        while (!memory.IsEndOrTerminated(position))
+        {
+            current = memory.ReadLexeme(current, position, out position);
+            Tokens.Add((position, current.Value));
+        }
+
+        Index = 0;
     }
 
-    /// <summary>
-    /// The input string to tokenize.
-    /// </summary>
-    private ReadOnlyMemory<char> Memory { get; }
+    public int Index { get; private set; }
 
-    /// <summary>
-    /// The current position in the input string.
-    /// </summary>
-    public int Position { get; private set; }
+    public int Position => Tokens[Index - 1].Position;
 
-    /// <summary>
-    /// The token that was peeked at.
-    /// </summary>
-    private Token? PeekToken;
-
-    /// <summary>
-    /// The position of the peeked token.
-    /// </summary>
-    private int PeekPosition;
+    private List<(int Position, Token Value)> Tokens { get; }
 
     /// <summary>
     /// Indicates if the tokenizer has reached the end of the input string.
     /// </summary>
-    public bool IsEnd => IsEndLogic();
+    public bool IsEnd => Tokens.Count <= Index ? true : false;
 
-    private bool IsEndLogic()
-    {
-        if (Position >= Memory.Length)
-        {
-            return true;
-        }
-
-        if (Memory.Span[Position] == ';')
-        {
-            // If the next token is a semicolon, move to the end of the text
-            Position = Memory.Length;
-            return true;
-        }
-
-        return false;
-    }
-
-    public Token? PreviousToken { get; private set; }
+    internal Token? PreviousToken => Index == 0 ? null : Tokens[Index].Value;
 
     public void CommitPeek()
     {
-        if (PeekPosition == 0)
-        {
-            return;
-        }
-        Position = PeekPosition;
-        PreviousToken = PeekToken;
-        PeekPosition = 0;
-        PeekToken = null;
+        Index++;
     }
 
     public bool TryPeek(out Token token)
@@ -76,21 +46,8 @@ public class SqlTokenizer
             token = Token.Empty;
             return false;
         }
-        if (!PeekToken.HasValue)
-        {
-            PeekToken = Memory.ReadLexeme(PreviousToken, Position, out PeekPosition);
-        }
-        token = PeekToken.Value;
+        token = Tokens[Index].Value;
         return true;
-    }
-
-    public T Peek<T>(Func<Token, T> action)
-    {
-        if (TryPeek(out var token))
-        {
-            return action(token);
-        }
-        throw SqlParsingExceptionBuilder.EndOfInput(this);
     }
 
     public T Peek<T>(Func<Token, T> action, T defaultValue)
@@ -140,26 +97,11 @@ public class SqlTokenizer
         return true;
     }
 
-    private Token ReadCore()
-    {
-        // If we have a peeked token, return it and commit the peek
-        if (PeekToken != null)
-        {
-            var cache = PeekToken.Value;
-            CommitPeek();
-            return cache;
-        }
-
-        var token = Memory.ReadLexeme(PreviousToken, Position, out var p);
-        Position = p;
-        return token;
-    }
-
     public Token Read()
     {
-        var token = ReadCore();
-        PreviousToken = token;
-        return token;
+        var t = Tokens[Index].Value;
+        Index++;
+        return t;
     }
 
     public Token Read(string expectedCommand)
@@ -217,19 +159,6 @@ public class SqlTokenizer
             }
 
             throw SqlParsingExceptionBuilder.UnexpectedTokenType(this, expectedTokenType, token);
-        }
-        throw SqlParsingExceptionBuilder.EndOfInput(this);
-    }
-
-    public Token Read(params TokenType[] expectedTokenTypes)
-    {
-        if (TryRead(out var token))
-        {
-            if (expectedTokenTypes.Contains(token.Type))
-            {
-                return token;
-            }
-            throw SqlParsingExceptionBuilder.UnexpectedTokenType(this, expectedTokenTypes, token);
         }
         throw SqlParsingExceptionBuilder.EndOfInput(this);
     }
