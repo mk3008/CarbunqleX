@@ -400,11 +400,15 @@ public static class ReadOnlyMemoryExtensions
 
         if (ignoreCase)
         {
-            if (span.ToString().Equals(expectedValue, StringComparison.OrdinalIgnoreCase))
+            for (int i = 0; i < span.Length; i++)
             {
-                endPosition = start + expectedValue.Length;
-                return true;
+                if (char.ToLowerInvariant(span[i]) != char.ToLowerInvariant(expectedValue[i]))
+                {
+                    return false;
+                }
             }
+            endPosition = start + expectedValue.Length;
+            return true;
         }
         else
         {
