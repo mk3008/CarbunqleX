@@ -21,11 +21,11 @@ public class OrderByColumnParser
             return true;
         }
 
-        var next = tokenizer.Peek(token => token.CommandOrOperatorText);
+        var next = tokenizer.Peek().CommandOrOperatorText;
 
         if (next == "asc" || next == "desc")
         {
-            tokenizer.Read();
+            tokenizer.CommitPeek();
             return next == "asc";
         }
 
@@ -39,7 +39,7 @@ public class OrderByColumnParser
             return null;
         }
 
-        var next = tokenizer.Peek(token => token.CommandOrOperatorText);
+        var next = tokenizer.Peek().CommandOrOperatorText;
 
         if (next == "nulls first" || next == "nulls last")
         {

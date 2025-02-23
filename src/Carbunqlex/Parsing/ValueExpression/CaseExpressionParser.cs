@@ -9,9 +9,9 @@ public static class CaseExpressionParser
     {
         tokenizer.Read("case");
 
-        var caseValue = tokenizer.Peek(token =>
+        var caseValue = tokenizer.Peek(static (r, token) =>
         {
-            return token.CommandOrOperatorText == "when" ? null : ValueExpressionParser.Parse(tokenizer);
+            return token.CommandOrOperatorText == "when" ? null : ValueExpressionParser.Parse(r);
         }, null);
 
         var whenClauses = ParseWhenThenPair(tokenizer).ToList();

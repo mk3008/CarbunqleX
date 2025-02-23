@@ -94,6 +94,11 @@ public static class SqlKeyword
 
         CommandKeywords = new HashSet<string>
         {
+            "position",
+            "trim",
+            "both",
+            "trailing",
+            "leading",
             //common
             "as",
             //with
