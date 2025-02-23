@@ -717,14 +717,14 @@ public static class ReadOnlyMemoryExtensions
         }
 
         // Check if the first character is not a letter
-        if (memory.Span[p].IsWhiteSpace() || memory.Span[p].IsSingleSymbol() || memory.Span[p].IsMultipleSymbol())
+        if (!IsValidWordCharacter(memory.Span[p]))
         {
             word = string.Empty;
             return false;
         }
 
-        //　Read until a white space or symbol is found
-        while (p < memory.Length && !memory.Span[p].IsWhiteSpace() && !memory.Span[p].IsSingleSymbol() && !memory.Span[p].IsMultipleSymbol())
+        // Read until a white space or symbol is found
+        while (p < memory.Length && IsValidWordCharacter(memory.Span[p]))
         {
             p++;
         }
@@ -732,6 +732,11 @@ public static class ReadOnlyMemoryExtensions
         word = memory.Slice(start, p - start).ToString();
         endPosition = p;
         return true;
+    }
+
+    private static bool IsValidWordCharacter(char c)
+    {
+        return !char.IsWhiteSpace(c) && !c.IsSingleSymbol() && !c.IsMultipleSymbol();
     }
 
     private static bool IsMultipleSymbol(this ReadOnlyMemory<char> memory, int position)
