@@ -86,6 +86,11 @@ public class SqlTokenizer
         throw SqlParsingExceptionBuilder.EndOfInput(this);
     }
 
+    public Token Peek(int shift)
+    {
+        return Tokens[Index + shift].Value;
+    }
+
     public bool TryRead(out Token token)
     {
         if (IsEnd)

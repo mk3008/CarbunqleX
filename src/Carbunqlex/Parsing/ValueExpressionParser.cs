@@ -34,6 +34,10 @@ public static class ValueExpressionParser
         // command (e.g., array, modifier)
         if (token.Type == TokenType.Command)
         {
+            //if (token.CommandOrOperatorText == "trim")
+            //{
+            //    return TrimValueParser.Parse(tokenizer);
+            //}
             if (token.CommandOrOperatorText == "array")
             {
                 return ArrayExpressionParser.Parse(tokenizer);
@@ -51,6 +55,10 @@ public static class ValueExpressionParser
                 tokenizer.Read();
                 return UnaryExpressionParser.Parse(tokenizer, token.CommandOrOperatorText);
             }
+            if (token.CommandOrOperatorText is "exists" or "not exists")
+            {
+                return ExistsExpressionParser.Parse(tokenizer);
+            }
             if (token.CommandOrOperatorText == "cube")
             {
                 return CubeExpressionParser.Parse(tokenizer);
@@ -63,9 +71,9 @@ public static class ValueExpressionParser
             {
                 return GroupingSetsExpressionParser.Parse(tokenizer);
             }
-            if (token.CommandOrOperatorText is "exists" or "not exists")
+            if (token.CommandOrOperatorText == "position")
             {
-                return ExistsExpressionParser.Parse(tokenizer);
+                return PositionValueParser.Parse(tokenizer);
             }
             return ModifierExpressionParser.Parse(tokenizer);
         }
@@ -148,11 +156,11 @@ public static class ValueExpressionParser
     /// Try to parse the following expression.
     /// </summary>
     /// <param name="tokenizer"></param>
-    /// <param name="ignoreOperators"></param>
+    /// <param name="ignoreValues"></param>
     /// <param name="left"></param>
     /// <param name="renewValue"></param>
     /// <returns></returns>
-    public static bool TryParseFollowingExpression(SqlTokenizer tokenizer, string[]? ignoreOperators, IValueExpression left, [NotNullWhen(true)] out IValueExpression renewValue)
+    public static bool TryParseFollowingExpression(SqlTokenizer tokenizer, string[]? ignoreValues, IValueExpression left, [NotNullWhen(true)] out IValueExpression renewValue)
     {
         if (!tokenizer.TryPeek(out var nextToken))
         {
@@ -162,6 +170,13 @@ public static class ValueExpressionParser
 
         if (nextToken.Type == TokenType.Command)
         {
+            // e.g., in the case of the position function, ignore `in` within the syntax.
+            if (ignoreValues != null && ignoreValues.Contains(nextToken.Value.ToLower()))
+            {
+                renewValue = left;
+                return false;
+            }
+
             if (nextToken.CommandOrOperatorText == "between" || nextToken.CommandOrOperatorText == "not between")
             {
                 renewValue = BetweenExpressionParser.Parse(tokenizer, left);
@@ -174,16 +189,26 @@ public static class ValueExpressionParser
             }
             if (nextToken.CommandOrOperatorText is "in" or "not in")
             {
-                renewValue = InExpressionParser.Parse(tokenizer, left);
-                return true;
+                var isInExpression = tokenizer.Peek(1).Type == TokenType.OpenParen ? true : false;
+
+                // Only treat as an in-expression if parentheses appear
+                if (isInExpression)
+                {
+                    renewValue = InExpressionParser.Parse(tokenizer, left);
+                    return true;
+                }
+                else
+                {
+                    renewValue = left;
+                    return false;
+                }
             }
         }
 
         if (nextToken.Type == TokenType.Operator)
         {
-            // ignore operators
-            // In the case of "between", "and" is not treated as an operator, and if detected, break.
-            if (ignoreOperators != null && ignoreOperators.Contains(nextToken.Value.ToLower()))
+            // e.g., in the case of "between", ignore `and` as an operator, and if detected, break.
+            if (ignoreValues != null && ignoreValues.Contains(nextToken.Value.ToLower()))
             {
                 renewValue = left;
                 return false;
