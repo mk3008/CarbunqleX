@@ -203,14 +203,12 @@ public class FunctionExpressionParserTests
     public void Parse_NormalizeFunctionExpression_ReturnsCorrectExpression()
     {
         // Arrange
-        var tokenizer = new SqlTokenizer("normalize(U&'\\FB01', NFKD)");
+        var tokenizer = new SqlTokenizer("normalize(U&'\\FB01', nfkd)");
         // Act
         var result = ValueExpressionParser.Parse(tokenizer);
         Output.WriteLine(result.ToSqlWithoutCte());
         Assert.NotNull(result);
-        Assert.IsType<FunctionExpression>(result);
-        Assert.Equal("normalize", ((FunctionExpression)result).FunctionName);
-        Assert.Equal("U&'\\FB01', NFKD", ((FunctionExpression)result).Arguments.ToSqlWithoutCte());
-        Assert.Equal("normalize(U&'\\FB01', NFKD)", result.ToSqlWithoutCte());
+        Assert.IsType<NormalizeExpression>(result);
+        Assert.Equal("normalize(U&'\\FB01', nfkd)", result.ToSqlWithoutCte());
     }
 }

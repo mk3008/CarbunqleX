@@ -94,6 +94,11 @@ public static class SqlKeyword
 
         CommandKeywords = new HashSet<string>
         {
+            "normalize",
+            "nfc",
+            "nfd",
+            "nfkc",
+            "nfkd",
             "position",
             "trim",
             "both",

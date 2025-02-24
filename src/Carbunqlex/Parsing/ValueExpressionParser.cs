@@ -75,6 +75,10 @@ public static class ValueExpressionParser
             {
                 return PositionValueParser.Parse(tokenizer);
             }
+            if (token.CommandOrOperatorText == "normalize")
+            {
+                return NormalizedExpressionParser.Parse(tokenizer);
+            }
             return ModifierExpressionParser.Parse(tokenizer);
         }
 

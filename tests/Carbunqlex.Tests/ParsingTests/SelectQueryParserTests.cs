@@ -146,10 +146,10 @@ public class SelectQueryParserTests
     //[InlineData("IS NOT NFKC NORMALIZED", "select U&'fi' IS NOT NFKC NORMALIZED")]
     //[InlineData("IS NFKD NORMALIZED", "select U&'\\FB01' IS NFKD NORMALIZED")]
     //[InlineData("IS NOT NFKD NORMALIZED", "select U&'fi' IS NOT NFKD NORMALIZED")]
-    [InlineData("Normalize to NFC", "select normalize(U&'\\0061\\0308bc', NFC)")]
-    [InlineData("Normalize to NFD", "select normalize(U&'\\0061\\0308bc', NFD)")]
-    [InlineData("Normalize to NFKC", "select normalize(U&'\\FB01', NFKC)")]
-    [InlineData("Normalize to NFKD", "select normalize(U&'\\FB01', NFKD)")]
+    [InlineData("Normalize to NFC", "select normalize(U&'\\0061\\0308bc')")]
+    [InlineData("Normalize to NFD", "select normalize(U&'\\0061\\0308bc', nfd)")]
+    [InlineData("Normalize to NFKC", "select normalize(U&'\\FB01', nfkc)")]
+    [InlineData("Normalize to NFKD", "select normalize(U&'\\FB01', nfkd)")]
     public void Parse(string caption, string query)
     {
         Output.WriteLine($"Caption: {caption}\n{query}");
