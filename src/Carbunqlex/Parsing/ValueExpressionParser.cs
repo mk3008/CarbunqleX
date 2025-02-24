@@ -42,6 +42,10 @@ public static class ValueExpressionParser
             {
                 return ArrayExpressionParser.Parse(tokenizer);
             }
+            if (token.CommandOrOperatorText == "substring")
+            {
+                return SubStringExpressionParser.Parse(tokenizer);
+            }
             if (token.CommandOrOperatorText == "case")
             {
                 return CaseExpressionParser.Parse(tokenizer); ;
