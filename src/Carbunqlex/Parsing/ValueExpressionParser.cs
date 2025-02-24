@@ -85,7 +85,7 @@ public static class ValueExpressionParser
             }
             if (token.CommandOrOperatorText == "normalize")
             {
-                return NormalizedExpressionParser.Parse(tokenizer);
+                return NormalizeExpressionParser.Parse(tokenizer);
             }
             if (tokenizer.Peek(1).Type == TokenType.OpenParen)
             {

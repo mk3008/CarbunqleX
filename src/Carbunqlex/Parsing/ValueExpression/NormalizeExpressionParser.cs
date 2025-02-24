@@ -2,7 +2,7 @@
 
 namespace Carbunqlex.Parsing.ValueExpression;
 
-public class NormalizedExpressionParser
+public class NormalizeExpressionParser
 {
     public static NormalizeExpression Parse(SqlTokenizer tokenizer)
     {
