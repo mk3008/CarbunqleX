@@ -198,4 +198,31 @@ public class FunctionExpressionParserTests
         Assert.Equal("over window_name", ((FunctionExpression)result).FunctionModifier!.ToSqlWithoutCte());
         Assert.Equal("count(*) over window_name", result.ToSqlWithoutCte());
     }
+
+    [Fact]
+    public void Parse_NormalizeFunctionExpression_ReturnsCorrectExpression()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("normalize(U&'\\FB01', nfkd)");
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+        Assert.NotNull(result);
+        Assert.IsType<NormalizeExpression>(result);
+        Assert.Equal("normalize(U&'\\FB01', nfkd)", result.ToSqlWithoutCte());
+    }
+
+    [Fact]
+    public void Parse_Trim()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("trim('  yxTomxx  ')");
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<TrimExpression>(result);
+        Assert.Equal("trim('  yxTomxx  ')", result.ToSqlWithoutCte());
+    }
 }

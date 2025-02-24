@@ -63,6 +63,15 @@ public static class SqlKeyword
             "localtime",
             "localtimestamp",
             "unbounded",
+            "normalized",
+            "nfc normalized",
+            "nfd normalized",
+            "nfkc normalized",
+            "nfkd normalized",
+            "nfc",
+            "nfd",
+            "nfkc",
+            "nfkd",
         };
 
         UnionCommandKeywords = new HashSet<string>
@@ -94,6 +103,30 @@ public static class SqlKeyword
 
         CommandKeywords = new HashSet<string>
         {
+            //trim
+            "trim",
+            "both",
+            "leading",
+            "trailing",
+            "from",
+            "both from",
+            "leading from",
+            "trailing from",
+            "both leading",
+            "both trailing",           
+            //substring
+            "substring",
+            "from",
+            "for",
+            "similar",
+            "escape",
+            //overlay
+            "overlay",
+            "placing",
+            "from",
+            "for",
+            //normalize
+            "normalize",
             "position",
             "trim",
             "both",
