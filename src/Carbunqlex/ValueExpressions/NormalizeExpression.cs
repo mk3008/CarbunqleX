@@ -43,7 +43,7 @@ public class NormalizeExpression : IValueExpression
         if (!Form.Equals("NFC", StringComparison.OrdinalIgnoreCase))
         {
             tokens.Add(new Token(TokenType.Comma, ","));
-            tokens.Add(new Token(TokenType.Command, Form));
+            tokens.Add(new Token(TokenType.Literal, Form));
         }
         tokens.Add(new Token(TokenType.CloseParen, ")"));
         return tokens;

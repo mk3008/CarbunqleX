@@ -14,7 +14,7 @@ public class NormalizedExpressionParser
         if (tokenizer.TryPeek(out var token) && token.Type == TokenType.Comma)
         {
             tokenizer.CommitPeek();
-            var form = tokenizer.Read().CommandOrOperatorText;
+            var form = tokenizer.Read(TokenType.Literal).Value;
             tokenizer.Read(TokenType.CloseParen);
             return new NormalizeExpression(originalText, form);
         }
