@@ -94,6 +94,12 @@ public static class SqlKeyword
 
         CommandKeywords = new HashSet<string>
         {
+            //overlay
+            "overlay",
+            "placing",
+            "from",
+            "for",
+            //normalize
             "normalize",
             "nfc",
             "nfd",

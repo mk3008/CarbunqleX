@@ -4,7 +4,7 @@ namespace Carbunqlex.Parsing.ValueExpression;
 
 public class NormalizedExpressionParser
 {
-    public static IValueExpression Parse(SqlTokenizer tokenizer)
+    public static NormalizeExpression Parse(SqlTokenizer tokenizer)
     {
         tokenizer.Read("normalize");
         tokenizer.Read(TokenType.OpenParen);
