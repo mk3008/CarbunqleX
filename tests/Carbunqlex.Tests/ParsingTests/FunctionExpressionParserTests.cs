@@ -211,4 +211,18 @@ public class FunctionExpressionParserTests
         Assert.IsType<NormalizeExpression>(result);
         Assert.Equal("normalize(U&'\\FB01', nfkd)", result.ToSqlWithoutCte());
     }
+
+    [Fact]
+    public void Parse_Trim()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("trim('  yxTomxx  ')");
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<TrimExpression>(result);
+        Assert.Equal("trim('  yxTomxx  ')", result.ToSqlWithoutCte());
+    }
 }

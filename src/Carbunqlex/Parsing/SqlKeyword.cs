@@ -103,6 +103,17 @@ public static class SqlKeyword
 
         CommandKeywords = new HashSet<string>
         {
+            //trim
+            "trim",
+            "both",
+            "leading",
+            "trailing",
+            "from",
+            "both from",
+            "leading from",
+            "trailing from",
+            "both leading",
+            "both trailing",           
             //substring
             "substring",
             "from",

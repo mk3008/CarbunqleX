@@ -34,10 +34,10 @@ public static class ValueExpressionParser
         // command (e.g., array, modifier)
         if (token.Type == TokenType.Command)
         {
-            //if (token.CommandOrOperatorText == "trim")
-            //{
-            //    return TrimValueParser.Parse(tokenizer);
-            //}
+            if (token.CommandOrOperatorText == "trim")
+            {
+                return TrimExpressionParser.Parse(tokenizer);
+            }
             if (token.CommandOrOperatorText == "array")
             {
                 return ArrayExpressionParser.Parse(tokenizer);
@@ -86,6 +86,11 @@ public static class ValueExpressionParser
             if (token.CommandOrOperatorText == "normalize")
             {
                 return NormalizedExpressionParser.Parse(tokenizer);
+            }
+            if (tokenizer.Peek(1).Type == TokenType.OpenParen)
+            {
+                var function = tokenizer.Read();
+                return FunctionExpressionParser.Parse(tokenizer, function);
             }
             return ModifierExpressionParser.Parse(tokenizer);
         }

@@ -88,6 +88,10 @@ public class SqlTokenizer
 
     public Token Peek(int shift)
     {
+        if (Index + shift >= Tokens.Count)
+        {
+            return Token.Empty;
+        }
         return Tokens[Index + shift].Value;
     }
 
