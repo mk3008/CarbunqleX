@@ -1,4 +1,4 @@
-﻿namespace Carbunqlex;
+﻿namespace Carbunqlex.Lexing;
 
 /// <summary>
 /// Represents a token in a SQL statement.

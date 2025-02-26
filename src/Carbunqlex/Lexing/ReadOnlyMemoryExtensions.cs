@@ -1,4 +1,4 @@
-﻿namespace Carbunqlex.Parsing;
+﻿namespace Carbunqlex.Lexing;
 
 /// <summary>
 /// Lexeme reading extensions for <see cref="ReadOnlyMemory{T}"/>.
@@ -490,7 +490,7 @@ public static class ReadOnlyMemoryExtensions
                 // Move by the length of the prefix
                 p += keyword.Length;
 
-                if (TryReadDigit(memory, p, out p, out _))
+                if (memory.TryReadDigit(p, out p, out _))
                 {
                     lexeme = memory.Slice(start, p - start).ToString();
                     endPosition = p;
@@ -547,7 +547,7 @@ public static class ReadOnlyMemoryExtensions
         // Read digits, dots, and exponents
         while (p < memory.Length)
         {
-            if (char.IsDigit(memory.Span[p]) || (memory.Span[p] == '.' && !hasDot))
+            if (char.IsDigit(memory.Span[p]) || memory.Span[p] == '.' && !hasDot)
             {
                 if (memory.Span[p] == '.')
                 {

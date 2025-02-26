@@ -1,4 +1,5 @@
-﻿using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Lexing;
+using Carbunqlex.ValueExpressions;
 
 namespace Carbunqlex.Clauses;
 

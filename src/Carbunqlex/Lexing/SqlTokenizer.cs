@@ -1,6 +1,6 @@
 ﻿using Carbunqlex.Parsing.ValueExpression;
 
-namespace Carbunqlex.Parsing;
+namespace Carbunqlex.Lexing;
 
 public class SqlTokenizer
 {

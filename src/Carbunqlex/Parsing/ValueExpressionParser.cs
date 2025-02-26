@@ -1,4 +1,5 @@
-﻿using Carbunqlex.Parsing.ValueExpression;
+﻿using Carbunqlex.Lexing;
+using Carbunqlex.Parsing.ValueExpression;
 using Carbunqlex.ValueExpressions;
 using System.Diagnostics.CodeAnalysis;
 

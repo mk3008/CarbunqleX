@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Carbunqlex.Parsing;
+namespace Carbunqlex.Lexing;
 
 public readonly struct SqlKeywordNode
 {

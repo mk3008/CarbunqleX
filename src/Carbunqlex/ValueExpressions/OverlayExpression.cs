@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Lexing;
+
+namespace Carbunqlex.ValueExpressions;
 
 public class OverlayExpression : IValueExpression
 {

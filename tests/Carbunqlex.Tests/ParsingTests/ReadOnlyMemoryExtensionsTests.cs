@@ -1,4 +1,4 @@
-﻿using Carbunqlex.Parsing;
+﻿using Carbunqlex.Lexing;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ParsingTests;

@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Lexing;
+
+namespace Carbunqlex.ValueExpressions;
 
 /// <summary>
 /// Represents an IN clause value expression. 

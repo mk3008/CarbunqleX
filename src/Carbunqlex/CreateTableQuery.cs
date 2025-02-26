@@ -1,5 +1,6 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.Lexing;
 using Carbunqlex.ValueExpressions;
 
 namespace Carbunqlex;

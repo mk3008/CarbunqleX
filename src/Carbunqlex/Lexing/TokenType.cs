@@ -1,4 +1,4 @@
-﻿namespace Carbunqlex;
+﻿namespace Carbunqlex.Lexing;
 
 public enum TokenType : byte
 {

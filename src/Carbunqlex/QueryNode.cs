@@ -1,5 +1,6 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.Lexing;
 using Carbunqlex.Parsing;
 using Carbunqlex.ValueExpressions;
 using System.Collections.ObjectModel;

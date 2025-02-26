@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Lexing;
+
+namespace Carbunqlex.ValueExpressions;
 
 /// <summary>
 /// Represents a SQL modifier expression, such as INTERVAL '1 day' or DATE '2024-12-25'.

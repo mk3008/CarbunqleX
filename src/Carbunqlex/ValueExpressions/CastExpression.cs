@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Lexing;
+
+namespace Carbunqlex.ValueExpressions;
 
 /// <summary>
 /// Represents a SQL CAST expression, which converts a value from one data type to another.

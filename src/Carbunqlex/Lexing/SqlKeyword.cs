@@ -1,4 +1,4 @@
-﻿namespace Carbunqlex.Parsing;
+﻿namespace Carbunqlex.Lexing;
 
 public static class SqlKeyword
 {

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Carbunqlex.Lexing;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex.DatasourceExpressions;

@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.Parsing.ValueExpression;
+﻿using Carbunqlex.Lexing;
+
+namespace Carbunqlex.Parsing.ValueExpression;
 
 public class SqlParsingException : Exception
 {
