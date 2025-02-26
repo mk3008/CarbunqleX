@@ -1,10 +1,10 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.Expressions;
 using Carbunqlex.Lexing;
-using Carbunqlex.ValueExpressions;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace Carbunqlex.DatasourceExpressions;
+namespace Carbunqlex.QuerySources;
 
 public class DatasourceExpression : ISqlComponent, IDatasource
 {

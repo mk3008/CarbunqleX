@@ -1,8 +1,9 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.Expressions;
 using Carbunqlex.Lexing;
-using Carbunqlex.Parsing;
-using Carbunqlex.ValueExpressions;
+using Carbunqlex.Parsing.Expressions;
+using Carbunqlex.Parsing.QuerySources;
+using Carbunqlex.QuerySources;
 using System.Collections.ObjectModel;
 using System.Text;
 

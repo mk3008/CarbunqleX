@@ -1,5 +1,5 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.ValueExpressions;
+using Carbunqlex.Expressions;
 using System.Globalization;
 
 namespace Carbunqlex;

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Carbunqlex.DatasourceExpressions;
+namespace Carbunqlex.QuerySources;
 
 public interface IDatasource : ISqlComponent
 {

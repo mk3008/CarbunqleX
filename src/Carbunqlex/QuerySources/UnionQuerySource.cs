@@ -1,7 +1,7 @@
 ﻿using Carbunqlex.Lexing;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Carbunqlex.DatasourceExpressions;
+namespace Carbunqlex.QuerySources;
 
 public class UnionQuerySource : IDatasource
 {

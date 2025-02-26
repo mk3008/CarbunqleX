@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace Carbunqlex.DatasourceExpressions;
+namespace Carbunqlex.QuerySources;
 
 public class SubQuerySource : IDatasource
 {

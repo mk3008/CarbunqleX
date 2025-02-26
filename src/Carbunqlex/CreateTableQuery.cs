@@ -1,7 +1,7 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.DatasourceExpressions;
+using Carbunqlex.Expressions;
 using Carbunqlex.Lexing;
-using Carbunqlex.ValueExpressions;
+using Carbunqlex.QuerySources;
 
 namespace Carbunqlex;
 

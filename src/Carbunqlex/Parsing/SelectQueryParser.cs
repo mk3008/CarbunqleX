@@ -1,7 +1,8 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.Expressions;
 using Carbunqlex.Lexing;
-using Carbunqlex.Parsing.ValueExpression;
-using Carbunqlex.ValueExpressions;
+using Carbunqlex.Parsing.Clauses;
+using Carbunqlex.Parsing.Expressions;
 
 namespace Carbunqlex.Parsing;
 
