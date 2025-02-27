@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Carbunqlex;
 
-public class QueryNode : ISqlComponent
+public class QueryNode : ISqlComponent, IQuery
 {
     /// <summary>
     /// The query.
@@ -32,8 +32,14 @@ public class QueryNode : ISqlComponent
     {
         Query = query;
         SelectExpressionMap = query.GetSelectExpressions().ToDictionary(static expr => expr.Alias.ToLowerInvariant(), expr => expr).AsReadOnly();
-        DatasourceNodeMap = datasourceNodes.ToDictionary(static ds => ds.Name.ToLowerInvariant(), static ds => ds).AsReadOnly();
-        MustRefresh = false;
+
+        // Group if the same data source is referenced multiple times
+        DatasourceNodeMap = datasourceNodes
+            .GroupBy(static ds => ds.Name.ToLowerInvariant())
+            .ToDictionary(static g => g.Key, static g => g.First())
+            .AsReadOnly();
+
+        MustRefresh = false; MustRefresh = false;
     }
 
     /// <summary>
@@ -539,7 +545,7 @@ public class QueryNode : ISqlComponent
     private List<FromEditor> GetFromEditors(IEnumerable<string> columnNames)
     {
         var result = new List<FromEditor>();
-        WhenRecursive(this, columnNames.Select(c => c.ToLowerInvariant()).ToList(), result);
+        WhenRecursive(this, columnNames.Select(c => c.ToLowerInvariant()).ToList(), result, isCurrentOnly: true);
         return result;
     }
 
@@ -556,7 +562,7 @@ public class QueryNode : ISqlComponent
         var column = columnName.ToLowerInvariant();
 
         var result = new List<ColumnEditor>();
-        WhenRecursive(this, column, isSelectableOnly, result, currentOnly: false);
+        WhenRecursive(this, column, isSelectableOnly, result, isCurrentOnly: false);
         foreach (var item in result)
         {
             action(item);
@@ -567,18 +573,18 @@ public class QueryNode : ISqlComponent
         return this;
     }
 
-    private void WhenRecursive(QueryNode node, string columnName, bool isSelectableOnly, List<ColumnEditor> result, bool currentOnly)
+    private void WhenRecursive(QueryNode node, string columnName, bool isSelectableOnly, List<ColumnEditor> result, bool isCurrentOnly)
     {
         var beforeCount = result.Count;
 
         // Search child nodes first
-        if (!currentOnly)
+        if (!isCurrentOnly)
         {
             foreach (var datasourceNode in node.DatasourceNodeMap.Values)
             {
                 foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
                 {
-                    WhenRecursive(childQueryNode, columnName, isSelectableOnly, result, currentOnly);
+                    WhenRecursive(childQueryNode, columnName, isSelectableOnly, result, isCurrentOnly);
                 }
             }
 
@@ -610,20 +616,23 @@ public class QueryNode : ISqlComponent
         }
     }
 
-    private void WhenRecursive(QueryNode node, IList<string> columnNames, List<FromEditor> result)
+    private void WhenRecursive(QueryNode node, IList<string> columnNames, List<FromEditor> result, bool isCurrentOnly)
     {
-        // Search child nodes first
-        foreach (var datasourceNode in node.DatasourceNodeMap.Values)
+        if (!isCurrentOnly)
         {
-            foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+            // Search child nodes first
+            foreach (var datasourceNode in node.DatasourceNodeMap.Values)
             {
-                WhenRecursive(childQueryNode, columnNames, result);
+                foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+                {
+                    WhenRecursive(childQueryNode, columnNames, result, isCurrentOnly);
+                }
             }
-        }
 
-        if (result.Any())
-        {
-            return;
+            if (result.Any())
+            {
+                return;
+            }
         }
 
         var values = new Dictionary<string, IValueExpression>();
@@ -651,6 +660,7 @@ public class QueryNode : ISqlComponent
         // Add to result if all columns are found
         result.Add(new(node.Query, values));
     }
+
     public string ToSql()
     {
         return Query.ToSql();

@@ -239,7 +239,11 @@ public class SelectQuery : ISelectQuery
         {
             return Enumerable.Empty<DatasourceExpression>();
         }
-        return FromClause.GetDatasources();
+        var lst = new List<DatasourceExpression>();
+        lst.AddRange(FromClause.GetDatasources());
+        lst.AddRange(WhereClause.GetDatasources());
+        lst.AddRange(HavingClause.GetDatasources());
+        return lst;
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()

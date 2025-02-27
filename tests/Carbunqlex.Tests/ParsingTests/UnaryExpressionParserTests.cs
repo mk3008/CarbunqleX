@@ -41,7 +41,7 @@ public class UnaryExpressionParserTests
         Assert.IsType<UnaryExpression>(result);
         Assert.Equal("-", ((UnaryExpression)result).Operator);
         Assert.Equal("1", ((UnaryExpression)result).Operand.ToSqlWithoutCte());
-        Assert.Equal("- 1", result.ToSqlWithoutCte());
+        Assert.Equal("-1", result.ToSqlWithoutCte());
     }
 
     [Fact]

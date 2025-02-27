@@ -1,5 +1,6 @@
 ﻿using Carbunqlex.Expressions;
 using Carbunqlex.Lexing;
+using Carbunqlex.QuerySources;
 using System.Text;
 
 namespace Carbunqlex.Clauses;
@@ -85,5 +86,14 @@ public class WhereClause : ISqlComponent
     public void Add(IValueExpression expression)
     {
         Add("and", expression);
+    }
+
+    public IEnumerable<DatasourceExpression> GetDatasources()
+    {
+        if (Condition == null)
+        {
+            return Enumerable.Empty<DatasourceExpression>();
+        }
+        return Condition.GetQueries().SelectMany(query => query.GetDatasources());
     }
 }

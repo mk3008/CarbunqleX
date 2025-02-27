@@ -1,6 +1,6 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.Expressions;
-using System.Globalization;
+using Carbunqlex.Parsing.Expressions;
 
 namespace Carbunqlex;
 
@@ -8,26 +8,22 @@ public static class ValueBuilder
 {
     public static LiteralExpression Null = new LiteralExpression("null");
 
-    public static LiteralExpression Constant(object value)
+    public static IValueExpression Constant(object value)
     {
         string columnValue;
         if (value is DateTime dateTimeValue)
         {
             columnValue = "'" + dateTimeValue.ToString("yyyy-MM-dd HH:mm:ss") + "'";
         }
-        else if (value is double doubleValue)
+        else if (value is bool boolValue)
         {
-            columnValue = doubleValue.ToString("G", CultureInfo.InvariantCulture);
-        }
-        else if (value is string stringValue)
-        {
-            columnValue = "'" + stringValue.Replace("'", "''") + "'";
+            columnValue = boolValue ? "true" : "false";
         }
         else
         {
             columnValue = value?.ToString() ?? "null";
         }
-        return new LiteralExpression(columnValue);
+        return ValueExpressionParser.Parse(columnValue);
     }
 
     public static BetweenExpression Between(IValueExpression left, IValueExpression start, IValueExpression end)

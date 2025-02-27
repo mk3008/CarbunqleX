@@ -31,7 +31,10 @@ public class UnaryExpression : IValueExpression
     {
         var sb = new StringBuilder();
         sb.Append(Operator);
-        sb.Append(" ");
+        if (Operator != "-")
+        {
+            sb.Append(" ");
+        }
         sb.Append(Operand.ToSqlWithoutCte());
         return sb.ToString();
     }

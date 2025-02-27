@@ -5,7 +5,7 @@ namespace Carbunqlex;
 
 public class QueryAstParser
 {
-    public static QueryNode Create(string sql)
+    public static QueryNode Parse(string sql)
     {
         var query = SelectQueryParser.Parse(sql);
         return Create(query);

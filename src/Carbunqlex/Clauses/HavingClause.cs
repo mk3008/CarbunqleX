@@ -1,5 +1,6 @@
 ﻿using Carbunqlex.Expressions;
 using Carbunqlex.Lexing;
+using Carbunqlex.QuerySources;
 using System.Text;
 
 namespace Carbunqlex.Clauses;
@@ -73,5 +74,19 @@ public class HavingClause : ISqlComponent
     public void AddRange(IEnumerable<IValueExpression> conditions)
     {
         Conditions.AddRange(conditions);
+    }
+
+    public IEnumerable<DatasourceExpression> GetDatasources()
+    {
+        foreach (var condition in Conditions)
+        {
+            foreach (var query in condition.GetQueries())
+            {
+                foreach (var datasource in query.GetDatasources())
+                {
+                    yield return datasource;
+                }
+            }
+        }
     }
 }

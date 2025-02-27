@@ -41,7 +41,7 @@ public class ParenthesizedExpressionParserTests
         // Assert
         Assert.NotNull(result);
         Assert.IsType<ParenthesizedExpression>(result);
-        Assert.Equal("(- 1)", result.ToSqlWithoutCte());
+        Assert.Equal("(-1)", result.ToSqlWithoutCte());
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class ParenthesizedExpressionParserTests
         // Assert
         Assert.NotNull(result);
         Assert.IsType<UnaryExpression>(result);
-        Assert.Equal("- (1 + 2)", result.ToSqlWithoutCte());
+        Assert.Equal("-(1 + 2)", result.ToSqlWithoutCte());
     }
 
     [Fact]

@@ -97,10 +97,22 @@ public class WhereEditor
         return this;
     }
 
-    public WhereEditor In(ISelectQuery scalarSubQuery)
+    public WhereEditor In(IQuery subQuery)
     {
-        AddCondition(Value.In(scalarSubQuery));
-        return this;
+        if (subQuery is ISelectQuery selectQuery)
+        {
+            AddCondition(Value.In(selectQuery));
+            return this;
+        }
+        else if (subQuery is QueryNode node)
+        {
+            AddCondition(Value.In(node.Query));
+            return this;
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
     }
 
     public WhereEditor In(IValueGroupExpression rightValue)
@@ -115,10 +127,22 @@ public class WhereEditor
         return this;
     }
 
-    public WhereEditor NotIn(ISelectQuery scalarSubQuery)
+    public WhereEditor NotIn(IQuery subQuery)
     {
-        AddCondition(Value.NotIn(scalarSubQuery));
-        return this;
+        if (subQuery is ISelectQuery selectQuery)
+        {
+            AddCondition(Value.NotIn(selectQuery));
+            return this;
+        }
+        else if (subQuery is QueryNode node)
+        {
+            AddCondition(Value.NotIn(node.Query));
+            return this;
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
     }
 
     public WhereEditor NotIn(IValueGroupExpression rightValue)

@@ -92,7 +92,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         // Act
         var queryNode = QueryAstParser.Create(query);
 
-        queryNode.Where("table_a_id", static r => r.Like("%a%").NotLike("%b%"));
+        queryNode.Where("table_a_id", static r => r.Like("'%a%'").NotLike("'%b%'"));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);

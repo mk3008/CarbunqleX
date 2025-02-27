@@ -24,7 +24,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
         var unary = new UnaryExpression("-", operand);
         var sql = unary.ToSqlWithoutCte();
         output.WriteLine(sql);
-        Assert.Equal("- 42", sql);
+        Assert.Equal("-42", sql);
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void LikeExpression_ToSql_ReturnsCorrectSql()
     {
         var left = new ColumnExpression("TableName", "ColumnName");
-        var right = ValueBuilder.Constant("%value%");
+        var right = ValueBuilder.Constant("'%value%'");
         var likeExpression = ValueBuilder.Like(left, right);
         var sql = likeExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -144,7 +144,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void LikeExpression_NotLike_ToSql_ReturnsCorrectSql()
     {
         var left = new ColumnExpression("TableName", "ColumnName");
-        var right = ValueBuilder.Constant("%value%");
+        var right = ValueBuilder.Constant("'%value%'");
         var likeExpression = ValueBuilder.NotLike(left, right);
         var sql = likeExpression.ToSqlWithoutCte();
         output.WriteLine(sql);
@@ -154,7 +154,7 @@ public class ValueExpressionTests(ITestOutputHelper output)
     [Fact]
     public void ConstantExpression_CreateEscapeString_ReturnsEscapedConstantExpression()
     {
-        var input = "O'Reilly";
+        var input = "'O''Reilly'";
         var expected = "'O''Reilly'";
         var constantExpression = ValueBuilder.Constant(input);
         var actual = constantExpression.ToSqlWithoutCte();
@@ -166,10 +166,10 @@ public class ValueExpressionTests(ITestOutputHelper output)
     public void CaseExpressionWithoutCase_ToSql_ReturnsCorrectSql()
     {
         var when1 = new LiteralExpression(1);
-        var then1 = ValueBuilder.Constant("One");
+        var then1 = ValueBuilder.Constant("'One'");
         var when2 = new LiteralExpression(2);
-        var then2 = ValueBuilder.Constant("Two");
-        var elseExpr = ValueBuilder.Constant("Other");
+        var then2 = ValueBuilder.Constant("'Two'");
+        var elseExpr = ValueBuilder.Constant("'Other'");
 
         var caseExpression = new CaseWhenExpression(
             new List<WhenClause>
@@ -190,10 +190,10 @@ public class ValueExpressionTests(ITestOutputHelper output)
     {
         var caseExpr = new ColumnExpression("TableName", "ColumnName");
         var when1 = new LiteralExpression(1);
-        var then1 = ValueBuilder.Constant("One");
+        var then1 = ValueBuilder.Constant("'One'");
         var when2 = new LiteralExpression(2);
-        var then2 = ValueBuilder.Constant("Two");
-        var elseExpr = ValueBuilder.Constant("Other");
+        var then2 = ValueBuilder.Constant("'Two'");
+        var elseExpr = ValueBuilder.Constant("'Other'");
 
         var caseExpression = new CaseExpression(
             caseExpr,
