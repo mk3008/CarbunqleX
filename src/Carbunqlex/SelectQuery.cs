@@ -276,7 +276,7 @@ public class SelectQuery : ISelectQuery
         SelectClause.Expressions.Add(new SelectExpression(value, alias));
     }
 
-    public void RemoveColumn(SelectExpression expr)
+    public void ExcludeColumn(SelectExpression expr)
     {
         SelectClause.Expressions.Remove(expr);
     }

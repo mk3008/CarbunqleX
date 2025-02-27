@@ -223,11 +223,11 @@ public class QueryNode : ISqlComponent
         }
     }
 
-    public QueryNode Override(string columnName, Action<SelectEditor> action)
+    public QueryNode ModifyColumn(string columnName, Action<SelectEditor> action)
     {
         if (MustRefresh) Refresh();
 
-        var result = GetColumnEditors(columnName, isSelectableOnly: true);
+        var result = GetColumnEditors(columnName, isSelectableOnly: true, isCurrentOnly: false);
 
         foreach (var columnModifier in result)
         {
@@ -240,19 +240,48 @@ public class QueryNode : ISqlComponent
         return this;
     }
 
-    public QueryNode Remove(string columnName)
+    public QueryNode ExcludeColumn(string columnName)
     {
         if (MustRefresh) Refresh();
 
-        var result = GetColumnEditors(columnName, isSelectableOnly: true);
-
-        foreach (var columnModifier in result)
+        var result = GetColumnEditors(columnName, isSelectableOnly: true, isCurrentOnly: true).FirstOrDefault();
+        if (result == null)
         {
-            var editor = new SelectEditor(columnModifier);
-            editor.Remove();
+            return this;
         }
 
-        if (result.Any()) MustRefresh = true;
+        var editor = new SelectEditor(result);
+        editor.Exclude();
+        MustRefresh = true;
+
+        return this;
+    }
+
+    public QueryNode SelectColumn(string columnExpression)
+    {
+        if (MustRefresh) Refresh();
+        var result = GetColumnEditors(columnExpression, isSelectableOnly: true, isCurrentOnly: true).FirstOrDefault();
+        if (result != null)
+        {
+            throw new InvalidOperationException("Column already selected");
+        }
+
+        Query.AddColumn(new SelectExpression(ColumnExpressionParser.Parse(columnExpression)));
+        MustRefresh = true;
+        return this;
+    }
+
+    public QueryNode SelectValue(string valueExpression, string alias)
+    {
+        if (MustRefresh) Refresh();
+        var result = GetColumnEditors(alias, isSelectableOnly: true, isCurrentOnly: true).FirstOrDefault();
+        if (result != null)
+        {
+            throw new InvalidOperationException("Alias already selected");
+        }
+
+        Query.AddColumn(new SelectExpression(ValueExpressionParser.Parse(valueExpression), alias));
+        MustRefresh = true;
         return this;
     }
 
@@ -260,9 +289,8 @@ public class QueryNode : ISqlComponent
     {
         if (MustRefresh) Refresh();
 
-        var result = GetColumnEditors(columnName, isSelectableOnly: false);
+        var result = GetColumnEditors(columnName, isSelectableOnly: false, isCurrentOnly: false);
 
-        // TODO : distinct x.Value is used to remove duplicates
         result = result.GroupBy(x => x.Value).Select(g => g.First()).ToList();
 
         foreach (var columnModifier in result)
@@ -326,7 +354,7 @@ public class QueryNode : ISqlComponent
             new FromClause(new DatasourceExpression(new SubQuerySource(Query), alias))
             );
 
-        return QueryNodeFactory.Create(sq);
+        return QueryAstParser.Create(sq);
     }
 
     public QueryNode NormalizeSelectClause()
@@ -501,10 +529,10 @@ public class QueryNode : ISqlComponent
         return this;
     }
 
-    private List<ColumnEditor> GetColumnEditors(string columnName, bool isSelectableOnly)
+    private List<ColumnEditor> GetColumnEditors(string columnName, bool isSelectableOnly, bool isCurrentOnly)
     {
         var result = new List<ColumnEditor>();
-        WhenRecursive(this, columnName.ToLowerInvariant(), isSelectableOnly, result);
+        WhenRecursive(this, columnName.ToLowerInvariant(), isSelectableOnly, result, isCurrentOnly);
         return result;
     }
 
@@ -528,7 +556,7 @@ public class QueryNode : ISqlComponent
         var column = columnName.ToLowerInvariant();
 
         var result = new List<ColumnEditor>();
-        WhenRecursive(this, column, isSelectableOnly, result);
+        WhenRecursive(this, column, isSelectableOnly, result, currentOnly: false);
         foreach (var item in result)
         {
             action(item);
@@ -539,22 +567,25 @@ public class QueryNode : ISqlComponent
         return this;
     }
 
-    private void WhenRecursive(QueryNode node, string columnName, bool isSelectableOnly, List<ColumnEditor> result)
+    private void WhenRecursive(QueryNode node, string columnName, bool isSelectableOnly, List<ColumnEditor> result, bool currentOnly)
     {
         var beforeCount = result.Count;
 
         // Search child nodes first
-        foreach (var datasourceNode in node.DatasourceNodeMap.Values)
+        if (!currentOnly)
         {
-            foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+            foreach (var datasourceNode in node.DatasourceNodeMap.Values)
             {
-                WhenRecursive(childQueryNode, columnName, isSelectableOnly, result);
+                foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+                {
+                    WhenRecursive(childQueryNode, columnName, isSelectableOnly, result, currentOnly);
+                }
             }
-        }
 
-        if (result.Count != beforeCount)
-        {
-            return;
+            if (result.Count != beforeCount)
+            {
+                return;
+            }
         }
 
         // Search for column names used in the query
@@ -667,7 +698,7 @@ public class QueryNode : ISqlComponent
 
     private void Refresh()
     {
-        var node = QueryNodeFactory.Create(Query);
+        var node = QueryAstParser.Create(Query);
         Query = node.Query;
         SelectExpressionMap = node.SelectExpressionMap;
         DatasourceNodeMap = node.DatasourceNodeMap;

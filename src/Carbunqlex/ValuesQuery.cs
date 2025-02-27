@@ -175,7 +175,7 @@ public class ValuesQuery : ISelectQuery
         throw new NotSupportedException("ValuesQuery does not support adding columns.");
     }
 
-    public void RemoveColumn(SelectExpression expr)
+    public void ExcludeColumn(SelectExpression expr)
     {
         throw new NotSupportedException("ValuesQuery does not support removing columns.");
     }

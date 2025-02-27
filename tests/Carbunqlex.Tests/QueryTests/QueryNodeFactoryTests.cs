@@ -16,7 +16,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
         var query = SelectQueryFactory.CreateSelectQueryWithAllComponents();
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Create(query);
         output.WriteLine(queryNode.ToTreeString());
     }
 
@@ -27,7 +27,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
         var query = CreateSelectQuery_WildCard();
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Create(query);
         output.WriteLine(queryNode.ToTreeString());
 
         //queryNode.When(node => node.)
@@ -48,7 +48,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
         var query = CreateSelectQuery_WildCard_TableAlias();
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Create(query);
         output.WriteLine(queryNode.ToTreeString());
 
         //var queries = queryNode.FindDeepestQueriesWithColumn("columnname1").ToList();
@@ -65,7 +65,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
         var query = SelectQueryFactory.CreateSelectQueryWithSubQuery("table1", "t1", "sub1", "Column1", "Column2");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Create(query);
         output.WriteLine(queryNode.ToTreeString());
     }
 
@@ -76,7 +76,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
         var query = CreateSelectQueryWithJoin();
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Create(query);
         output.WriteLine(queryNode.ToTreeString());
     }
 
@@ -87,7 +87,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
         var query = SelectQueryFactory.CreateComplexSelectQuery();
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Create(query);
         output.WriteLine(queryNode.ToTreeString());
     }
 
@@ -97,7 +97,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
         // Arrange
         var query = CreateSelectQueryWithUnionAll_SubQuery();
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Create(query);
         output.WriteLine(queryNode.ToTreeString());
     }
 
@@ -108,7 +108,7 @@ public class QueryNodeFactoryTests(ITestOutputHelper output)
         var query = CreateSelectQueryWithUnionAll();
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Create(query);
         output.WriteLine(queryNode.ToTreeString());
     }
 

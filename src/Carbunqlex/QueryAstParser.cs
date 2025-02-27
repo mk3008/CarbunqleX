@@ -3,7 +3,7 @@ using Carbunqlex.Parsing;
 
 namespace Carbunqlex;
 
-public class QueryNodeFactory
+public class QueryAstParser
 {
     public static QueryNode Create(string sql)
     {

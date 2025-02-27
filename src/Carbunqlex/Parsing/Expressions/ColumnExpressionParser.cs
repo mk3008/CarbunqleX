@@ -5,6 +5,13 @@ namespace Carbunqlex.Parsing.Expressions;
 
 public static class ColumnExpressionParser
 {
+    public static ColumnExpression Parse(string columnExpressionText)
+    {
+        var tokenizer = new SqlTokenizer(columnExpressionText);
+        var identifier = tokenizer.Read(TokenType.Identifier);
+        return Parse(tokenizer, identifier);
+    }
+
     public static ColumnExpression Parse(SqlTokenizer tokenizer, Token identifier)
     {
         var values = IdentifierValueParser.Parse(tokenizer, identifier).ToList();

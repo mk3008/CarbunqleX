@@ -87,11 +87,11 @@ public class SelectEditor
         return this;
     }
 
-    public void Remove()
+    public void Exclude()
     {
         if (SelectExpression != null)
         {
-            Query.RemoveColumn(SelectExpression);
+            Query.ExcludeColumn(SelectExpression);
         }
     }
 }
