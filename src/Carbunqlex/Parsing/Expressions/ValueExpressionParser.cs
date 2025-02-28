@@ -9,7 +9,12 @@ public static class ValueExpressionParser
     public static IValueExpression Parse(string commandText)
     {
         var tokenizer = new SqlTokenizer(commandText);
-        return Parse(tokenizer);
+        var expression = Parse(tokenizer);
+        if (!tokenizer.IsEnd)
+        {
+            throw SqlParsingExceptionBuilder.Interrupted(tokenizer);
+        }
+        return expression;
     }
 
     public static IValueExpression Parse(SqlTokenizer tokenizer, string[]? ignoreOperators = null)

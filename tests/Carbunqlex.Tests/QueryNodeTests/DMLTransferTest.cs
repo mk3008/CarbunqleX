@@ -14,7 +14,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
         var insertQuery = root.ToInsertQuery("table_b", sequenceColumns: ["sequence_column1", "sequence_column2"], hasReturning: true);
@@ -33,7 +33,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
         var insertQuery = root.ToInsertQuery("table_b");
@@ -51,7 +51,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("WITH cte AS (SELECT post_id FROM posts) SELECT post_id FROM cte");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
         var insertQuery = root.ToInsertQuery("table_b");
         var actual = insertQuery.ToSql();
@@ -67,7 +67,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
         var insertQuery = root.ToInsertQuery("table_b", sequenceColumns: ["sequence_column1"], hasReturning: true);
@@ -86,7 +86,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id as id, a.value as val from table_a as a");
 
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
         var insertQuery = root.ToInsertQuery("table_b", sequenceColumns: ["sequence_column1"], hasReturning: true);
@@ -105,7 +105,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value1, a.value2 from table_a as a where a.table_a_id = 1");
 
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
         var insertQuery = root.ToInsertQuery("table_b", valueColumns: ["value2"]);
@@ -123,7 +123,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a where a.price = 1");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
         var updateQuery = root.ToUpdateQuery("table_b", ["table_a_id"]);
@@ -140,7 +140,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a where a.price = 1");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
         var updateQuery = root.ToUpdateQuery("table_b", ["table_a_id"], hasReturning: true);
         var actual = updateQuery.ToSql();
@@ -155,7 +155,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("WITH cte AS (SELECT post_id, value FROM posts) SELECT post_id, value FROM cte");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
         var updateQuery = root.ToUpdateQuery("table_b", ["post_id"]);
         var actual = updateQuery.ToSql();
@@ -170,7 +170,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a where a.table_a_id = 1");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
         var updateQuery = root.ToUpdateQuery("table_b", ["table_a_id"]);
         var actual = updateQuery.ToSql();
@@ -185,7 +185,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value1, a.value2 from table_a as a where a.table_a_id = 1");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
         var updateQuery = root.ToUpdateQuery("table_b", ["table_a_id"], valueColumns: ["value2"]);
         var actual = updateQuery.ToSql();
@@ -200,7 +200,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("select a.v1 as value_1, a.value_2 from table_a as a where a.price = 1");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
         var deleteQuery = root.ToDeleteQuery("table_x", hasReturning: true);
         var actual = deleteQuery.ToSql();
@@ -215,7 +215,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a where a.table_a_id = 1");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
         var deleteQuery = root.ToDeleteQuery("table_b", keyColumns: ["table_a_id"]);
         var actual = deleteQuery.ToSql();
@@ -230,7 +230,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("WITH cte AS (SELECT post_id FROM posts) SELECT post_id FROM cte");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
         var deleteQuery = root.ToDeleteQuery("table_b");
         var actual = deleteQuery.ToSql();
@@ -245,7 +245,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
         var createTableAsQuery = root.ToCreateTableQuery("table_b", false);
         var actual = createTableAsQuery.ToSql();
@@ -260,7 +260,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
         var createTableAsQuery = root.ToCreateTableQuery("table_b", true);
         var actual = createTableAsQuery.ToSql();
@@ -275,7 +275,7 @@ public class DMLTransferTest(ITestOutputHelper output)
         // Arrange
         var query = SelectQueryParser.Parse("WITH cte AS (SELECT post_id FROM posts) SELECT post_id FROM cte");
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
         var createTableAsQuery = root.ToCreateTableQuery("table_b", false);
         var actual = createTableAsQuery.ToSql();

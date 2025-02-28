@@ -14,7 +14,7 @@ public class SelectEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
         root.ModifyColumn("value", static value => value.Greatest(1).Least(10));
@@ -33,7 +33,7 @@ public class SelectEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
         root.ModifyColumn("value", static value => value.Coalesce(1, 2, 3));
@@ -52,7 +52,7 @@ public class SelectEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
         root.ExcludeColumn("value");
@@ -71,7 +71,7 @@ public class SelectEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value as val from table_a as a");
 
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
         root.ExcludeColumn("val");
@@ -90,10 +90,10 @@ public class SelectEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id from table_a as a");
 
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
-        root.SelectValue("a.value");
+        root.AddColumn("a.value");
 
         var actual = root.Query.ToSql();
         output.WriteLine(actual);
@@ -109,10 +109,10 @@ public class SelectEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id from table_a as a");
 
         // Act
-        var root = QueryAstParser.Create(query);
+        var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
-        root.SelectValue("current_timestamp", "created_at");
+        root.AddColumn("current_timestamp", "created_at");
 
         var actual = root.Query.ToSql();
         output.WriteLine(actual);

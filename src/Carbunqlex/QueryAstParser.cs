@@ -8,10 +8,10 @@ public class QueryAstParser
     public static QueryNode Parse(string sql)
     {
         var query = SelectQueryParser.Parse(sql);
-        return Create(query);
+        return Parse(query);
     }
 
-    public static QueryNode Create(ISelectQuery query)
+    public static QueryNode Parse(ISelectQuery query)
     {
         var ctes = query.GetCommonTableClauses().ToList();
         return CreateCore(ctes, query);

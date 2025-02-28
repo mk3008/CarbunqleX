@@ -1,23 +1,34 @@
 ﻿using Carbunqlex;
+using Carbunqlex.Parsing;
 using Xunit.Abstractions;
 
 namespace Sample;
 
+/// <summary>
+/// Sample usage of QueryAstParser.
+/// Use QueryAstParser when processing queries using AST.
+/// </summary>
+/// <param name="output"></param>
 public class QueryAstParserSample(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
 
+    /// <summary>
+    /// Sample for parsing a simple query text.
+    /// </summary>
     [Fact]
     public void ParseSimpleQuery()
     {
         var query = QueryAstParser.Parse("select a.table_a_id, a.value from table_a as a");
 
-        // select a.table_a_id, a.value from table_a as a
+        // You can convert it to SQL using the ToSql method.
         output.WriteLine("* SQL");
         output.WriteLine(query.ToSql());
 
         output.WriteLine(string.Empty);
 
+        // You can get the AST as a string using the ToTreeString method.
+        // Mainly used for debugging purposes.
         /*
         *Query
          Type: SelectQuery
@@ -33,6 +44,9 @@ public class QueryAstParserSample(ITestOutputHelper output)
         output.WriteLine(query.ToTreeString());
     }
 
+    /// <summary>
+    /// Sample for parsing a complex query text.
+    /// </summary>
     [Fact]
     public void ParseComplexQuery()
     {
@@ -129,7 +143,7 @@ public class QueryAstParserSample(ITestOutputHelper output)
            Columns: line_id, name, unit_price, quantity, tax_rate, price, tax
             *Query
              Type: SelectQuery
-             Current: select line_id, name, unit_price, quantity, tax_rate, price, tax + adjust_tax from (select q.*, case when q.total_tax - q.cumulative >= q.priority then 1 else 0 end as adjust_tax from (select d.*, s.total_tax, sum(d.tax) over(partition by d.tax_rate) as cumulative, row_number() over(partition by d.tax_rate order by d.raw_tax % 1 desc, d.line_id) as priority from detail as d inner join tax_summary as s on d.tax_rate = s.tax_rate) as q) as q
+             Current: select line_id, name, unit_price, quantity, tax_rate, price, tax + adjust_tax from (select q.*, case when q.total_tax - q.cumulative >= q.priority then 1 else 0 end as adjust_tax from (select d.*, s.total_tax, sum(d.tax) over (partition by d.tax_rate) as cumulative, row_number() over (partition by d.tax_rate order by d.raw_tax % 1 desc, d.line_id) as priority from detail as d inner join tax_summary as s on d.tax_rate = s.tax_rate) as q) as q
              SelectedColumns: line_id, name, unit_price, quantity, tax_rate, price, tax
               *Datasource
                Type: SubQuery
@@ -138,7 +152,7 @@ public class QueryAstParserSample(ITestOutputHelper output)
                Columns: adjust_tax
                 *Query
                  Type: SelectQuery
-                 Current: select q.*, case when q.total_tax - q.cumulative >= q.priority then 1 else 0 end as adjust_tax from (select d.*, s.total_tax, sum(d.tax) over(partition by d.tax_rate) as cumulative, row_number() over(partition by d.tax_rate order by d.raw_tax % 1 desc, d.line_id) as priority from detail as d inner join tax_summary as s on d.tax_rate = s.tax_rate) as q
+                 Current: select q.*, case when q.total_tax - q.cumulative >= q.priority then 1 else 0 end as adjust_tax from (select d.*, s.total_tax, sum(d.tax) over (partition by d.tax_rate) as cumulative, row_number() over (partition by d.tax_rate order by d.raw_tax % 1 desc, d.line_id) as priority from detail as d inner join tax_summary as s on d.tax_rate = s.tax_rate) as q
                  SelectedColumns: *, adjust_tax
                   *Datasource
                    Type: SubQuery
@@ -147,7 +161,7 @@ public class QueryAstParserSample(ITestOutputHelper output)
                    Columns: total_tax, cumulative, priority
                     *Query
                      Type: SelectQuery
-                     Current: select d.*, s.total_tax, sum(d.tax) over(partition by d.tax_rate) as cumulative, row_number() over(partition by d.tax_rate order by d.raw_tax % 1 desc, d.line_id) as priority from detail as d inner join tax_summary as s on d.tax_rate = s.tax_rate
+                     Current: select d.*, s.total_tax, sum(d.tax) over (partition by d.tax_rate) as cumulative, row_number() over (partition by d.tax_rate order by d.raw_tax % 1 desc, d.line_id) as priority from detail as d inner join tax_summary as s on d.tax_rate = s.tax_rate
                      SelectedColumns: *, total_tax, cumulative, priority
                       *Datasource
                        Type: CommonTableExtension
@@ -215,5 +229,19 @@ public class QueryAstParserSample(ITestOutputHelper output)
          */
         output.WriteLine("* AST");
         output.WriteLine(query.ToTreeString());
+    }
+
+    /// <summary>
+    /// Sample for generating AST from a select query class.
+    /// Normally, there is no need to take this approach, so it is provided for reference.
+    /// </summary>
+    [Fact]
+    public void ParseSelectQuery()
+    {
+        var selectQuery = SelectQueryParser.Parse("select s.sale_date, s.sales_amount from sales as s");
+        var query = QueryAstParser.Parse(selectQuery);
+
+        output.WriteLine("* SQL");
+        output.WriteLine(query.ToSql());
     }
 }

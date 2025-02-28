@@ -1,14 +1,23 @@
 ﻿using Carbunqlex;
+using Carbunqlex.Parsing.Expressions;
 using Xunit.Abstractions;
 
 namespace Sample;
 
+/// <summary>
+/// This is a sample for editing SELECT statements.
+/// You can add, exclude, or modify columns.
+/// </summary>
+/// <param name="output"></param>
 public class SelectEditorSample(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
 
+    /// <summary>
+    /// Modify columns using the GREATEST function to get the maximum value.
+    /// </summary>
     [Fact]
-    public void ModifyColumnWithGreatest()
+    public void SelectValueWithModifyGreatestFunction()
     {
         var query = QueryAstParser.Parse("select s.sale_date, s.sales_amount from sales as s");
 
@@ -21,8 +30,11 @@ public class SelectEditorSample(ITestOutputHelper output)
         Assert.Equal(expected, actual);
     }
 
+    /// <summary>
+    /// Exclude columns.
+    /// </summary>
     [Fact]
-    public void ModifyColumnWithExclude()
+    public void SelectValueWithExcludeFunction()
     {
         var query = QueryAstParser.Parse("select s.sale_date, s.sales_amount from sales as s");
 
@@ -35,12 +47,15 @@ public class SelectEditorSample(ITestOutputHelper output)
         Assert.Equal(expected, actual);
     }
 
+    /// <summary>
+    /// Add columns.
+    /// </summary>
     [Fact]
-    public void AddSelectColumn()
+    public void SelectValueWithoutAlias()
     {
         var query = QueryAstParser.Parse("select s.sale_date from sales as s");
 
-        query.SelectValue("s.sales_amount");
+        query.AddColumn("s.sales_amount");
 
         var expected = "select s.sale_date, s.sales_amount from sales as s";
 
@@ -49,12 +64,15 @@ public class SelectEditorSample(ITestOutputHelper output)
         Assert.Equal(expected, actual);
     }
 
+    /// <summary>
+    /// Add columns with alias.
+    /// </summary>
     [Fact]
-    public void AddSelectColumnAlias()
+    public void SelectValueWithAlias()
     {
         var query = QueryAstParser.Parse("select s.sale_date from sales as s");
 
-        query.SelectValue("s.sales_amount", "amount");
+        query.AddColumn("s.sales_amount", "amount");
 
         var expected = "select s.sale_date, s.sales_amount as amount from sales as s";
 
@@ -63,17 +81,34 @@ public class SelectEditorSample(ITestOutputHelper output)
         Assert.Equal(expected, actual);
     }
 
+    /// <summary>
+    /// Add columns with alias.
+    /// The column to be added is specified by an expression string.
+    /// The written content is parsed through the parser and added to the SELECT clause.
+    /// </summary>
     [Fact]
-    public void AddSelectValue()
+    public void SelectExpressionWithAlias()
     {
         var query = QueryAstParser.Parse("select s.sale_date from sales as s");
 
-        query.SelectValue("1+2", "value");
+        query.AddColumn("1+2", "value");
 
         var expected = "select s.sale_date, 1 + 2 as value from sales as s";
 
         var actual = query.ToSql();
         output.WriteLine(actual);
         Assert.Equal(expected, actual);
+    }
+
+    /// <summary>
+    /// The written content is parsed through the parser and added to the SELECT clause.
+    /// If there is a syntax error, an exception will be thrown.
+    /// </summary>
+    [Fact]
+    public void SelectExpressionSyntaxError()
+    {
+        var query = QueryAstParser.Parse("select s.sale_date from sales as s");
+
+        Assert.Throws<SqlParsingException>(() => query.AddColumn("1 SELECT", "value"));
     }
 }

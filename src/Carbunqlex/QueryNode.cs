@@ -263,7 +263,7 @@ public class QueryNode : ISqlComponent, IQuery
         return this;
     }
 
-    public QueryNode SelectValue(string columnExpression)
+    public QueryNode AddColumn(string columnExpression)
     {
         if (MustRefresh) Refresh();
         var result = GetColumnEditors(columnExpression, isSelectableOnly: true, isCurrentOnly: true).FirstOrDefault();
@@ -277,7 +277,7 @@ public class QueryNode : ISqlComponent, IQuery
         return this;
     }
 
-    public QueryNode SelectValue(string valueExpression, string alias)
+    public QueryNode AddColumn(string valueExpression, string alias)
     {
         if (MustRefresh) Refresh();
         var result = GetColumnEditors(alias, isSelectableOnly: true, isCurrentOnly: true).FirstOrDefault();
@@ -416,7 +416,7 @@ public class QueryNode : ISqlComponent, IQuery
             new FromClause(new DatasourceExpression(new SubQuerySource(Query), alias))
             );
 
-        return QueryAstParser.Create(sq);
+        return QueryAstParser.Parse(sq);
     }
 
     public QueryNode NormalizeSelectClause()
@@ -822,7 +822,7 @@ public class QueryNode : ISqlComponent, IQuery
 
     private void Refresh()
     {
-        var node = QueryAstParser.Create(Query);
+        var node = QueryAstParser.Parse(Query);
         Query = node.Query;
         SelectExpressionMap = node.SelectExpressionMap;
         DatasourceNodeMap = node.DatasourceNodeMap;

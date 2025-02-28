@@ -13,7 +13,7 @@ public class FromEditorTests(ITestOutputHelper output)
     {
         // Arrange
         var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
-        var queryNode = QueryAstParser.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
 
         // Act
         output.WriteLine(queryNode.ToSql());
@@ -35,7 +35,7 @@ public class FromEditorTests(ITestOutputHelper output)
     {
         // Arrange
         var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
-        var queryNode = QueryAstParser.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
 
         // Act
         output.WriteLine(queryNode.ToSql());
@@ -57,7 +57,7 @@ public class FromEditorTests(ITestOutputHelper output)
     {
         // Arrange
         var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
-        var queryNode = QueryAstParser.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
 
         // Act
         output.WriteLine(queryNode.ToSql());
@@ -79,7 +79,7 @@ public class FromEditorTests(ITestOutputHelper output)
     {
         // Arrange
         var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
-        var queryNode = QueryAstParser.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
 
         // Act
         output.WriteLine(queryNode.ToSql());
@@ -107,7 +107,7 @@ public class FromEditorTests(ITestOutputHelper output)
     {
         // Arrange
         var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
-        var queryNode = QueryAstParser.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
 
         // Act
         output.WriteLine(queryNode.ToSql());
