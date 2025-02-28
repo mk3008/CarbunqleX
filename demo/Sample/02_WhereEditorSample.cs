@@ -14,8 +14,11 @@ public class WhereEditorSample(ITestOutputHelper output)
 
         query.Where("value", w => w.Equal(1));
 
-        //select a.table_a_id, a.value from table_a as a where a.value = 1
-        output.WriteLine(query.ToSql());
+        var expected = "select a.table_a_id, a.value from table_a as a where a.value = 1";
+
+        var actual = query.ToSql();
+        output.WriteLine(actual);
+        Assert.Equal(expected, actual);
     }
 
     [Fact]
@@ -25,8 +28,11 @@ public class WhereEditorSample(ITestOutputHelper output)
 
         query.Where("price", w => w.Equal(1));
 
-        //select a.table_a_id, a.value as price from table_a as a where a.value = 1
-        output.WriteLine(query.ToSql());
+        var expected = "select a.table_a_id, a.value as price from table_a as a where a.value = 1";
+
+        var actual = query.ToSql();
+        output.WriteLine(actual);
+        Assert.Equal(expected, actual);
     }
 
     [Fact]
@@ -52,28 +58,30 @@ public class WhereEditorSample(ITestOutputHelper output)
     {
         var query = QueryAstParser.Parse("""
             WITH regional_sales AS (
-                SELECT region, SUM(amount) AS total_sales
+                SELECT orders.region, SUM(orders.amount) AS total_sales
                 FROM orders
-                GROUP BY region
+                GROUP BY orders.region
             ), top_regions AS (
-                SELECT region
-                FROM regional_sales
-                WHERE total_sales > (SELECT SUM(total_sales)/10 FROM regional_sales)
+                SELECT rs.region
+                FROM regional_sales rs
+                WHERE rs.total_sales > (SELECT SUM(x.total_sales)/10 FROM regional_sales x)
             )
-            SELECT region,
-                   product,
-                   SUM(quantity) AS product_units,
-                   SUM(amount) AS product_sales
-            FROM orders
-            WHERE region IN (SELECT region FROM top_regions)
-            GROUP BY region, product
+            SELECT orders.region,
+                   orders.product,
+                   SUM(orders.quantity) AS product_units,
+                   SUM(orders.amount) AS product_sales
+            FROM orders 
+            WHERE orders.region IN (SELECT x.region FROM top_regions x)
+            GROUP BY orders.region, orders.product
             """);
 
         query.Where("region", w => w.Equal("'east'"));
 
-        var expected = "with regional_sales as (select region, SUM(amount) as total_sales from orders where region = 'east' group by region), top_regions as (select region from regional_sales where total_sales > (select SUM(total_sales) / 10 from regional_sales)) select region, product, SUM(quantity) as product_units, SUM(amount) as product_sales from orders where region in (select region from top_regions) group by region, product";
+        var expected = "with regional_sales as (select orders.region, SUM(orders.amount) as total_sales from orders where orders.region = 'east' group by orders.region), top_regions as (select rs.region from regional_sales as rs where rs.total_sales > (select SUM(x.total_sales) / 10 from regional_sales as x)) select orders.region, orders.product, SUM(orders.quantity) as product_units, SUM(orders.amount) as product_sales from orders where orders.region in (select x.region from top_regions as x) group by orders.region, orders.product";
 
-        Assert.Equal(expected, query.ToSql());
+        var actual = query.ToSql();
+        output.WriteLine(actual);
+        Assert.Equal(expected, actual);
     }
 
     [Fact]
@@ -91,7 +99,9 @@ public class WhereEditorSample(ITestOutputHelper output)
 
         var expected = "select user_id, name, email, 'user' as type from users where name like '%mike%' UNION select customer_id, name, email, 'customer' as type from customers where name like '%mike%'";
 
-        Assert.Equal(expected, query.ToSql());
+        var actual = query.ToSql();
+        output.WriteLine(actual);
+        Assert.Equal(expected, actual);
     }
 
     [Fact]
@@ -105,28 +115,66 @@ public class WhereEditorSample(ITestOutputHelper output)
 
         var query = QueryAstParser.Parse("""
             WITH regional_sales AS (
-                SELECT region, SUM(amount) AS total_sales
+                SELECT orders.region, SUM(orders.amount) AS total_sales
                 FROM orders
-                GROUP BY region
+                GROUP BY orders.region
             ), top_regions AS (
-                SELECT region
-                FROM regional_sales
-                WHERE total_sales > (SELECT SUM(total_sales)/10 FROM regional_sales)
+                SELECT rs.region
+                FROM regional_sales rs
+                WHERE rs.total_sales > (SELECT SUM(x.total_sales)/10 FROM regional_sales x)
             )
-            SELECT region,
-                   product,
-                   SUM(quantity) AS product_units,
-                   SUM(amount) AS product_sales
-            FROM orders
-            WHERE region IN (SELECT region FROM top_regions)
-            GROUP BY region, product
+            SELECT orders.region,
+                   orders.product,
+                   SUM(orders.quantity) AS product_units,
+                   SUM(orders.amount) AS product_sales
+            FROM orders 
+            WHERE orders.region IN (SELECT x.region FROM top_regions x)
+            GROUP BY orders.region, orders.product
             """);
 
         query.Where("region", w => w.In(userRegionPermissionQuery));
 
-        var expected = "with regional_sales as (select region, SUM(amount) as total_sales from orders where region in (select rrp.region from region_reference_permission as rrp where rrp.user_id = :user_id) group by region), top_regions as (select region from regional_sales where total_sales > (select SUM(total_sales) / 10 from regional_sales)) select region, product, SUM(quantity) as product_units, SUM(amount) as product_sales from orders where region in (select region from top_regions) group by region, product";
+        var expected = "with regional_sales as (select orders.region, SUM(orders.amount) as total_sales from orders where orders.region in (select x.region from (select rrp.region from region_reference_permission as rrp where rrp.user_id = :user_id) as x) group by orders.region), top_regions as (select rs.region from regional_sales as rs where rs.total_sales > (select SUM(x.total_sales) / 10 from regional_sales as x)) select orders.region, orders.product, SUM(orders.quantity) as product_units, SUM(orders.amount) as product_sales from orders where orders.region in (select x.region from top_regions as x) group by orders.region, orders.product";
 
-        output.WriteLine(query.ToSql());
-        Assert.Equal(expected, query.ToSql());
+        var actual = query.ToSql();
+        output.WriteLine(actual);
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void InjectExistsConditionWithSubquery()
+    {
+        var userRegionPermissionQuery = QueryAstParser.Parse("""
+            SELECT rrp.region
+            FROM region_reference_permission rrp
+            WHERE rrp.user_id = :user_id
+            """);
+
+        var query = QueryAstParser.Parse("""
+            WITH regional_sales AS (
+                SELECT orders.region, SUM(orders.amount) AS total_sales
+                FROM orders
+                GROUP BY orders.region
+            ), top_regions AS (
+                SELECT rs.region
+                FROM regional_sales rs
+                WHERE rs.total_sales > (SELECT SUM(x.total_sales)/10 FROM regional_sales x)
+            )
+            SELECT orders.region,
+                   orders.product,
+                   SUM(orders.quantity) AS product_units,
+                   SUM(orders.amount) AS product_sales
+            FROM orders 
+            WHERE orders.region IN (SELECT x.region FROM top_regions x)
+            GROUP BY orders.region, orders.product
+            """);
+
+        query.Where("region", w => w.Exists(userRegionPermissionQuery));
+
+        var expected = "with regional_sales as (select orders.region, SUM(orders.amount) as total_sales from orders where exists (select * from (select rrp.region from region_reference_permission as rrp where rrp.user_id = :user_id) as x where orders.region = x.region) group by orders.region), top_regions as (select rs.region from regional_sales as rs where rs.total_sales > (select SUM(x.total_sales) / 10 from regional_sales as x)) select orders.region, orders.product, SUM(orders.quantity) as product_units, SUM(orders.amount) as product_sales from orders where orders.region in (select x.region from top_regions as x) group by orders.region, orders.product";
+
+        var actual = query.ToSql();
+        output.WriteLine(actual);
+        Assert.Equal(expected, actual);
     }
 }

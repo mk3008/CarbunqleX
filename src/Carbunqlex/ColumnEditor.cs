@@ -14,9 +14,6 @@ public class ColumnEditor(ISelectQuery query, IValueExpression expression, Selec
     private SelectEditor? _selectModifier;
     public SelectEditor SelectModifier => _selectModifier ??= new(this);
 
-    private WhereEditor? _whereModifier;
-    public WhereEditor WhereModifier => _whereModifier ??= new(this);
-
     private FromEditor? _fromModifier;
     public FromEditor FromModifier => _fromModifier ??= new(Query, new Dictionary<string, IValueExpression>() { { Value.DefaultName.ToLowerInvariant(), Value } });
 

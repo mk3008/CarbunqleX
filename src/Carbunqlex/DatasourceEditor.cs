@@ -33,6 +33,7 @@ public class DatasourceEditor
 
     public WhereEditor Where(string columnName)
     {
-        return new WhereEditor(new ColumnEditor(Query, new ColumnExpression(DatasourceAlias, columnName)));
+        var keyValues = new Dictionary<string, IValueExpression> { { columnName, new ColumnExpression(DatasourceAlias, columnName) } };
+        return new WhereEditor(Query, keyValues);
     }
 }

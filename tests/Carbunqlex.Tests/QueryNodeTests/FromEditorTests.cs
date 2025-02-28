@@ -116,7 +116,7 @@ public class FromEditorTests(ITestOutputHelper output)
         {
             from.LeftJoin("table_b", "b").Edit(static join =>
             {
-                join.Where("amount").Coalesce(0).Equal(0);
+                join.Where("amount").Coalesce(0, w => w.Equal(0));
                 join.Where("name").Equal("'test'");
             });
         });

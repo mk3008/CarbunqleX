@@ -1,25 +1,21 @@
-﻿using Carbunqlex.Expressions;
+﻿using Carbunqlex.Clauses;
+using Carbunqlex.Expressions;
+using Carbunqlex.QuerySources;
 
 namespace Carbunqlex;
 
-public class WhereEditor
+public class WhereEditor(ISelectQuery query, IReadOnlyDictionary<string, IValueExpression> keyValues)
 {
-    private readonly IValueExpression Value;
+    internal readonly IReadOnlyDictionary<string, IValueExpression> ValueMap = keyValues;
 
-    private readonly ISelectQuery Query;
-
-    public WhereEditor(ColumnEditor modifier)
-    {
-        Query = modifier.Query;
-        Value = modifier.Value;
-    }
+    internal readonly ISelectQuery Query = query;
 
     public ParameterExpression AddParameter(string name, object value)
     {
         return Query.AddParameter(name, value);
     }
 
-    internal void AddCondition(IValueExpression condition)
+    private void AddCondition(IValueExpression condition)
     {
         if (Query.TryGetWhereClause(out var whereClause))
         {
@@ -27,205 +23,336 @@ public class WhereEditor
         }
         else
         {
-            throw new InvalidOperationException();
+            throw new NotSupportedException("The query must have a WHERE clause.");
         }
     }
 
     public WhereEditor Equal(object rightValue)
     {
-        AddCondition(Value.Equal(rightValue));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.Equal(rightValue));
+        }
         return this;
     }
 
     public WhereEditor NotEqual(object rightValue)
     {
-        AddCondition(Value.NotEqual(rightValue));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.NotEqual(rightValue));
+        }
         return this;
     }
 
     public WhereEditor GreaterThan(object rightValue)
     {
-        AddCondition(Value.GreaterThan(rightValue));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.GreaterThan(rightValue));
+        }
         return this;
     }
 
     public WhereEditor GreaterThanOrEqual(object rightValue)
     {
-        AddCondition(Value.GreaterThanOrEqual(rightValue));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.GreaterThanOrEqual(rightValue));
+        }
         return this;
     }
 
     public WhereEditor LessThan(object rightValue)
     {
-        AddCondition(Value.LessThan(rightValue));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.LessThan(rightValue));
+        }
         return this;
     }
 
     public WhereEditor LessThanOrEqual(object rightValue)
     {
-        AddCondition(Value.LessThanOrEqual(rightValue));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.LessThanOrEqual(rightValue));
+        }
         return this;
     }
 
     public WhereEditor Like(IValueExpression rightValue)
     {
-        AddCondition(Value.Like(rightValue));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.Like(rightValue));
+        }
         return this;
     }
 
     public WhereEditor Like(object rightValue)
     {
-        AddCondition(Value.Like(rightValue));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.Like(rightValue));
+        }
         return this;
     }
 
     public WhereEditor NotLike(IValueExpression rightValue)
     {
-        AddCondition(Value.NotLike(rightValue));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.NotLike(rightValue));
+        }
         return this;
     }
 
     public WhereEditor NotLike(object rightValue)
     {
-        AddCondition(Value.NotLike(rightValue));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.NotLike(rightValue));
+        }
+        return this;
+    }
+
+    public WhereEditor In(IValueGroupExpression rightValue)
+    {
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.In(rightValue));
+        }
         return this;
     }
 
     public WhereEditor In(IEnumerable<object> values)
     {
-        AddCondition(Value.In(values));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.In(values));
+        }
         return this;
     }
 
     public WhereEditor In(IQuery subQuery)
     {
-        if (subQuery is ISelectQuery selectQuery)
+        var xsq = subQuery is ISelectQuery selectQuery
+            ? selectQuery
+            : subQuery is QueryNode node
+                ? node.Query
+                : throw new InvalidOperationException("The subquery must be a SELECT query.");
+
+        var expressions = new List<SelectExpression>();
+        foreach (var (key, value) in ValueMap)
         {
-            AddCondition(Value.In(selectQuery));
-            return this;
+            expressions.Add(new SelectExpression(new ColumnExpression("x", value.DefaultName ?? key)));
         }
-        else if (subQuery is QueryNode node)
-        {
-            AddCondition(Value.In(node.Query));
-            return this;
-        }
-        else
-        {
-            throw new InvalidOperationException();
-        }
+
+        var sq = new SelectQuery(
+            new SelectClause(expressions),
+            new FromClause(new DatasourceExpression(new SubQuerySource(xsq), "x"))
+            );
+
+        AddCondition(new InExpression(false,
+            new InValueGroupExpression(ValueMap.Values.ToList()),
+            new SubQueryExpression(sq)));
+        return this;
     }
 
-    public WhereEditor In(IValueGroupExpression rightValue)
+    public WhereEditor Exists(IQuery subQuery)
     {
-        AddCondition(Value.In(rightValue));
+        var xsq = subQuery is ISelectQuery selectQuery
+            ? selectQuery
+            : subQuery is QueryNode node
+                ? node.Query
+                : throw new NotSupportedException("The subquery must be a SELECT query.");
+
+        var sq = new SelectQuery(
+            new SelectClause(new SelectExpression(new ColumnExpression("*"))),
+            new FromClause(new DatasourceExpression(new SubQuerySource(xsq), "x"))
+            );
+        foreach (var (key, value) in ValueMap)
+        {
+            sq.WhereClause.Add(value.Equal(new ColumnExpression("x", value.DefaultName ?? key)));
+        }
+        AddCondition(new ExistsExpression(false, sq));
         return this;
     }
 
     public WhereEditor NotIn(IEnumerable<object> values)
     {
-        AddCondition(Value.NotIn(values));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.NotIn(values));
+        }
+        return this;
+    }
+
+    public WhereEditor NotIn(IValueGroupExpression rightValue)
+    {
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.NotIn(rightValue));
+        }
         return this;
     }
 
     public WhereEditor NotIn(IQuery subQuery)
     {
-        if (subQuery is ISelectQuery selectQuery)
+        var xsq = subQuery is ISelectQuery selectQuery
+            ? selectQuery
+            : subQuery is QueryNode node
+                ? node.Query
+                : throw new InvalidOperationException("The subquery must be a SELECT query.");
+
+        var expressions = new List<SelectExpression>();
+        foreach (var (key, value) in ValueMap)
         {
-            AddCondition(Value.NotIn(selectQuery));
-            return this;
+            expressions.Add(new SelectExpression(new ColumnExpression("x", value.DefaultName ?? key)));
         }
-        else if (subQuery is QueryNode node)
-        {
-            AddCondition(Value.NotIn(node.Query));
-            return this;
-        }
-        else
-        {
-            throw new InvalidOperationException();
-        }
+
+        var sq = new SelectQuery(
+            new SelectClause(expressions),
+            new FromClause(new DatasourceExpression(new SubQuerySource(xsq), "x"))
+            );
+
+        AddCondition(new InExpression(true,
+            new InValueGroupExpression(ValueMap.Values.ToList()),
+            new SubQueryExpression(sq)));
+        return this;
     }
 
-    public WhereEditor NotIn(IValueGroupExpression rightValue)
+    public WhereEditor NotExists(IQuery subQuery)
     {
-        AddCondition(Value.NotIn(rightValue));
+        var xsq = subQuery is ISelectQuery selectQuery
+            ? selectQuery
+            : subQuery is QueryNode node
+                ? node.Query
+                : throw new NotSupportedException("The subquery must be a SELECT query.");
+
+        var sq = new SelectQuery(
+            new SelectClause(new SelectExpression(new ColumnExpression("*"))),
+            new FromClause(new DatasourceExpression(new SubQuerySource(xsq), "x"))
+            );
+
+        foreach (var (key, value) in ValueMap)
+        {
+            sq.WhereClause.Add(value.Equal(new ColumnExpression("x", value.DefaultName ?? key)));
+        }
+
+        AddCondition(new ExistsExpression(true, sq));
         return this;
     }
 
     public WhereEditor Any(params object[] values)
     {
-        AddCondition(Value.Any(values));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.Any(values));
+        }
         return this;
     }
 
     public WhereEditor Any(ISelectQuery scalarSubQuery)
     {
-        AddCondition(Value.Any(scalarSubQuery));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.Any(scalarSubQuery));
+        }
         return this;
     }
 
     public WhereEditor Any(IArgumentExpression rightValue)
     {
-        AddCondition(Value.Any(rightValue));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.Any(rightValue));
+        }
         return this;
     }
 
+
     public WhereEditor IsNull()
     {
-        AddCondition(Value.IsNull());
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.IsNull());
+        }
         return this;
     }
 
     public WhereEditor IsNotNull()
     {
-        AddCondition(Value.IsNotNull());
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.IsNotNull());
+        }
         return this;
     }
 
     public WhereEditor Between(object start, object end)
     {
-        AddCondition(Value.Between(start, end));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.Between(start, end));
+        }
         return this;
     }
 
     public WhereEditor NotBetween(object start, object end)
     {
-        AddCondition(Value.NotBetween(start, end));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.NotBetween(start, end));
+        }
         return this;
     }
 
-    public WhereEditor Coalesce(params object[] values)
+    public WhereEditor Coalesce(object nullValue, Action<WhereEditor> action)
     {
-        var expr = Value.Coalesce(values);
-        return new WhereEditor(new ColumnEditor(Query, expr));
-    }
-
-    public WhereEditor Coalesce(IEnumerable<object> values)
-    {
-        var expr = Value.Coalesce(values);
-        return new WhereEditor(new ColumnEditor(Query, expr));
+        foreach (var (key, value) in ValueMap)
+        {
+            var expr = value.Coalesce(nullValue);
+            var editor = new WhereEditor(Query, new Dictionary<string, IValueExpression> { { string.Empty, expr } });
+            action(editor);
+        }
+        return this;
     }
 
     public WhereEditor Greatest(params object[] values)
     {
-        var expr = Value.Greatest(values);
-        return new WhereEditor(new ColumnEditor(Query, expr));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.Greatest(values));
+        }
+        return this;
     }
 
     public WhereEditor Greatest(IEnumerable<object> values)
     {
-        var expr = Value.Greatest(values);
-        return new WhereEditor(new ColumnEditor(Query, expr));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.Greatest(values));
+        }
+        return this;
     }
 
     public WhereEditor Least(params object[] values)
     {
-        var expr = Value.Least(values);
-        return new WhereEditor(new ColumnEditor(Query, expr));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.Least(values));
+        }
+        return this;
     }
 
     public WhereEditor Least(IEnumerable<object> values)
     {
-        var expr = Value.Least(values);
-        return new WhereEditor(new ColumnEditor(Query, expr));
+        foreach (var (key, value) in ValueMap)
+        {
+            AddCondition(value.Least(values));
+        }
+        return this;
     }
 }

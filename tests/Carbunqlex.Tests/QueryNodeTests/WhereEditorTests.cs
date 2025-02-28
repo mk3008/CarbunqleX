@@ -169,7 +169,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         var queryNode = QueryAstParser.Create(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.Where("table_a_id", static value => value.Coalesce(0).GreaterThanOrEqual(0));
+        queryNode.Where("table_a_id", static value => value.Coalesce(0, w => w.GreaterThanOrEqual(0)));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -233,7 +233,7 @@ public class WhereEditorTests(ITestOutputHelper output)
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
-        //output.WriteLine(queryNode.ToTreeString());
+        output.WriteLine(queryNode.ToTreeString());
 
         var expected = "select u.user_id, u.users_name from users as u where u.user_id = 10 union select u.user_id, u.users_name from users as u where u.user_id = 10 union all select u.user_id, u.users_name from users as u where u.user_id = 10";
         Assert.Equal(expected, actual);

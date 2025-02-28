@@ -291,17 +291,33 @@ public class QueryNode : ISqlComponent, IQuery
         return this;
     }
 
-    public QueryNode Where(string columnName, Action<WhereEditor> action)
+    //public QueryNode Where(string columnName, Action<WhereEditorOld> action)
+    //{
+    //    if (MustRefresh) Refresh();
+
+    //    var result = GetColumnEditors(columnName, isSelectableOnly: false, isCurrentOnly: false);
+
+    //    result = result.GroupBy(x => x.Value).Select(g => g.First()).ToList();
+
+    //    foreach (var columnModifier in result)
+    //    {
+    //        var editor = new WhereEditorOld(columnModifier);
+    //        action(editor);
+    //    }
+
+    //    if (result.Any()) MustRefresh = true;
+
+    //    return this;
+    //}
+
+    public QueryNode From(IEnumerable<string> columnNames, Action<FromEditor> action)
     {
         if (MustRefresh) Refresh();
 
-        var result = GetColumnEditors(columnName, isSelectableOnly: false, isCurrentOnly: false);
+        var result = GetFromEditors(columnNames);
 
-        result = result.GroupBy(x => x.Value).Select(g => g.First()).ToList();
-
-        foreach (var columnModifier in result)
+        foreach (var editor in result)
         {
-            var editor = new WhereEditor(columnModifier);
             action(editor);
         }
 
@@ -310,11 +326,16 @@ public class QueryNode : ISqlComponent, IQuery
         return this;
     }
 
-    public QueryNode From(IEnumerable<string> columnNames, Action<FromEditor> action)
+    public QueryNode Where(string columnName, Action<WhereEditor> action)
+    {
+        return Where(new List<string> { columnName }, action);
+    }
+
+    public QueryNode Where(IEnumerable<string> columnNames, Action<WhereEditor> action)
     {
         if (MustRefresh) Refresh();
 
-        var result = GetFromEditors(columnNames);
+        var result = GetWhereEditors(columnNames);
 
         foreach (var editor in result)
         {
@@ -428,7 +449,6 @@ public class QueryNode : ISqlComponent, IQuery
 
         return this;
     }
-
 
     public QueryNode Serialize(string datasource, string objectName = "", IEnumerable<string>? include = null, bool removePropertyColumn = true, Func<string, string>? propertyBuilder = null, bool removePrefix = true)
     {
@@ -549,6 +569,17 @@ public class QueryNode : ISqlComponent, IQuery
         return result;
     }
 
+    private List<WhereEditor> GetWhereEditors(IEnumerable<string> columnNames)
+    {
+        var result = new List<WhereEditor>();
+        WhenRecursive(this, columnNames.Select(c => c.ToLowerInvariant()).ToList(), result, isCurrentOnly: false);
+
+        // Remove duplicates
+        result = result.GroupBy(x => x.Query).Select(g => g.First()).ToList();
+
+        return result;
+    }
+
     /// <summary>
     /// Searches for queries that match the predicate and executes
     /// </summary>
@@ -630,6 +661,54 @@ public class QueryNode : ISqlComponent, IQuery
             }
 
             if (result.Any())
+            {
+                return;
+            }
+        }
+
+        var values = new Dictionary<string, IValueExpression>();
+
+        // Search for columns used in the query
+        foreach (var columnName in columnNames)
+        {
+            if (node.SelectExpressionMap.ContainsKey(columnName))
+            {
+                values.Add(columnName.ToLowerInvariant(), node.SelectExpressionMap[columnName].Value);
+
+            }
+            else if (node.DatasourceNodeMap.Values.Where(ds => ds.Columns.ContainsKey(columnName)).Any())
+            {
+                var datasource = node.DatasourceNodeMap.Values.Where(ds => ds.Columns.ContainsKey(columnName)).First();
+                values.Add(columnName.ToLowerInvariant(), new ColumnExpression(datasource.Name, datasource.Columns[columnName]));
+            }
+            else
+            {
+                // Exit if any column is not found
+                return;
+            }
+        }
+
+        // Add to result if all columns are found
+        result.Add(new(node.Query, values));
+    }
+
+    private void WhenRecursive(QueryNode node, IList<string> columnNames, List<WhereEditor> result, bool isCurrentOnly)
+    {
+        if (!isCurrentOnly)
+        {
+            var startingCount = result.Count;
+
+            // Search child nodes first
+            foreach (var datasourceNode in node.DatasourceNodeMap.Values)
+            {
+                foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+                {
+                    WhenRecursive(childQueryNode, columnNames, result, isCurrentOnly);
+                }
+            }
+
+            // Exit if any column is found
+            if (startingCount != result.Count)
             {
                 return;
             }
