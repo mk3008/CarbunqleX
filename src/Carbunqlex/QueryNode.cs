@@ -263,7 +263,7 @@ public class QueryNode : ISqlComponent, IQuery
         return this;
     }
 
-    public QueryNode SelectColumn(string columnExpression)
+    public QueryNode SelectValue(string columnExpression)
     {
         if (MustRefresh) Refresh();
         var result = GetColumnEditors(columnExpression, isSelectableOnly: true, isCurrentOnly: true).FirstOrDefault();

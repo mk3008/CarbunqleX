@@ -93,7 +93,7 @@ public class SelectEditorTests(ITestOutputHelper output)
         var root = QueryAstParser.Create(query);
         output.WriteLine(root.Query.ToSql());
 
-        root.SelectColumn("a.value");
+        root.SelectValue("a.value");
 
         var actual = root.Query.ToSql();
         output.WriteLine(actual);
