@@ -58,14 +58,16 @@ public class WhereEditorSample(ITestOutputHelper output)
         query.Where("value", w => w.Equal(":value"))
             .AddParameter(":value", 1);
 
-        //select a.table_a_id, a.value from table_a as a where a.value = ':value'
-        output.WriteLine(query.ToSql());
+        var expected = "select a.table_a_id, a.value from table_a as a where a.value = :value";
 
-        // :value = 1
-        foreach (var parameter in query.GetParameters())
-        {
-            output.WriteLine($"{parameter.Key} = {parameter.Value}");
-        }
+        var actual = query.ToSql();
+        output.WriteLine(actual);
+        Assert.Equal(expected, actual);
+
+        var parameters = query.GetParameters();
+        Assert.Single(parameters);
+        Assert.Equal(":value", parameters.First().Key);
+        Assert.Equal(1, parameters.First().Value);
     }
 
     [Fact]
