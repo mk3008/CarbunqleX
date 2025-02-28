@@ -22,7 +22,7 @@ public class ExistsExpression : IValueExpression
     {
         yield return new Token(TokenType.Operator, IsNegated ? "not exists" : "exists");
         yield return new Token(TokenType.OpenParen, "(");
-        foreach (var lexeme in Query.GenerateTokens())
+        foreach (var lexeme in Query.GenerateTokensWithoutCte())
         {
             yield return lexeme;
         }
@@ -33,7 +33,7 @@ public class ExistsExpression : IValueExpression
     {
         var sb = new StringBuilder();
         sb.Append(IsNegated ? "not exists (" : "exists (");
-        sb.Append(Query.ToSql());
+        sb.Append(Query.ToSqlWithoutCte());
         sb.Append(")");
         return sb.ToString();
     }

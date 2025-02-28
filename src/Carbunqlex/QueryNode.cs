@@ -326,11 +326,46 @@ public class QueryNode : ISqlComponent, IQuery
         return this;
     }
 
+    /// <summary>
+    /// Adds search conditions to the current query.
+    /// </summary>
+    /// <param name="conditionExpressionText"></param>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
+    public QueryNode Where(string conditionExpressionText)
+    {
+        /// 強制追加するため、事前Refreshは不要
+        if (Query.TryGetWhereClause(out var whereClause))
+        {
+            whereClause.Add(ValueExpressionParser.Parse(conditionExpressionText));
+            MustRefresh = true;
+        }
+        else
+        {
+            throw new NotSupportedException("The query must have a WHERE clause.");
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Searches for queries that contain the specified column name and adds search conditions.
+    /// If not found, does nothing.
+    /// </summary>
+    /// <param name="columnName"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public QueryNode Where(string columnName, Action<WhereEditor> action)
     {
         return Where(new List<string> { columnName }, action);
     }
 
+    /// <summary>
+    /// Searches for queries that contain the specified column names and adds search conditions.
+    /// If not found, does nothing.
+    /// </summary>
+    /// <param name="columnNames"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public QueryNode Where(IEnumerable<string> columnNames, Action<WhereEditor> action)
     {
         if (MustRefresh) Refresh();
