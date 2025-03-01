@@ -810,4 +810,79 @@ public class QueryNode : IQuery
     {
         return Query.TryGetWhereClause(out whereClause);
     }
+
+    public QueryNode UnionAll(IQuery right)
+    {
+        if (Query.TryGetSelectQuery(out var leftQuery) && right.TryGetSelectQuery(out var rightQuery))
+        {
+            Query = new UnionQuery("union all", leftQuery, rightQuery);
+            MustRefresh = true;
+            return this;
+        }
+        if (leftQuery is null)
+        {
+            throw new ArgumentException("The left query must be a select query.");
+        }
+        throw new ArgumentException("The right query must be a select query.", nameof(right));
+    }
+
+    public QueryNode Union(IQuery right)
+    {
+        if (Query.TryGetSelectQuery(out var leftQuery) && right.TryGetSelectQuery(out var rightQuery))
+        {
+            Query = new UnionQuery("union", leftQuery, rightQuery);
+            MustRefresh = true;
+            return this;
+        }
+        if (leftQuery is null)
+        {
+            throw new ArgumentException("The left query must be a select query.");
+        }
+        throw new ArgumentException("The right query must be a select query.", nameof(right));
+    }
+
+    public QueryNode Intersect(IQuery right)
+    {
+        if (Query.TryGetSelectQuery(out var leftQuery) && right.TryGetSelectQuery(out var rightQuery))
+        {
+            Query = new UnionQuery("intersect", leftQuery, rightQuery);
+            MustRefresh = true;
+            return this;
+        }
+        if (leftQuery is null)
+        {
+            throw new ArgumentException("The left query must be a select query.");
+        }
+        throw new ArgumentException("The right query must be a select query.", nameof(right));
+    }
+
+    public QueryNode Except(IQuery right)
+    {
+        if (Query.TryGetSelectQuery(out var leftQuery) && right.TryGetSelectQuery(out var rightQuery))
+        {
+            Query = new UnionQuery("except", leftQuery, rightQuery);
+            MustRefresh = true;
+            return this;
+        }
+        if (leftQuery is null)
+        {
+            throw new ArgumentException("The left query must be a select query.");
+        }
+        throw new ArgumentException("The right query must be a select query.", nameof(right));
+    }
+
+    public QueryNode Distinct()
+    {
+        if (Query.TryGetSelectClause(out var selectClause))
+        {
+            selectClause.DistinctClause = new DistinctClause();
+            return this;
+        }
+        throw new InvalidOperationException("The query must have a select clause.");
+    }
+
+    public bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause)
+    {
+        return Query.TryGetSelectClause(out selectClause);
+    }
 }

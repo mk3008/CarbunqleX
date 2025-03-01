@@ -135,4 +135,39 @@ public class QueryBuildingSample(ITestOutputHelper output)
         output.WriteLine(actual);
         Assert.Equal(expected, actual);
     }
+
+    /// <summary>
+    /// Sample for generating a union query.
+    /// </summary>
+    [Fact]
+    public void UnionAll()
+    {
+        var query1 = QueryAstParser.Parse("select id from table_a");
+        var query2 = QueryAstParser.Parse("select id from table_b");
+        var unionQuery = query1.UnionAll(query2);
+
+        var expected = "select id from table_a union all select id from table_b";
+
+        var actual = unionQuery.ToSql();
+        output.WriteLine(actual);
+        Assert.Equal(expected, actual);
+    }
+
+    /// <summary>
+    /// Sample for generating a distinct union query.
+    /// Combine multiple queries to generate a query that removes duplicates.
+    /// </summary>
+    [Fact]
+    public void UnionAllAndDistinct()
+    {
+        var query1 = QueryAstParser.Parse("select id from table_a");
+        var query2 = QueryAstParser.Parse("select id from table_b");
+        var distinctQuery = query1.UnionAll(query2).ToSubQuery().Distinct();
+
+        var expected = "select distinct * from (select id from table_a union all select id from table_b) as d";
+
+        var actual = distinctQuery.ToSql();
+        output.WriteLine(actual);
+        Assert.Equal(expected, actual);
+    }
 }

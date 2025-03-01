@@ -216,4 +216,10 @@ public class UnionQuery : ISelectQuery
         selectQuery = this;
         return true;
     }
+
+    public bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause)
+    {
+        selectClause = null;
+        return false;
+    }
 }

@@ -131,6 +131,12 @@ public class UpdateQuery : IQueryComponent
     public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
     {
         whereClause = WhereClause;
+        return true;
+    }
+
+    public bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause)
+    {
+        selectClause = null;
         return false;
     }
 }

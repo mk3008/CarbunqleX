@@ -153,4 +153,10 @@ public class DeleteQuery : IQueryComponent
         whereClause = WhereClause;
         return true;
     }
+
+    public bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause)
+    {
+        selectClause = null;
+        return false;
+    }
 }

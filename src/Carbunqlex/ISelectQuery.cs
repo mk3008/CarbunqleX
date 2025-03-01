@@ -23,6 +23,8 @@ public interface IQuery
 
     bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery);
 
+    bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause);
+
     bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause);
 }
 

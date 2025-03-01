@@ -299,4 +299,10 @@ public class SelectQuery : ISelectQuery
         selectQuery = this;
         return true;
     }
+
+    public bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause)
+    {
+        selectClause = SelectClause;
+        return true;
+    }
 }

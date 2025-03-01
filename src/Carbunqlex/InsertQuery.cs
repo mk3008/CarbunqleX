@@ -110,4 +110,9 @@ public class InsertQuery : IQueryComponent
     {
         return SelectQuery.TryGetWhereClause(out whereClause);
     }
+
+    public bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause)
+    {
+        return SelectQuery.TryGetSelectClause(out selectClause);
+    }
 }
