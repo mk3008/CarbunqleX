@@ -784,10 +784,12 @@ public class QueryNode : IQuery
     {
         return Query.GetParameters();
     }
-    public ParameterExpression AddParameter(string name, object value)
+    public QueryNode AddParameter(string name, object value)
     {
-        return Query.AddParameter(name, value);
+        Query.AddParameter(name, value);
+        return this;
     }
+
     private void Refresh()
     {
         var node = QueryAstParser.Parse(Query);
