@@ -291,6 +291,11 @@ public class QueryNode : IQuery
         return this;
     }
 
+    public QueryNode From(string columnName, bool isCurrentOnly, Action<FromEditor> action)
+    {
+        return From(new List<string> { columnName }, isCurrentOnly, action);
+    }
+
     public QueryNode From(IEnumerable<string> columnNames, bool isCurrentOnly, Action<FromEditor> action)
     {
         if (MustRefresh) Refresh();

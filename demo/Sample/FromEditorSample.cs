@@ -40,7 +40,7 @@ public class FromEditorSample(ITestOutputHelper output)
           GROUP BY orders.region, orders.product  
           """);
 
-        query.From(["region"], isCurrentOnly: true, static from =>
+        query.From("region", isCurrentOnly: true, static from =>
         {
             from.InnerJoin("top_regions", "tp");
             from.EditQuery(q =>
@@ -85,7 +85,7 @@ public class FromEditorSample(ITestOutputHelper output)
           """);
 
         // Set isCurrentOnly: false to use the join as a filter condition  
-        query.From(["region"], isCurrentOnly: false, static from =>
+        query.From("region", isCurrentOnly: false, static from =>
         {
             from.LeftJoin("top_regions", "tp");
             from.EditQuery(q =>
@@ -127,7 +127,7 @@ public class FromEditorSample(ITestOutputHelper output)
           GROUP BY orders.region, orders.product  
           """);
 
-        query.From(["region"], isCurrentOnly: true, static from =>
+        query.From("region", isCurrentOnly: true, static from =>
         {
             from.Join("inner join",
                 new DatasourceExpression(new TableSource("top_regions"), "tp"),
