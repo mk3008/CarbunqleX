@@ -1,15 +1,16 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.Expressions;
-using Carbunqlex.Lexing;
 using Carbunqlex.Parsing.Expressions;
 using Carbunqlex.Parsing.QuerySources;
 using Carbunqlex.QuerySources;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex;
 
-public class QueryNode : ISqlComponent, IQuery
+
+public class QueryNode : IQuery
 {
     /// <summary>
     /// The query.
@@ -779,46 +780,14 @@ public class QueryNode : ISqlComponent, IQuery
         return Query.ToSql();
     }
 
-    public IEnumerable<Token> GenerateTokens()
-    {
-        return Query.GenerateTokens();
-    }
-
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
-    {
-        return Query.GetCommonTableClauses();
-    }
-
     public IDictionary<string, object?> GetParameters()
     {
         return Query.GetParameters();
     }
-
     public ParameterExpression AddParameter(string name, object value)
     {
         return Query.AddParameter(name, value);
     }
-
-    public string ToSqlWithoutCte()
-    {
-        return Query.ToSqlWithoutCte();
-    }
-
-    public IEnumerable<Token> GenerateTokensWithoutCte()
-    {
-        return Query.GenerateTokensWithoutCte();
-    }
-
-    public IEnumerable<ISelectQuery> GetQueries()
-    {
-        return Query.GetQueries();
-    }
-
-    public void AddJoin(JoinClause joinClause)
-    {
-        Query.AddJoin(joinClause);
-    }
-
     private void Refresh()
     {
         var node = QueryAstParser.Parse(Query);
@@ -827,5 +796,16 @@ public class QueryNode : ISqlComponent, IQuery
         DatasourceNodeMap = node.DatasourceNodeMap;
 
         MustRefresh = false;
+    }
+
+    public bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery)
+    {
+        selectQuery = Query;
+        return true;
+    }
+
+    public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
+    {
+        return Query.TryGetWhereClause(out whereClause);
     }
 }

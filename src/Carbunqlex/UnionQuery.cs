@@ -210,4 +210,10 @@ public class UnionQuery : ISelectQuery
     {
         throw new NotSupportedException("Joins cannot be added to a union query.");
     }
+
+    public bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery)
+    {
+        selectQuery = this;
+        return true;
+    }
 }

@@ -2,10 +2,11 @@
 using Carbunqlex.Expressions;
 using Carbunqlex.Lexing;
 using Carbunqlex.QuerySources;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Carbunqlex;
 
-public class CreateTableAsQuery : IQuery
+public class CreateTableAsQuery : IQueryComponent
 {
     public TableSource TableSource { get; set; }
     public ISelectQuery SelectQuery { get; set; }
@@ -64,5 +65,16 @@ public class CreateTableAsQuery : IQuery
     public IEnumerable<ISelectQuery> GetQueries()
     {
         yield break;
+    }
+
+    public bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery)
+    {
+        selectQuery = SelectQuery;
+        return true;
+    }
+
+    public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
+    {
+        return SelectQuery.TryGetWhereClause(out whereClause);
     }
 }

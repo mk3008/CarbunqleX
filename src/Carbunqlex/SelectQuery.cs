@@ -293,4 +293,10 @@ public class SelectQuery : ISelectQuery
         }
         FromClause.AddJoin(joinClause);
     }
+
+    public bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery)
+    {
+        selectQuery = this;
+        return true;
+    }
 }

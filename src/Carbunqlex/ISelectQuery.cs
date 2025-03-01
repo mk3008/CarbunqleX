@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Carbunqlex;
 
-public interface IQuery : ISqlComponent
+public interface IQuery
 {
     /// <summary>
     /// Generates the SQL string for the query.
@@ -15,6 +15,19 @@ public interface IQuery : ISqlComponent
     /// <returns>The SQL string representation of the query.</returns>
     string ToSql();
 
+    /// <summary>
+    /// Retrieves the parameters used in the query.
+    /// </summary>
+    /// <returns></returns>
+    IDictionary<string, object?> GetParameters();
+
+    bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery);
+
+    bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause);
+}
+
+public interface IQueryComponent : ISqlComponent, IQuery
+{
     /// <summary>
     /// Generates the tokens for the query.
     /// This can include the WITH clause if the query is at the root level.
@@ -30,12 +43,6 @@ public interface IQuery : ISqlComponent
     IEnumerable<CommonTableClause> GetCommonTableClauses();
 
     /// <summary>
-    /// Retrieves the parameters used in the query.
-    /// </summary>
-    /// <returns></returns>
-    IDictionary<string, object?> GetParameters();
-
-    /// <summary>
     /// Adds a parameter to the query.
     /// </summary>
     /// <param name="name"></param>
@@ -47,7 +54,7 @@ public interface IQuery : ISqlComponent
 /// <summary>
 /// Represents a SQL query that can generate SQL strings and tokens, with or without CTEs.
 /// </summary>
-public interface ISelectQuery : IQuery, IArgumentExpression
+public interface ISelectQuery : IQueryComponent, IArgumentExpression
 {
     /// <summary>
     /// Retrieves the select expressions.
@@ -60,8 +67,6 @@ public interface ISelectQuery : IQuery, IArgumentExpression
     /// </summary>
     /// <returns></returns>
     IEnumerable<DatasourceExpression> GetDatasources();
-
-    bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause);
 
     void AddColumn(SelectExpression expr);
 

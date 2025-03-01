@@ -189,4 +189,10 @@ public class ValuesQuery : ISelectQuery
     {
         throw new NotSupportedException("ValuesQuery does not support adding joins.");
     }
+
+    public bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery)
+    {
+        selectQuery = this;
+        return true;
+    }
 }

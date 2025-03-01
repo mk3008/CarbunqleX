@@ -137,46 +137,48 @@ public class WhereEditor(ISelectQuery query, IReadOnlyDictionary<string, IValueE
 
     public WhereEditor In(IQuery subQuery)
     {
-        var xsq = subQuery is ISelectQuery selectQuery
-            ? selectQuery
-            : subQuery is QueryNode node
-                ? node.Query
-                : throw new InvalidOperationException("The subquery must be a SELECT query.");
-
-        var expressions = new List<SelectExpression>();
-        foreach (var (key, value) in ValueMap)
+        if (subQuery.TryGetSelectQuery(out var xsq))
         {
-            expressions.Add(new SelectExpression(new ColumnExpression("x", value.DefaultName ?? key)));
+            var expressions = new List<SelectExpression>();
+            foreach (var (key, value) in ValueMap)
+            {
+                expressions.Add(new SelectExpression(new ColumnExpression("x", value.DefaultName ?? key)));
+            }
+
+            var sq = new SelectQuery(
+                new SelectClause(expressions),
+                new FromClause(new DatasourceExpression(new SubQuerySource(xsq), "x"))
+                );
+
+            AddCondition(new InExpression(false,
+                new InValueGroupExpression(ValueMap.Values.ToList()),
+                new SubQueryExpression(sq)));
         }
-
-        var sq = new SelectQuery(
-            new SelectClause(expressions),
-            new FromClause(new DatasourceExpression(new SubQuerySource(xsq), "x"))
-            );
-
-        AddCondition(new InExpression(false,
-            new InValueGroupExpression(ValueMap.Values.ToList()),
-            new SubQueryExpression(sq)));
+        else
+        {
+            throw new InvalidOperationException("The subquery must be a SELECT query.");
+        }
         return this;
     }
 
     public WhereEditor Exists(IQuery subQuery)
     {
-        var xsq = subQuery is ISelectQuery selectQuery
-            ? selectQuery
-            : subQuery is QueryNode node
-                ? node.Query
-                : throw new NotSupportedException("The subquery must be a SELECT query.");
-
-        var sq = new SelectQuery(
-            new SelectClause(new SelectExpression(new ColumnExpression("*"))),
-            new FromClause(new DatasourceExpression(new SubQuerySource(xsq), "x"))
-            );
-        foreach (var (key, value) in ValueMap)
+        if (subQuery.TryGetSelectQuery(out var selectQuery))
         {
-            sq.WhereClause.Add(value.Equal(new ColumnExpression("x", value.DefaultName ?? key)));
+            var sq = new SelectQuery(
+                new SelectClause(new SelectExpression(new ColumnExpression("*"))),
+                new FromClause(new DatasourceExpression(new SubQuerySource(selectQuery), "x"))
+                );
+            foreach (var (key, value) in ValueMap)
+            {
+                sq.WhereClause.Add(value.Equal(new ColumnExpression("x", value.DefaultName ?? key)));
+            }
+            AddCondition(new ExistsExpression(false, sq));
         }
-        AddCondition(new ExistsExpression(false, sq));
+        else
+        {
+            throw new NotSupportedException("The subquery must be a SELECT query.");
+        }
         return this;
     }
 
@@ -200,48 +202,48 @@ public class WhereEditor(ISelectQuery query, IReadOnlyDictionary<string, IValueE
 
     public WhereEditor NotIn(IQuery subQuery)
     {
-        var xsq = subQuery is ISelectQuery selectQuery
-            ? selectQuery
-            : subQuery is QueryNode node
-                ? node.Query
-                : throw new InvalidOperationException("The subquery must be a SELECT query.");
-
-        var expressions = new List<SelectExpression>();
-        foreach (var (key, value) in ValueMap)
+        if (subQuery.TryGetSelectQuery(out var xsq))
         {
-            expressions.Add(new SelectExpression(new ColumnExpression("x", value.DefaultName ?? key)));
+            var expressions = new List<SelectExpression>();
+            foreach (var (key, value) in ValueMap)
+            {
+                expressions.Add(new SelectExpression(new ColumnExpression("x", value.DefaultName ?? key)));
+            }
+
+            var sq = new SelectQuery(
+                new SelectClause(expressions),
+                new FromClause(new DatasourceExpression(new SubQuerySource(xsq), "x"))
+                );
+
+            AddCondition(new InExpression(true,
+                new InValueGroupExpression(ValueMap.Values.ToList()),
+                new SubQueryExpression(sq)));
         }
-
-        var sq = new SelectQuery(
-            new SelectClause(expressions),
-            new FromClause(new DatasourceExpression(new SubQuerySource(xsq), "x"))
-            );
-
-        AddCondition(new InExpression(true,
-            new InValueGroupExpression(ValueMap.Values.ToList()),
-            new SubQueryExpression(sq)));
+        else
+        {
+            throw new NotSupportedException("The subquery must be a SELECT query.");
+        }
         return this;
     }
 
     public WhereEditor NotExists(IQuery subQuery)
     {
-        var xsq = subQuery is ISelectQuery selectQuery
-            ? selectQuery
-            : subQuery is QueryNode node
-                ? node.Query
-                : throw new NotSupportedException("The subquery must be a SELECT query.");
-
-        var sq = new SelectQuery(
-            new SelectClause(new SelectExpression(new ColumnExpression("*"))),
-            new FromClause(new DatasourceExpression(new SubQuerySource(xsq), "x"))
-            );
-
-        foreach (var (key, value) in ValueMap)
+        if (subQuery.TryGetSelectQuery(out var selectQuery))
         {
-            sq.WhereClause.Add(value.Equal(new ColumnExpression("x", value.DefaultName ?? key)));
+            var sq = new SelectQuery(
+                new SelectClause(new SelectExpression(new ColumnExpression("*"))),
+                new FromClause(new DatasourceExpression(new SubQuerySource(selectQuery), "x"))
+                );
+            foreach (var (key, value) in ValueMap)
+            {
+                sq.WhereClause.Add(value.Equal(new ColumnExpression("x", value.DefaultName ?? key)));
+            }
+            AddCondition(new ExistsExpression(true, sq));
         }
-
-        AddCondition(new ExistsExpression(true, sq));
+        else
+        {
+            throw new NotSupportedException("The subquery must be a SELECT query.");
+        }
         return this;
     }
 

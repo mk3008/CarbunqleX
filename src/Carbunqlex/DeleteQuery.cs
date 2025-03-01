@@ -1,11 +1,12 @@
 ﻿using Carbunqlex.Clauses;
 using Carbunqlex.Expressions;
 using Carbunqlex.Lexing;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex;
 
-public class DeleteQuery : IQuery
+public class DeleteQuery : IQueryComponent
 {
     public WithClause WithClause { get; }
 
@@ -139,5 +140,17 @@ public class DeleteQuery : IQuery
     public IEnumerable<ISelectQuery> GetQueries()
     {
         yield break;
+    }
+
+    public bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery)
+    {
+        selectQuery = null;
+        return false;
+    }
+
+    public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
+    {
+        whereClause = WhereClause;
+        return true;
     }
 }
