@@ -1,6 +1,7 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.DatasourceExpressions;
-using Carbunqlex.ValueExpressions;
+using Carbunqlex.Expressions;
+using Carbunqlex.Lexing;
+using Carbunqlex.QuerySources;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
@@ -187,5 +188,17 @@ public class ValuesQuery : ISelectQuery
     public void AddJoin(JoinClause joinClause)
     {
         throw new NotSupportedException("ValuesQuery does not support adding joins.");
+    }
+
+    public bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery)
+    {
+        selectQuery = this;
+        return true;
+    }
+
+    public bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause)
+    {
+        selectClause = null;
+        return false;
     }
 }

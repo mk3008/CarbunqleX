@@ -1,4 +1,4 @@
-﻿using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Expressions;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.QueryTests;
@@ -34,19 +34,19 @@ public class ValuesQueryTests(ITestOutputHelper output)
         var columns1 = new List<IValueExpression>
         {
             ValueBuilder.Constant(1),
-            ValueBuilder.Constant("test"),
+            ValueBuilder.Constant("'test'"),
             ValueBuilder.Null
         };
         var columns2 = new List<IValueExpression>
         {
             ValueBuilder.Constant(2),
-            ValueBuilder.Constant("example"),
+            ValueBuilder.Constant("'example'"),
             ValueBuilder.Constant(new DateTime(2001,2,3))
         };
         var columns3 = new List<IValueExpression>
         {
             ValueBuilder.Constant(3),
-            ValueBuilder.Constant("O'Reilly"),
+            ValueBuilder.Constant("'O''Reilly'"),
             ValueBuilder.Null
         };
         query.AddRow(columns1);
@@ -69,7 +69,7 @@ public class ValuesQueryTests(ITestOutputHelper output)
         var columns = new List<IValueExpression>
         {
             ValueBuilder.Constant(1.23),
-            ValueBuilder.Constant("double test")
+            ValueBuilder.Constant("'double test'")
         };
         query.AddRow(columns);
 

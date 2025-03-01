@@ -1,10 +1,12 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.ValueExpressions;
+using Carbunqlex.Expressions;
+using Carbunqlex.Lexing;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex;
 
-public class InsertQuery : IQuery
+public class InsertQuery : IQueryComponent
 {
     public InsertClause InsertClause { get; set; }
 
@@ -96,5 +98,21 @@ public class InsertQuery : IQuery
         var parameter = new ParameterExpression(name);
         Parameters[name] = value;
         return parameter;
+    }
+
+    public bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery)
+    {
+        selectQuery = SelectQuery;
+        return true;
+    }
+
+    public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
+    {
+        return SelectQuery.TryGetWhereClause(out whereClause);
+    }
+
+    public bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause)
+    {
+        return SelectQuery.TryGetSelectClause(out selectClause);
     }
 }

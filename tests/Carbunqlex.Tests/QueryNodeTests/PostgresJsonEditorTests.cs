@@ -14,7 +14,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select users.user_id, users.name from users");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
 
@@ -34,7 +34,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select users.user_id, users.name from users");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.NormalizeSelectClause();
@@ -53,7 +53,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select u.user_id as id, u.name from users as u");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.NormalizeSelectClause();
@@ -72,7 +72,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select u.user_id, u.name from users as u");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.AddJsonColumn("u", "user");
@@ -91,7 +91,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select users.user_id, users.name from users");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.AddJsonColumn("users", "user");
@@ -110,7 +110,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select users.user_id as id, users.name from users");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.AddJsonColumn("users", "user");
@@ -131,7 +131,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select users.user_id, users.name from users");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.AddJsonColumn("users", "user", propertyBuilder: upperCaseBuilder);
@@ -150,7 +150,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select users.user_id, users.name as user_name from users");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Serialize("user", "user");
@@ -171,7 +171,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select users.user_id, users.name as user_name from users");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Serialize("user", "user", propertyBuilder: upperCaseBuilder);
@@ -190,7 +190,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select users.user_id as id, users.name from users");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.ToJson();
@@ -209,7 +209,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select users.user_id as id, users.name from users");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.ToJsonArray();
@@ -246,7 +246,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
             """;
 
         var query = SelectQueryParser.Parse(sql);
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         queryNode.NormalizeSelectClause()
             .Serialize("organizations", objectName: "organization")
             .Serialize("users", objectName: "user")

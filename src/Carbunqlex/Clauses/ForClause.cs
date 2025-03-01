@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex.Clauses;
+﻿using Carbunqlex.Lexing;
+
+namespace Carbunqlex.Clauses;
 
 public class ForClause : IForClause
 {

@@ -1,5 +1,5 @@
-﻿using Carbunqlex.DatasourceExpressions;
-using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Expressions;
+using Carbunqlex.QuerySources;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.QueryNodeTests;
@@ -13,14 +13,21 @@ public class FromEditorTests(ITestOutputHelper output)
     {
         // Arrange
         var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
 
         // Act
         output.WriteLine(queryNode.ToSql());
 
-        queryNode.From(["table_a_id"], static from =>
+        queryNode.From(["table_a_id"], isCurrentOnly: true, static from =>
         {
-            from.Join("inner join", new DatasourceExpression(new TableSource("table_b"), "b"), from.ValueMap["table_a_id"].Equal(new ColumnExpression("b", "table_a_id")));
+            from.Join("inner join"
+                , new DatasourceExpression(new TableSource("table_b"), "b")
+                , static (map, ds) =>
+                {
+                    return map.Values
+                        .Select(x => x.Equal(new ColumnExpression(ds.Alias, x.DefaultName)))
+                        .Aggregate((current, next) => current.And(next));
+                });
         });
 
         var actual = queryNode.ToSql();
@@ -35,12 +42,12 @@ public class FromEditorTests(ITestOutputHelper output)
     {
         // Arrange
         var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
 
         // Act
         output.WriteLine(queryNode.ToSql());
 
-        queryNode.From(["table_a_id"], static from =>
+        queryNode.From(["table_a_id"], isCurrentOnly: true, static from =>
         {
             from.InnerJoin("table_b", "b");
         });
@@ -57,12 +64,12 @@ public class FromEditorTests(ITestOutputHelper output)
     {
         // Arrange
         var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
 
         // Act
         output.WriteLine(queryNode.ToSql());
 
-        queryNode.From(["table_a_id", "value"], static from =>
+        queryNode.From(["table_a_id", "value"], isCurrentOnly: true, static from =>
         {
             from.InnerJoin("table_b", "b");
         });
@@ -79,17 +86,17 @@ public class FromEditorTests(ITestOutputHelper output)
     {
         // Arrange
         var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
 
         // Act
         output.WriteLine(queryNode.ToSql());
 
-        queryNode.From(["table_a_id"], static from =>
+        queryNode.From(["table_a_id"], isCurrentOnly: true, static from =>
         {
-            from.LeftJoin("table_b", "b").Edit(static join =>
+            from.LeftJoin("table_b", "b").EditQuery(static q =>
             {
-                join.Select("amount", "quantity").Coalesce(0);
-                join.Select("name");
+                q.AddColumn("coalesce(b.amount, 0)", "quantity");
+                q.AddColumn("b.name");
             });
         });
 
@@ -107,18 +114,19 @@ public class FromEditorTests(ITestOutputHelper output)
     {
         // Arrange
         var query = SelectQueryFactory.CreateSelectQuery("table_a", "a", "table_a_id", "value");
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
 
         // Act
         output.WriteLine(queryNode.ToSql());
 
-        queryNode.From(["table_a_id"], static from =>
+        queryNode.From(["table_a_id"], isCurrentOnly: true, static from =>
         {
-            from.LeftJoin("table_b", "b").Edit(static join =>
-            {
-                join.Where("amount").Coalesce(0).Equal(0);
-                join.Where("name").Equal("test");
-            });
+            from.LeftJoin("table_b", "b")
+                .EditQuery(static q =>
+                {
+                    q.Where("coalesce(b.amount, 0) = 0");
+                    q.Where("b.name ='test'");
+                });
         });
 
         output.WriteLine(queryNode.ToTreeString());

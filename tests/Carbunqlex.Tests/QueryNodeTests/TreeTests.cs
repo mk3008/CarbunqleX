@@ -12,7 +12,7 @@ public class TreeTests(ITestOutputHelper output)
     {
         var query = SelectQueryParser.Parse("select u.user_id, u.users_name from users as u");
 
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         var actual = queryNode.ToTreeString();
         output.WriteLine(actual);
 
@@ -36,7 +36,7 @@ public class TreeTests(ITestOutputHelper output)
     {
         var query = SelectQueryParser.Parse("select * from (select u.user_id, u.users_name from users as u) as d");
 
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         var actual = queryNode.ToTreeString();
         output.WriteLine(actual);
 
@@ -89,7 +89,7 @@ public class TreeTests(ITestOutputHelper output)
                 posts.post_id = :post_id
             """);
 
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         var actual = queryNode.ToTreeString();
         output.WriteLine(actual);
 

@@ -1,5 +1,6 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.ValueExpressions;
+using Carbunqlex.Expressions;
+using Carbunqlex.Lexing;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ClauseTests;

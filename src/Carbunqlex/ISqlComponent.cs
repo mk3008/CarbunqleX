@@ -1,4 +1,6 @@
-﻿namespace Carbunqlex;
+﻿using Carbunqlex.Lexing;
+
+namespace Carbunqlex;
 
 /// <summary>
 /// Represents a SQL component that can generate SQL strings and tokens.

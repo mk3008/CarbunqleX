@@ -1,5 +1,6 @@
-﻿using Carbunqlex.Parsing;
-using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Expressions;
+using Carbunqlex.Lexing;
+using Carbunqlex.Parsing.Expressions;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ParsingTests;
@@ -40,7 +41,7 @@ public class ParenthesizedExpressionParserTests
         // Assert
         Assert.NotNull(result);
         Assert.IsType<ParenthesizedExpression>(result);
-        Assert.Equal("(- 1)", result.ToSqlWithoutCte());
+        Assert.Equal("(-1)", result.ToSqlWithoutCte());
     }
 
     [Fact]
@@ -54,7 +55,7 @@ public class ParenthesizedExpressionParserTests
         // Assert
         Assert.NotNull(result);
         Assert.IsType<UnaryExpression>(result);
-        Assert.Equal("- (1 + 2)", result.ToSqlWithoutCte());
+        Assert.Equal("-(1 + 2)", result.ToSqlWithoutCte());
     }
 
     [Fact]

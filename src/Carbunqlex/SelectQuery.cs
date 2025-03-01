@@ -1,6 +1,7 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.DatasourceExpressions;
-using Carbunqlex.ValueExpressions;
+using Carbunqlex.Expressions;
+using Carbunqlex.Lexing;
+using Carbunqlex.QuerySources;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
@@ -238,7 +239,11 @@ public class SelectQuery : ISelectQuery
         {
             return Enumerable.Empty<DatasourceExpression>();
         }
-        return FromClause.GetDatasources();
+        var lst = new List<DatasourceExpression>();
+        lst.AddRange(FromClause.GetDatasources());
+        lst.AddRange(WhereClause.GetDatasources());
+        lst.AddRange(HavingClause.GetDatasources());
+        return lst;
     }
 
     public IEnumerable<ColumnExpression> ExtractColumnExpressions()
@@ -287,5 +292,17 @@ public class SelectQuery : ISelectQuery
             throw new InvalidOperationException("Cannot add a join clause without a FROM clause.");
         }
         FromClause.AddJoin(joinClause);
+    }
+
+    public bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery)
+    {
+        selectQuery = this;
+        return true;
+    }
+
+    public bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause)
+    {
+        selectClause = SelectClause;
+        return true;
     }
 }

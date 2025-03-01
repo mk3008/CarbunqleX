@@ -1,5 +1,6 @@
-﻿using Carbunqlex.Parsing;
-using Carbunqlex.ValueExpressions;
+﻿using Carbunqlex.Expressions;
+using Carbunqlex.Lexing;
+using Carbunqlex.Parsing.Expressions;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ParsingTests;

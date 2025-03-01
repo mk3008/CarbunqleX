@@ -14,7 +14,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Where("table_a_id", static value => value.Equal(100).NotEqual(-100));
@@ -33,7 +33,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Where("table_a_id", static value => value.GreaterThan(50).GreaterThanOrEqual(30));
@@ -52,7 +52,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Where("table_a_id", static value => value.LessThan(200).LessThanOrEqual(300));
@@ -71,7 +71,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Where("table_a_id", static value => value.In([1, 2, 3]).NotIn([4, 5, 6]));
@@ -90,9 +90,9 @@ public class WhereEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
 
-        queryNode.Where("table_a_id", static r => r.Like("%a%").NotLike("%b%"));
+        queryNode.Where("table_a_id", static r => r.Like("'%a%'").NotLike("'%b%'"));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -108,7 +108,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Where("table_a_id",
@@ -128,7 +128,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Where("table_a_id", static value => value.IsNull().IsNotNull());
@@ -147,7 +147,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Where("table_a_id", static value => value.Between(1, 10).NotBetween(20, 30));
@@ -166,10 +166,10 @@ public class WhereEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select a.table_a_id, a.value from table_a as a");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.Where("table_a_id", static value => value.Coalesce(0).GreaterThanOrEqual(0));
+        queryNode.Where("table_a_id", static value => value.Coalesce(0, w => w.GreaterThanOrEqual(0)));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -184,7 +184,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select d.user_id, d.users_name from (select u.user_id, u.users_name from users as u) as d");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Where("user_id", static value => value.Equal(10));
@@ -202,7 +202,7 @@ public class WhereEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("with d as (select u.user_id, u.users_name from users as u) select d.user_id, d.users_name from d");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Where("user_id", static value => value.Equal(10));
@@ -226,14 +226,14 @@ public class WhereEditorTests(ITestOutputHelper output)
             """);
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Where("user_id", static value => value.Equal(10));
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
-        //output.WriteLine(queryNode.ToTreeString());
+        output.WriteLine(queryNode.ToTreeString());
 
         var expected = "select u.user_id, u.users_name from users as u where u.user_id = 10 union select u.user_id, u.users_name from users as u where u.user_id = 10 union all select u.user_id, u.users_name from users as u where u.user_id = 10";
         Assert.Equal(expected, actual);
@@ -264,7 +264,7 @@ public class WhereEditorTests(ITestOutputHelper output)
             """);
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.Where("user_id", static value => value.Equal(10));

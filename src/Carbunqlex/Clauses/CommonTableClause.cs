@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Carbunqlex.Lexing;
+using System.Text;
 
 namespace Carbunqlex.Clauses;
 
@@ -9,6 +10,19 @@ public class CommonTableClause : ISqlComponent
     public ISelectQuery Query { get; }
     public ColumnAliasClause? ColumnAliasClause { get; }
     public bool? IsMaterialized { get; }
+
+    public CommonTableClause(IQuery query, string alias, ColumnAliasClause? columnAliases = null, bool? isMaterialized = null, bool isRecursive = false)
+    {
+        if (!query.TryGetSelectQuery(out var selectQuery))
+        {
+            throw new ArgumentException("The query must be a select query.", nameof(query));
+        }
+        Query = selectQuery;
+        Alias = alias;
+        ColumnAliasClause = columnAliases;
+        IsMaterialized = isMaterialized;
+        IsRecursive = isRecursive;
+    }
 
     public CommonTableClause(ISelectQuery query, string alias, ColumnAliasClause? columnAliases = null, bool? isMaterialized = null, bool isRecursive = false)
     {

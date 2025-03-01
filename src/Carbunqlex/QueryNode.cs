@@ -1,13 +1,19 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.DatasourceExpressions;
-using Carbunqlex.Parsing;
-using Carbunqlex.ValueExpressions;
+using Carbunqlex.Editors;
+using Carbunqlex.Expressions;
+using Carbunqlex.Parsing.Expressions;
+using Carbunqlex.Parsing.QuerySources;
+using Carbunqlex.QuerySources;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Carbunqlex;
 
-public class QueryNode : ISqlComponent
+/// <summary>
+/// Represents a query node that can be used to modify a query.
+/// </summary>
+public class QueryNode : IQuery
 {
     /// <summary>
     /// The query.
@@ -30,8 +36,14 @@ public class QueryNode : ISqlComponent
     {
         Query = query;
         SelectExpressionMap = query.GetSelectExpressions().ToDictionary(static expr => expr.Alias.ToLowerInvariant(), expr => expr).AsReadOnly();
-        DatasourceNodeMap = datasourceNodes.ToDictionary(static ds => ds.Name.ToLowerInvariant(), static ds => ds).AsReadOnly();
-        MustRefresh = false;
+
+        // Group if the same data source is referenced multiple times
+        DatasourceNodeMap = datasourceNodes
+            .GroupBy(static ds => ds.Name.ToLowerInvariant())
+            .ToDictionary(static g => g.Key, static g => g.First())
+            .AsReadOnly();
+
+        MustRefresh = false; MustRefresh = false;
     }
 
     /// <summary>
@@ -221,11 +233,11 @@ public class QueryNode : ISqlComponent
         }
     }
 
-    public QueryNode Override(string columnName, Action<SelectEditor> action)
+    public QueryNode ModifyColumn(string columnName, Action<SelectEditor> action)
     {
         if (MustRefresh) Refresh();
 
-        var result = GetColumnEditors(columnName, isSelectableOnly: true);
+        var result = GetColumnEditors(columnName, isSelectableOnly: true, isCurrentOnly: false);
 
         foreach (var columnModifier in result)
         {
@@ -238,47 +250,116 @@ public class QueryNode : ISqlComponent
         return this;
     }
 
-    public QueryNode Remove(string columnName)
+    public QueryNode RemoveColumn(string columnName)
     {
         if (MustRefresh) Refresh();
 
-        var result = GetColumnEditors(columnName, isSelectableOnly: true);
-
-        foreach (var columnModifier in result)
+        var result = GetColumnEditors(columnName, isSelectableOnly: true, isCurrentOnly: true).FirstOrDefault();
+        if (result == null || result.SelectExpression == null)
         {
-            var editor = new SelectEditor(columnModifier);
-            editor.Remove();
+            return this;
         }
 
-        if (result.Any()) MustRefresh = true;
+        Query.RemoveColumn(result.SelectExpression);
+        MustRefresh = true;
+
         return this;
     }
 
+    public QueryNode AddColumn(string columnExpression)
+    {
+        if (MustRefresh) Refresh();
+        var result = GetColumnEditors(columnExpression, isSelectableOnly: true, isCurrentOnly: true).FirstOrDefault();
+        if (result != null)
+        {
+            throw new InvalidOperationException("Column already selected");
+        }
+
+        Query.AddColumn(new SelectExpression(ColumnExpressionParser.Parse(columnExpression)));
+        MustRefresh = true;
+        return this;
+    }
+
+    public QueryNode AddColumn(string valueExpression, string alias)
+    {
+        if (MustRefresh) Refresh();
+        var result = GetColumnEditors(alias, isSelectableOnly: true, isCurrentOnly: true).FirstOrDefault();
+        if (result != null)
+        {
+            throw new InvalidOperationException("Alias already selected");
+        }
+
+        Query.AddColumn(new SelectExpression(ValueExpressionParser.Parse(valueExpression), alias));
+        MustRefresh = true;
+        return this;
+    }
+
+    public QueryNode From(string columnName, bool isCurrentOnly, Action<FromEditor> action)
+    {
+        return From(new List<string> { columnName }, isCurrentOnly, action);
+    }
+
+    public QueryNode From(IEnumerable<string> columnNames, bool isCurrentOnly, Action<FromEditor> action)
+    {
+        if (MustRefresh) Refresh();
+
+        var result = GetFromEditors(columnNames, isCurrentOnly);
+
+        foreach (var editor in result)
+        {
+            action(editor);
+        }
+
+        if (result.Any()) MustRefresh = true;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds search conditions to the current query.
+    /// </summary>
+    /// <param name="conditionExpressionText"></param>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
+    public QueryNode Where(string conditionExpressionText)
+    {
+        /// 強制追加するため、事前Refreshは不要
+        if (Query.TryGetWhereClause(out var whereClause))
+        {
+            whereClause.Add(ValueExpressionParser.Parse(conditionExpressionText));
+            MustRefresh = true;
+        }
+        else
+        {
+            throw new NotSupportedException("The query must have a WHERE clause.");
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Searches for queries that contain the specified column name and adds search conditions.
+    /// If not found, does nothing.
+    /// </summary>
+    /// <param name="columnName"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public QueryNode Where(string columnName, Action<WhereEditor> action)
     {
-        if (MustRefresh) Refresh();
-
-        var result = GetColumnEditors(columnName, isSelectableOnly: false);
-
-        // TODO : distinct x.Value is used to remove duplicates
-        result = result.GroupBy(x => x.Value).Select(g => g.First()).ToList();
-
-        foreach (var columnModifier in result)
-        {
-            var editor = new WhereEditor(columnModifier);
-            action(editor);
-        }
-
-        if (result.Any()) MustRefresh = true;
-
-        return this;
+        return Where(new List<string> { columnName }, action);
     }
 
-    public QueryNode From(IEnumerable<string> columnNames, Action<FromEditor> action)
+    /// <summary>
+    /// Searches for queries that contain the specified column names and adds search conditions.
+    /// If not found, does nothing.
+    /// </summary>
+    /// <param name="columnNames"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
+    public QueryNode Where(IEnumerable<string> columnNames, Action<WhereEditor> action)
     {
         if (MustRefresh) Refresh();
 
-        var result = GetFromEditors(columnNames);
+        var result = GetWhereEditors(columnNames);
 
         foreach (var editor in result)
         {
@@ -324,7 +405,7 @@ public class QueryNode : ISqlComponent
             new FromClause(new DatasourceExpression(new SubQuerySource(Query), alias))
             );
 
-        return QueryNodeFactory.Create(sq);
+        return QueryAstParser.Parse(sq);
     }
 
     public QueryNode NormalizeSelectClause()
@@ -392,7 +473,6 @@ public class QueryNode : ISqlComponent
 
         return this;
     }
-
 
     public QueryNode Serialize(string datasource, string objectName = "", IEnumerable<string>? include = null, bool removePropertyColumn = true, Func<string, string>? propertyBuilder = null, bool removePrefix = true)
     {
@@ -499,17 +579,28 @@ public class QueryNode : ISqlComponent
         return this;
     }
 
-    private List<ColumnEditor> GetColumnEditors(string columnName, bool isSelectableOnly)
+    private List<ColumnEditor> GetColumnEditors(string columnName, bool isSelectableOnly, bool isCurrentOnly)
     {
         var result = new List<ColumnEditor>();
-        WhenRecursive(this, columnName.ToLowerInvariant(), isSelectableOnly, result);
+        WhenRecursive(this, columnName.ToLowerInvariant(), isSelectableOnly, result, isCurrentOnly);
         return result;
     }
 
-    private List<FromEditor> GetFromEditors(IEnumerable<string> columnNames)
+    private List<FromEditor> GetFromEditors(IEnumerable<string> columnNames, bool isCurrentOnly)
     {
         var result = new List<FromEditor>();
-        WhenRecursive(this, columnNames.Select(c => c.ToLowerInvariant()).ToList(), result);
+        WhenRecursive(this, columnNames.Select(c => c.ToLowerInvariant()).ToList(), result, isCurrentOnly);
+        return result;
+    }
+
+    private List<WhereEditor> GetWhereEditors(IEnumerable<string> columnNames)
+    {
+        var result = new List<WhereEditor>();
+        WhenRecursive(this, columnNames.Select(c => c.ToLowerInvariant()).ToList(), result, isCurrentOnly: false);
+
+        // Remove duplicates
+        result = result.GroupBy(x => x.Query).Select(g => g.First()).ToList();
+
         return result;
     }
 
@@ -526,7 +617,7 @@ public class QueryNode : ISqlComponent
         var column = columnName.ToLowerInvariant();
 
         var result = new List<ColumnEditor>();
-        WhenRecursive(this, column, isSelectableOnly, result);
+        WhenRecursive(this, column, isSelectableOnly, result, isCurrentOnly: false);
         foreach (var item in result)
         {
             action(item);
@@ -537,22 +628,25 @@ public class QueryNode : ISqlComponent
         return this;
     }
 
-    private void WhenRecursive(QueryNode node, string columnName, bool isSelectableOnly, List<ColumnEditor> result)
+    private void WhenRecursive(QueryNode node, string columnName, bool isSelectableOnly, List<ColumnEditor> result, bool isCurrentOnly)
     {
         var beforeCount = result.Count;
 
         // Search child nodes first
-        foreach (var datasourceNode in node.DatasourceNodeMap.Values)
+        if (!isCurrentOnly)
         {
-            foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+            foreach (var datasourceNode in node.DatasourceNodeMap.Values)
             {
-                WhenRecursive(childQueryNode, columnName, isSelectableOnly, result);
+                foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+                {
+                    WhenRecursive(childQueryNode, columnName, isSelectableOnly, result, isCurrentOnly);
+                }
             }
-        }
 
-        if (result.Count != beforeCount)
-        {
-            return;
+            if (result.Count != beforeCount)
+            {
+                return;
+            }
         }
 
         // Search for column names used in the query
@@ -577,20 +671,71 @@ public class QueryNode : ISqlComponent
         }
     }
 
-    private void WhenRecursive(QueryNode node, IList<string> columnNames, List<FromEditor> result)
+    private void WhenRecursive(QueryNode node, IList<string> columnNames, List<FromEditor> result, bool isCurrentOnly)
     {
-        // Search child nodes first
-        foreach (var datasourceNode in node.DatasourceNodeMap.Values)
+        if (!isCurrentOnly)
         {
-            foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+            // Search child nodes first
+            foreach (var datasourceNode in node.DatasourceNodeMap.Values)
             {
-                WhenRecursive(childQueryNode, columnNames, result);
+                foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+                {
+                    WhenRecursive(childQueryNode, columnNames, result, isCurrentOnly);
+                }
+            }
+
+            if (result.Any())
+            {
+                return;
             }
         }
 
-        if (result.Any())
+        var values = new Dictionary<string, IValueExpression>();
+
+        // Search for columns used in the query
+        foreach (var columnName in columnNames)
         {
-            return;
+            if (node.SelectExpressionMap.ContainsKey(columnName))
+            {
+                values.Add(columnName.ToLowerInvariant(), node.SelectExpressionMap[columnName].Value);
+
+            }
+            else if (node.DatasourceNodeMap.Values.Where(ds => ds.Columns.ContainsKey(columnName)).Any())
+            {
+                var datasource = node.DatasourceNodeMap.Values.Where(ds => ds.Columns.ContainsKey(columnName)).First();
+                values.Add(columnName.ToLowerInvariant(), new ColumnExpression(datasource.Name, datasource.Columns[columnName]));
+            }
+            else
+            {
+                // Exit if any column is not found
+                return;
+            }
+        }
+
+        // Add to result if all columns are found
+        result.Add(new(node, values));
+    }
+
+    private void WhenRecursive(QueryNode node, IList<string> columnNames, List<WhereEditor> result, bool isCurrentOnly)
+    {
+        if (!isCurrentOnly)
+        {
+            var startingCount = result.Count;
+
+            // Search child nodes first
+            foreach (var datasourceNode in node.DatasourceNodeMap.Values)
+            {
+                foreach (var childQueryNode in datasourceNode.ChildQueryNodes)
+                {
+                    WhenRecursive(childQueryNode, columnNames, result, isCurrentOnly);
+                }
+            }
+
+            // Exit if any column is found
+            if (startingCount != result.Count)
+            {
+                return;
+            }
         }
 
         var values = new Dictionary<string, IValueExpression>();
@@ -618,58 +763,115 @@ public class QueryNode : ISqlComponent
         // Add to result if all columns are found
         result.Add(new(node.Query, values));
     }
+
     public string ToSql()
     {
         return Query.ToSql();
-    }
-
-    public IEnumerable<Token> GenerateTokens()
-    {
-        return Query.GenerateTokens();
-    }
-
-    public IEnumerable<CommonTableClause> GetCommonTableClauses()
-    {
-        return Query.GetCommonTableClauses();
     }
 
     public IDictionary<string, object?> GetParameters()
     {
         return Query.GetParameters();
     }
-
-    public ParameterExpression AddParameter(string name, object value)
+    public QueryNode AddParameter(string name, object value)
     {
-        return Query.AddParameter(name, value);
-    }
-
-    public string ToSqlWithoutCte()
-    {
-        return Query.ToSqlWithoutCte();
-    }
-
-    public IEnumerable<Token> GenerateTokensWithoutCte()
-    {
-        return Query.GenerateTokensWithoutCte();
-    }
-
-    public IEnumerable<ISelectQuery> GetQueries()
-    {
-        return Query.GetQueries();
-    }
-
-    public void AddJoin(JoinClause joinClause)
-    {
-        Query.AddJoin(joinClause);
+        Query.AddParameter(name, value);
+        return this;
     }
 
     private void Refresh()
     {
-        var node = QueryNodeFactory.Create(Query);
+        var node = QueryAstParser.Parse(Query);
         Query = node.Query;
         SelectExpressionMap = node.SelectExpressionMap;
         DatasourceNodeMap = node.DatasourceNodeMap;
 
         MustRefresh = false;
+    }
+
+    public bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery)
+    {
+        selectQuery = Query;
+        return true;
+    }
+
+    public bool TryGetWhereClause([NotNullWhen(true)] out WhereClause? whereClause)
+    {
+        return Query.TryGetWhereClause(out whereClause);
+    }
+
+    public QueryNode UnionAll(IQuery right)
+    {
+        if (Query.TryGetSelectQuery(out var leftQuery) && right.TryGetSelectQuery(out var rightQuery))
+        {
+            Query = new UnionQuery("union all", leftQuery, rightQuery);
+            MustRefresh = true;
+            return this;
+        }
+        if (leftQuery is null)
+        {
+            throw new ArgumentException("The left query must be a select query.");
+        }
+        throw new ArgumentException("The right query must be a select query.", nameof(right));
+    }
+
+    public QueryNode Union(IQuery right)
+    {
+        if (Query.TryGetSelectQuery(out var leftQuery) && right.TryGetSelectQuery(out var rightQuery))
+        {
+            Query = new UnionQuery("union", leftQuery, rightQuery);
+            MustRefresh = true;
+            return this;
+        }
+        if (leftQuery is null)
+        {
+            throw new ArgumentException("The left query must be a select query.");
+        }
+        throw new ArgumentException("The right query must be a select query.", nameof(right));
+    }
+
+    public QueryNode Intersect(IQuery right)
+    {
+        if (Query.TryGetSelectQuery(out var leftQuery) && right.TryGetSelectQuery(out var rightQuery))
+        {
+            Query = new UnionQuery("intersect", leftQuery, rightQuery);
+            MustRefresh = true;
+            return this;
+        }
+        if (leftQuery is null)
+        {
+            throw new ArgumentException("The left query must be a select query.");
+        }
+        throw new ArgumentException("The right query must be a select query.", nameof(right));
+    }
+
+    public QueryNode Except(IQuery right)
+    {
+        if (Query.TryGetSelectQuery(out var leftQuery) && right.TryGetSelectQuery(out var rightQuery))
+        {
+            Query = new UnionQuery("except", leftQuery, rightQuery);
+            MustRefresh = true;
+            return this;
+        }
+        if (leftQuery is null)
+        {
+            throw new ArgumentException("The left query must be a select query.");
+        }
+        throw new ArgumentException("The right query must be a select query.", nameof(right));
+    }
+
+    public QueryNode Distinct()
+    {
+        if (Query.TryGetSelectClause(out var selectClause))
+        {
+            selectClause.DistinctClause = new DistinctClause();
+            return this;
+        }
+        throw new InvalidOperationException("The query must have a select clause.");
+    }
+
+    public bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause)
+    {
+        return Query.TryGetSelectClause(out selectClause);
     }
 }

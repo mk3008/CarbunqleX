@@ -14,7 +14,7 @@ public class GroupByEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select u.user_id, u.name from user as u");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.GroupBy("user_id");
@@ -33,7 +33,7 @@ public class GroupByEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select u.id as user_id, u.name from user as u");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.GroupBy("user_id");
@@ -52,7 +52,7 @@ public class GroupByEditorTests(ITestOutputHelper output)
         var query = SelectQueryParser.Parse("select u2.user_id, u2.name from (select u1.user_id, u1.name from user as u1) as u2");
 
         // Act
-        var queryNode = QueryNodeFactory.Create(query);
+        var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
         queryNode.GroupBy("user_id");

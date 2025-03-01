@@ -1,4 +1,5 @@
-﻿using Carbunqlex.Parsing;
+﻿using Carbunqlex.Lexing;
+using Carbunqlex.Parsing.Expressions;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.ParsingTests;
@@ -144,5 +145,18 @@ public class ValueParserTests
         Output.WriteLine(result.ToSqlWithoutCte());
 
         Assert.Equal("table_a.*", result.ToSqlWithoutCte());
+    }
+
+    [Fact]
+    public void Parse_()
+    {
+        // Arrange
+        var tokenizer = new SqlTokenizer("-100");
+
+        // Act
+        var result = ValueExpressionParser.Parse(tokenizer);
+        Output.WriteLine(result.ToSqlWithoutCte());
+
+        Assert.Equal("-100", result.ToSqlWithoutCte());
     }
 }

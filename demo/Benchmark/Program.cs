@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using Carbunql;
+using Carbunqlex.Lexing;
 using Carbunqlex.Parsing;
 using SqModel.Analysis;
 

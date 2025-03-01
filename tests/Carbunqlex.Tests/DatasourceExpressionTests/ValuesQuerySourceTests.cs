@@ -1,6 +1,6 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.DatasourceExpressions;
-using Carbunqlex.ValueExpressions;
+using Carbunqlex.Expressions;
+using Carbunqlex.QuerySources;
 using Xunit.Abstractions;
 
 namespace Carbunqlex.Tests.DatasourceExpressionTests;
@@ -29,7 +29,7 @@ public class ValuesQuerySourceTests(ITestOutputHelper output)
         var columns3 = new List<IValueExpression>
         {
             ValueBuilder.Constant(3),
-            ValueBuilder.Constant("O'Reilly"),
+            ValueBuilder.Constant("'O''Reilly'"),
             ValueBuilder.Null
         };
         query.AddRow(columns1);

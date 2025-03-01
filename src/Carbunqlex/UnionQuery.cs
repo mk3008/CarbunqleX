@@ -1,6 +1,7 @@
 ﻿using Carbunqlex.Clauses;
-using Carbunqlex.DatasourceExpressions;
-using Carbunqlex.ValueExpressions;
+using Carbunqlex.Expressions;
+using Carbunqlex.Lexing;
+using Carbunqlex.QuerySources;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
@@ -208,5 +209,17 @@ public class UnionQuery : ISelectQuery
     public void AddJoin(JoinClause joinClause)
     {
         throw new NotSupportedException("Joins cannot be added to a union query.");
+    }
+
+    public bool TryGetSelectQuery([NotNullWhen(true)] out ISelectQuery? selectQuery)
+    {
+        selectQuery = this;
+        return true;
+    }
+
+    public bool TryGetSelectClause([NotNullWhen(true)] out SelectClause? selectClause)
+    {
+        selectClause = null;
+        return false;
     }
 }
