@@ -42,6 +42,33 @@ public class QueryBuildingSample(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// Sample for writing SelectQuery with CTE.
+    /// </summary>
+    [Fact]
+    public void BuildSelectQueryWithCte()
+    {
+        var fromClause = new FromClause(new DatasourceExpression(new TableSource("cte"), "x"));
+        var selectExpressions = new List<SelectExpression>()
+        {
+            new SelectExpression(new ColumnExpression("*"))
+        };
+        var selectClause = new SelectClause(selectExpressions);
+        var sq = new SelectQuery(selectClause, fromClause);
+
+        // create with clause
+        var subQuery = QueryAstParser.Parse("select a.table_a_id, 1 as value from table_a as a");
+        sq.WithClause.Add(new CommonTableClause(subQuery, "cte"));
+
+        var expected = "with cte as (select a.table_a_id, 1 as value from table_a as a) select * from cte as x";
+        var actual = sq.ToSql();
+        output.WriteLine(actual);
+        Assert.Equal(expected, actual);
+        // If RawSQL is available, it is recommended to write it like this.
+        var query = QueryAstParser.Parse(expected);
+        Assert.Equal(expected, query.ToSql());
+    }
+
+    /// <summary>
     /// Sample for generating a create table query from a select query.
     /// </summary>
     [Fact]
