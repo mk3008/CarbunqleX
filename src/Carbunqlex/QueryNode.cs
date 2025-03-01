@@ -291,30 +291,11 @@ public class QueryNode : IQuery
         return this;
     }
 
-    //public QueryNode Where(string columnName, Action<WhereEditorOld> action)
-    //{
-    //    if (MustRefresh) Refresh();
-
-    //    var result = GetColumnEditors(columnName, isSelectableOnly: false, isCurrentOnly: false);
-
-    //    result = result.GroupBy(x => x.Value).Select(g => g.First()).ToList();
-
-    //    foreach (var columnModifier in result)
-    //    {
-    //        var editor = new WhereEditorOld(columnModifier);
-    //        action(editor);
-    //    }
-
-    //    if (result.Any()) MustRefresh = true;
-
-    //    return this;
-    //}
-
-    public QueryNode From(IEnumerable<string> columnNames, Action<FromEditor> action)
+    public QueryNode From(IEnumerable<string> columnNames, bool isCurrentOnly, Action<FromEditor> action)
     {
         if (MustRefresh) Refresh();
 
-        var result = GetFromEditors(columnNames);
+        var result = GetFromEditors(columnNames, isCurrentOnly);
 
         foreach (var editor in result)
         {
@@ -597,10 +578,10 @@ public class QueryNode : IQuery
         return result;
     }
 
-    private List<FromEditor> GetFromEditors(IEnumerable<string> columnNames)
+    private List<FromEditor> GetFromEditors(IEnumerable<string> columnNames, bool isCurrentOnly)
     {
         var result = new List<FromEditor>();
-        WhenRecursive(this, columnNames.Select(c => c.ToLowerInvariant()).ToList(), result, isCurrentOnly: true);
+        WhenRecursive(this, columnNames.Select(c => c.ToLowerInvariant()).ToList(), result, isCurrentOnly);
         return result;
     }
 
@@ -724,7 +705,7 @@ public class QueryNode : IQuery
         }
 
         // Add to result if all columns are found
-        result.Add(new(node.Query, values));
+        result.Add(new(node, values));
     }
 
     private void WhenRecursive(QueryNode node, IList<string> columnNames, List<WhereEditor> result, bool isCurrentOnly)
