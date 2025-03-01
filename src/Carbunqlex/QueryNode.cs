@@ -9,7 +9,6 @@ using System.Text;
 
 namespace Carbunqlex;
 
-
 public class QueryNode : IQuery
 {
     /// <summary>
