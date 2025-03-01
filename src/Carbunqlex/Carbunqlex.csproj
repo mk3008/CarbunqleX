@@ -8,7 +8,7 @@
 		<RepositoryUrl>https://github.com/mk3008/CarbunqleX</RepositoryUrl>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<FileVersion></FileVersion>
-		<Version>0.0.1</Version>
+		<Version>0.0.2</Version>
 		<Authors>mk3008net</Authors>
 		<Description>CarbunqleX is a lightweight library that enhances the reusability and maintainability of RawSQL through advanced AST analysis.</Description>
 		<Copyright>mk3008net</Copyright>
