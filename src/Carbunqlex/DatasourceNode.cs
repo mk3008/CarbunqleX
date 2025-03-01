@@ -4,24 +4,24 @@ using System.Collections.ObjectModel;
 namespace Carbunqlex;
 
 /// <summary>
-/// データソースの種類。
+/// Types of data sources.
 /// </summary>
 public enum DatasourceType
 {
     /// <summary>
-    /// テーブル。
+    /// Table.
     /// </summary>
     Table,
     /// <summary>
-    /// サブクエリ。
+    /// Subquery.
     /// </summary>
     SubQuery,
     /// <summary>
-    /// CTE。
+    /// CTE.
     /// </summary>
     CommonTableExtension,
     /// <summary>
-    /// UNIONクエリ。
+    /// UNION query.
     /// </summary>
     UnionSubQuery
 }
@@ -29,33 +29,33 @@ public enum DatasourceType
 public class DatasourceNode
 {
     /// <summary>
-    /// データソース。
+    /// Data source.
     /// </summary>
     private DatasourceExpression Expression { get; }
 
     /// <summary>
-    /// データソースのエイリアス。
+    /// Alias of the data source.
     /// </summary>
     public string Name { get; }
 
     /// <summary>
-    /// データソースの種類。
+    /// Type of the data source.
     /// </summary>
     public DatasourceType DatasourceType { get; }
 
     /// <summary>
-    /// データソースのフルネーム。
+    /// Full name of the data source.
     /// </summary>
     public string TableFullName { get; }
 
     /// <summary>
-    /// データソースが所持している列名。
+    /// Column names owned by the data source.
     /// </summary>
     public ReadOnlyDictionary<string, string> Columns { get; }
 
     /// <summary>
-    /// データソースを構成している子クエリノード。
-    /// サブクエリ、CTEの場合はここに格納される。
+    /// Child query nodes that make up the data source.
+    /// Stored here in case of subqueries or CTEs.
     /// </summary>
     public IReadOnlyList<QueryNode> ChildQueryNodes { get; }
 
@@ -69,5 +69,3 @@ public class DatasourceNode
         ChildQueryNodes = childQueryNodes?.ToList().AsReadOnly() ?? new List<QueryNode>().AsReadOnly();
     }
 }
-
-

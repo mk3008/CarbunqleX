@@ -1,6 +1,6 @@
 ﻿using Carbunqlex.Expressions;
 
-namespace Carbunqlex;
+namespace Carbunqlex.Editors;
 
 public class ColumnEditor(ISelectQuery query, IValueExpression expression, SelectExpression? selectExpression = null)
 {

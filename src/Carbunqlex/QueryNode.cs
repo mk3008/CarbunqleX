@@ -1,4 +1,5 @@
 ﻿using Carbunqlex.Clauses;
+using Carbunqlex.Editors;
 using Carbunqlex.Expressions;
 using Carbunqlex.Parsing.Expressions;
 using Carbunqlex.Parsing.QuerySources;
@@ -9,6 +10,9 @@ using System.Text;
 
 namespace Carbunqlex;
 
+/// <summary>
+/// Represents a query node that can be used to modify a query.
+/// </summary>
 public class QueryNode : IQuery
 {
     /// <summary>

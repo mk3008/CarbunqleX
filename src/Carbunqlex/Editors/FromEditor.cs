@@ -2,7 +2,7 @@
 using Carbunqlex.Expressions;
 using Carbunqlex.QuerySources;
 
-namespace Carbunqlex;
+namespace Carbunqlex.Editors;
 
 public class FromEditor(QueryNode node, IReadOnlyDictionary<string, IValueExpression> keyValues)
 {

@@ -3,14 +3,27 @@ using Carbunqlex.Parsing;
 
 namespace Carbunqlex;
 
+/// <summary>
+/// Parses a query AST from a SQL string.
+/// </summary>
 public class QueryAstParser
 {
+    /// <summary>
+    /// Parses a query AST from a SQL string.
+    /// </summary>
+    /// <param name="sql"></param>
+    /// <returns></returns>
     public static QueryNode Parse(string sql)
     {
         var query = SelectQueryParser.Parse(sql);
         return Parse(query);
     }
 
+    /// <summary>
+    /// Parses a query AST from a select query.
+    /// </summary>
+    /// <param name="query"></param>
+    /// <returns></returns>
     public static QueryNode Parse(ISelectQuery query)
     {
         var ctes = query.GetCommonTableClauses().ToList();

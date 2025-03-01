@@ -1,6 +1,6 @@
 ﻿using Carbunqlex.Expressions;
 
-namespace Carbunqlex;
+namespace Carbunqlex.Editors;
 
 public class SelectEditor
 {
