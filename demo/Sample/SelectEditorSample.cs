@@ -34,11 +34,11 @@ public class SelectEditorSample(ITestOutputHelper output)
     /// Exclude columns.
     /// </summary>
     [Fact]
-    public void SelectValueWithExcludeFunction()
+    public void SelectValueWithRemoveColumn()
     {
         var query = QueryAstParser.Parse("select s.sale_date, s.sales_amount from sales as s");
 
-        query.ModifyColumn("sale_date", c => c.Exclude());
+        query.RemoveColumn("sale_date");
 
         var expected = "select s.sales_amount from sales as s";
 

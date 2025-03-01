@@ -55,7 +55,7 @@ public class SelectEditorTests(ITestOutputHelper output)
         var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
-        root.ExcludeColumn("value");
+        root.RemoveColumn("value");
 
         var actual = root.Query.ToSql();
         output.WriteLine(actual);
@@ -74,7 +74,7 @@ public class SelectEditorTests(ITestOutputHelper output)
         var root = QueryAstParser.Parse(query);
         output.WriteLine(root.Query.ToSql());
 
-        root.ExcludeColumn("val");
+        root.RemoveColumn("val");
 
         var actual = root.Query.ToSql();
         output.WriteLine(actual);

@@ -280,7 +280,7 @@ public class SelectQuery : ISelectQuery
         SelectClause.Expressions.Add(new SelectExpression(value, alias));
     }
 
-    public void ExcludeColumn(SelectExpression expr)
+    public void RemoveColumn(SelectExpression expr)
     {
         SelectClause.Expressions.Remove(expr);
     }

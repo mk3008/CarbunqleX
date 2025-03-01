@@ -246,18 +246,17 @@ public class QueryNode : ISqlComponent, IQuery
         return this;
     }
 
-    public QueryNode ExcludeColumn(string columnName)
+    public QueryNode RemoveColumn(string columnName)
     {
         if (MustRefresh) Refresh();
 
         var result = GetColumnEditors(columnName, isSelectableOnly: true, isCurrentOnly: true).FirstOrDefault();
-        if (result == null)
+        if (result == null || result.SelectExpression == null)
         {
             return this;
         }
 
-        var editor = new SelectEditor(result);
-        editor.Exclude();
+        Query.RemoveColumn(result.SelectExpression);
         MustRefresh = true;
 
         return this;

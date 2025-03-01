@@ -196,7 +196,7 @@ public class UnionQuery : ISelectQuery
         throw new NotSupportedException("Columns cannot be added to a union query.");
     }
 
-    public void ExcludeColumn(SelectExpression expr)
+    public void RemoveColumn(SelectExpression expr)
     {
         throw new NotSupportedException("Columns cannot be removed from a union query.");
     }

@@ -67,7 +67,7 @@ public interface ISelectQuery : IQuery, IArgumentExpression
 
     void AddColumn(IValueExpression value, string alias);
 
-    void ExcludeColumn(SelectExpression expr);
+    void RemoveColumn(SelectExpression expr);
 
     void AddJoin(JoinClause joinClause);
 }
