@@ -159,6 +159,33 @@ var query = QueryAstParser.Parse("...");
 query.Where("region", w => w.Exists(BuildRegionScalarQueryByUser(1)));
 ```
 
+#### 🔍 Expected SQL Output
+
+```sql
+WITH user_permissions AS (
+    SELECT rrp.region
+    FROM region_reference_permission AS rrp
+    WHERE rrp.user_id = :user_id
+), regional_sales AS (
+    SELECT orders.region, SUM(orders.amount) AS total_sales
+    FROM orders
+    WHERE EXISTS (
+        SELECT * 
+        FROM (SELECT up.region FROM user_permissions AS up) AS x 
+        WHERE orders.region = x.region
+    )
+    GROUP BY orders.region
+), top_regions AS (
+    SELECT rs.region
+    FROM regional_sales AS rs
+    WHERE rs.total_sales > (SELECT SUM(x.total_sales) / 10 FROM regional_sales AS x)
+)
+SELECT orders.region, orders.product, SUM(orders.quantity) AS product_units, SUM(orders.amount) AS product_sales
+FROM orders
+WHERE orders.region IN (SELECT x.region FROM top_regions AS x)
+GROUP BY orders.region, orders.product
+```
+
 By dynamically injecting permission-based filtering, we can ensure **secure and flexible query customization**.
 
 ## 📌 Conclusion
