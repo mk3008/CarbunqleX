@@ -1,4 +1,4 @@
-# CarbunqleX - SQL Parser and Modeler
+﻿# CarbunqleX - SQL Parser and Modeler
 
 ![GitHub](https://img.shields.io/github/license/mk3008/Carbunqlex)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/mk3008/Carbunqlex)
@@ -32,15 +32,15 @@ Unlike conventional SQL libraries, CarbunqleX automatically determines the most 
 
 ## 📦 Installation
 
-To install [Carbunqlex](https://www.nuget.org/packages/Carbunqlex/), use the following command:
+[Carbunqlex](https://www.nuget.org/packages/Carbunqlex/) can be installed from NuGet. To install using the package manager, use the following command:
 
 ```sh
-PM> NuGet\Install-Package Carbunqlex
+NuGet\Install-Package Carbunqlex
 ```
 
 ## 📖 Documentation
 
-### 1️⃣ Parsing a SQL Query
+### 1. Parsing a SQL Query
 
 Let's start by parsing a simple SQL query into an AST using `QueryAstParser.Parse`. We will then convert it back to SQL with `ToSql` and inspect its structure using `ToTreeString`.
 
@@ -60,9 +60,15 @@ Console.WriteLine("* AST");
 Console.WriteLine(query.ToTreeString());
 ```
 
-This basic example demonstrates how CarbunqleX converts SQL into a structured AST representation, making it easier to analyze and manipulate queries programmatically.
+#### 🔍 Expected SQL Output
 
-### 2️⃣ Modifying the WHERE Clause
+```sql
+SELECT a.table_a_id, a.value FROM table_a AS a
+```
+
+This makes it easy to convert between them.
+
+### 2. Modifying the WHERE Clause
 
 Now, let's modify the query by injecting a `WHERE` condition.
 
@@ -83,11 +89,11 @@ FROM table_a AS a
 WHERE a.value = 1;
 ```
 
-CarbunqleX automatically determines where to insert the condition while maintaining SQL integrity.
+CarbunqleX allows you to inject conditions while still maintaining the integrity of your SQL.
 
-### 3️⃣ Handling CTEs and Subqueries
+### 3. Handling CTEs and Subqueries
 
-Let's take it a step further by injecting a `WHERE` condition into a query that includes **CTEs and subqueries**.
+Let's try to insert a `WHERE` condition into a query that contains a **CTE and a subquery**.
 
 ```csharp
 var query = QueryAstParser.Parse("""
@@ -129,11 +135,11 @@ WHERE orders.region IN (SELECT x.region FROM top_regions x)
 GROUP BY orders.region, orders.product;
 ```
 
-CarbunqleX **intelligently places the condition in the deepest relevant query**, ensuring correctness.
+CarbunqleX will **intelligently place the condition in the deepest related query**. It will also **dynamically merge CTEs**.
 
-### 4️⃣ Advanced Filtering
+### 4. Standardizing filtering
 
-Now, let's introduce a **more advanced use case** where we dynamically filter data based on user permissions. We'll define a reusable function to retrieve regions a user has access to and use it in a filtering condition.
+Next, we will introduce a more advanced use case that dynamically filters data based on user permissions. We define the areas that users can access as reusable functions.
 
 #### 🔧 Define a Subquery Function
 
@@ -186,7 +192,89 @@ WHERE orders.region IN (SELECT x.region FROM top_regions AS x)
 GROUP BY orders.region, orders.product
 ```
 
-By dynamically injecting permission-based filtering, we can ensure **secure and flexible query customization**.
+By making filtering a function, we can express queries that are **highly maintainable and versatile**.
+
+### **5. Modify columns** 
+
+This feature is useful for enforcing constraints such as **closing date control in accounting** by ensuring a column value does not fall below a specified threshold.  
+
+```csharp
+var query = QueryAstParser.Parse("SELECT s.sale_date, s.sales_amount FROM sales AS s");
+
+// Ensure sale_date is at least '2024-01-01'
+query.ModifyColumn("sale_date", c => c.Greatest(new DateTime(2024, 1, 1)));
+
+Console.WriteLine(query.ToSql());
+```
+
+#### 🔍 Expected SQL Output  
+
+```sql
+SELECT GREATEST(s.sale_date, '2024-01-01 00:00:00') AS sale_date, s.sales_amount 
+FROM sales AS s;
+```
+
+In this way, column processing can be made common.
+
+### **6. Manage UNION queries as modular components**
+
+This approach allows you to manage `UNION` queries as separate components, improving maintainability and modularity.
+
+```csharp
+var query1 = QueryAstParser.Parse("SELECT id FROM table_a");
+var query2 = QueryAstParser.Parse("SELECT id FROM table_b");
+
+// Create a UNION ALL query and wrap it as a distinct subquery
+var distinctQuery = query1.UnionAll(query2).ToSubQuery().Distinct();
+
+Console.WriteLine(distinctQuery.ToSql());
+```
+
+#### 🔍 Expected SQL Output  
+
+```sql
+SELECT DISTINCT * FROM (SELECT id FROM table_a UNION ALL SELECT id FROM table_b) AS d;
+```
+
+Now managing huge union queries is not scary.
+
+### 7. Filtering using outer joins**
+
+You can also dynamically insert outer join conditions to perform filtering.
+
+```csharp
+var query = QueryAstParser.Parse("""  
+  WITH regional_sales AS (  
+      SELECT orders.region, SUM(orders.amount) AS total_sales  
+      FROM orders  
+      GROUP BY orders.region  
+  ), top_regions AS (  
+      SELECT rs.region  
+      FROM regional_sales rs  
+      WHERE rs.total_sales > (SELECT SUM(x.total_sales)/10 FROM regional_sales x)  
+  )  
+  SELECT orders.region,  
+         orders.product,  
+         SUM(orders.quantity) AS product_units,  
+         SUM(orders.amount) AS product_sales  
+  FROM orders   
+  WHERE orders.region IN (SELECT x.region FROM top_regions x)  
+  GROUP BY orders.region, orders.product  
+""");
+
+// Set isCurrentOnly: false to use the join as a filter condition  
+query.From("region", isCurrentOnly: false, static from =>
+{
+    from.LeftJoin("top_regions", "tp");
+    from.EditQuery(q =>
+    {
+        q.Where("tp.region is null");
+    });
+});
+
+// left join top_regions as tp on orders.region = tp.region where tp.region is null  
+var expected = "with regional_sales as (select orders.region, SUM(orders.amount) as total_sales from orders left join top_regions as tp on orders.region = tp.region where tp.region is null group by orders.region), top_regions as (select rs.region from regional_sales as rs where rs.total_sales > (select SUM(x.total_sales) / 10 from regional_sales as x)) select orders.region, orders.product, SUM(orders.quantity) as product_units, SUM(orders.amount) as product_sales from orders where orders.region in (select x.region from top_regions as x) group by orders.region, orders.product";
+```
 
 ## 📌 Conclusion
 
