@@ -40,7 +40,7 @@ NuGet\Install-Package Carbunqlex
 
 ## 📖 Documentation
 
-### 1. Parsing a SQL Query
+### **1. Parsing a SQL Query**
 
 Let's start by parsing a simple SQL query into an AST using `QueryAstParser.Parse`. We will then convert it back to SQL with `ToSql` and inspect its structure using `ToTreeString`.
 
@@ -68,7 +68,7 @@ SELECT a.table_a_id, a.value FROM table_a AS a
 
 This makes it easy to convert between them.
 
-### 2. Modifying the WHERE Clause
+### **2. Modifying the WHERE Clause**
 
 Now, let's modify the query by injecting a `WHERE` condition.
 
@@ -91,7 +91,7 @@ WHERE a.value = 1;
 
 CarbunqleX allows you to inject conditions while still maintaining the integrity of your SQL.
 
-### 3. Handling CTEs and Subqueries
+### **3. Handling CTEs and Subqueries**
 
 Let's try to insert a `WHERE` condition into a query that contains a **CTE and a subquery**.
 
@@ -137,7 +137,7 @@ GROUP BY orders.region, orders.product;
 
 CarbunqleX will **intelligently place the condition in the deepest related query**. It will also **dynamically merge CTEs**.
 
-### 4. Standardizing filtering
+### **4. Standardizing filtering**
 
 Next, we will introduce a more advanced use case that dynamically filters data based on user permissions. We define the areas that users can access as reusable functions.
 
@@ -238,7 +238,7 @@ SELECT DISTINCT * FROM (SELECT id FROM table_a UNION ALL SELECT id FROM table_b)
 
 Now managing huge union queries is not scary.
 
-### 7. Filtering using outer joins**
+### **7. Filtering using outer joins**
 
 You can also dynamically insert outer join conditions to perform filtering.
 
@@ -274,6 +274,72 @@ query.From("region", isCurrentOnly: false, static from =>
 
 // left join top_regions as tp on orders.region = tp.region where tp.region is null  
 var expected = "with regional_sales as (select orders.region, SUM(orders.amount) as total_sales from orders left join top_regions as tp on orders.region = tp.region where tp.region is null group by orders.region), top_regions as (select rs.region from regional_sales as rs where rs.total_sales > (select SUM(x.total_sales) / 10 from regional_sales as x)) select orders.region, orders.product, SUM(orders.quantity) as product_units, SUM(orders.amount) as product_sales from orders where orders.region in (select x.region from top_regions as x) group by orders.region, orders.product";
+```
+
+### **8. Create a table from a select query**
+
+You can convert a select query into a `CREATE TABLE` statement. This is very useful when you want to create a new table based on the results of a query.
+
+```csharp
+var query = QueryAstParser.Parse("SELECT a.table_a_id, 1 AS value FROM table_a AS a");
+
+// Generate a CREATE TABLE query, specifying that the table is temporary
+var createTableQuery = query.ToCreateTableQuery("table_b", isTemporary: true);
+
+// Print the generated SQL query
+Console.WriteLine(createTableQuery.ToSql());
+```
+
+#### 🔍 Expected SQL output
+
+```sql
+CREATE TEMPORARY TABLE table_b AS SELECT a.table_a_id, 1 AS value FROM table_a AS a;
+```
+
+### 9. Manage Update Queries with Select Queries
+
+The effects of insert, update, and delete queries can only be seen after they are executed, making it difficult to preview the expected results in advance.
+
+CarbunqleX allows you to express these queries as select queries. Select queries simplify the debugging and validation process by allowing you to preview changes without actually modifying tables.
+
+```csharp
+var query = QueryAstParser.Parse("SELECT a.table_a_id, 1 AS value FROM table_a AS a");
+
+// Generate an INSERT INTO query for table_b with a RETURNING clause
+var insertTableQuery = query.ToInsertQuery("table_b", hasReturning: true);
+
+// Print the generated SQL query
+Console.WriteLine(insertTableQuery.ToSql());
+```
+
+#### 🔍 Expected SQL output
+
+```sql
+INSERT INTO table_b(table_a_id, value)
+SELECT a.table_a_id, 1 AS value FROM table_a AS a
+RETURNING *;
+```
+
+The above example demonstrates how to express an insert query using a select query, but similar techniques can also be applied to update and delete queries.
+
+For update queries:
+
+```csharp
+var query = QueryAstParser.Parse("SELECT a.table_a_id, 1 AS value FROM table_a AS a");
+
+var updateQuery = query.ToUpdateQuery("table_b", new[] { "table_a_id" });
+
+var expected = "UPDATE table_b SET value = q.value FROM (SELECT a.table_a_id, 1 AS value FROM table_a AS a) AS q WHERE table_b.table_a_id = q.table_a_id";
+```
+
+For delete queries:
+
+```csharp
+var query = QueryAstParser.Parse("SELECT a.table_a_id, 1 AS value FROM table_a AS a");
+
+var deleteQuery = query.ToDeleteQuery("table_b", new[] { "table_a_id" });
+
+var expected = "DELETE FROM table_b WHERE table_b.table_a_id IN (SELECT q.table_a_id FROM (SELECT a.table_a_id, 1 AS value FROM table_a AS a) AS q)";
 ```
 
 ## 📌 Conclusion
