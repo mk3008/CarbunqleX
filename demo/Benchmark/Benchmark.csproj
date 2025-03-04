@@ -11,8 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
-    <PackageReference Include="Carbunql" Version="0.8.14" />
-    <PackageReference Include="SqModel" Version="0.8.15" />
+    <PackageReference Include="Microsoft.SqlServer.TransactSql.ScriptDom" Version="170.28.0" />
   </ItemGroup>
 
   <ItemGroup>

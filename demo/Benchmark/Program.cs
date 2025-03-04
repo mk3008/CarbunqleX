@@ -1,36 +1,60 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using Carbunql;
 using Carbunqlex.Lexing;
 using Carbunqlex.Parsing;
-using SqModel.Analysis;
+using Microsoft.SqlServer.TransactSql.ScriptDom;
 
 public class Program
 {
     public static void Main()
     {
+        //var benchmark = new SelectQueryParseBenchmark();
+        //benchmark.PrintTokenCounts();
+        //Console.WriteLine(benchmark.SqlScriptDOM_Parse_Tokens_230());
+
         BenchmarkRunner.Run<SelectQueryParseBenchmark>();
     }
 }
 public class SelectQueryParseBenchmark
 {
-    private readonly string Short = """
+    private static readonly TSql150Parser Parser = new TSql150Parser(false);
+
+    private Sql150ScriptGenerator Generator = new Sql150ScriptGenerator(new SqlScriptGeneratorOptions
+    {
+        AlignClauseBodies = false,
+        AsKeywordOnOwnLine = false,
+        IndentationSize = 0,
+        IncludeSemicolons = false,
+        MultilineSelectElementsList = false,
+        MultilineWherePredicatesList = false,
+        NewLineBeforeCloseParenthesisInMultilineList = false,
+        NewLineBeforeFromClause = false,
+        NewLineBeforeGroupByClause = false,
+        NewLineBeforeHavingClause = false,
+        NewLineBeforeJoinClause = false,
+        NewLineBeforeOffsetClause = false,
+        NewLineBeforeOpenParenthesisInMultilineList = false,
+        NewLineBeforeOrderByClause = false,
+        NewLineBeforeOutputClause = false,
+        NewLineBeforeWhereClause = false
+    });
+
+    private readonly string Tokens20 = """
         SELECT id, name, email, age, created_at, updated_at, status, role, last_login, country 
         FROM users 
-        WHERE id = :id;
+        WHERE id = 1;
         """;
-    private readonly string Middle = """
+    private readonly string Tokens70 = """
         SELECT 
             u.id, u.name, u.email, u.age, u.status, u.role, 
             o.id AS order_id, o.total, o.order_date, o.status AS order_status 
         FROM users AS u 
         JOIN orders AS o ON u.id = o.user_id 
-        WHERE u.age > :age AND o.status = 'completed' 
-        ORDER BY o.order_date DESC 
-        LIMIT 10;
+        WHERE u.age > 1 AND o.status = 'completed' 
+        ORDER BY o.order_date DESC;
         """;
 
-    private readonly string Long = """
+    private readonly string Tokens140 = """
         WITH recent_orders AS (
             SELECT user_id, MAX(order_date) AS last_order 
             FROM orders 
@@ -44,11 +68,11 @@ public class SelectQueryParseBenchmark
         JOIN recent_orders AS r ON u.id = r.user_id
         WHERE u.status = 'active'
         GROUP BY u.id, u.name, u.email, u.age, u.status, u.role, u.created_at, u.updated_at, r.last_order
-        HAVING SUM(o.total) > :threshold
+        HAVING SUM(o.total) > 10
         ORDER BY total_spent DESC;        
         """;
 
-    private readonly string SuperLong = """
+    private readonly string Tokens230 = """
         with
         detail as (
             select  
@@ -114,25 +138,30 @@ public class SelectQueryParseBenchmark
             line_id
         """;
 
-    [Benchmark] public string SqModel_Parse_Short() => ParseWithSqModel(Short);
-    [Benchmark] public string Carbunql_Parse_Short() => ParseWithCarbunql(Short);
-    [Benchmark] public string Carbunqlex_Parse_Short() => ParseWithCarbunqlex(Short);
-    [Benchmark] public void Carbunqlex_ParseOnly_Short() => ParseOnlyWithCarbunqlex(Short);
+    [Benchmark] public void Carbunqlex_ParseOnly_Tokens_20() => ParseOnlyWithCarbunqlex(Tokens20);
+    [Benchmark] public void SqlScriptDOM_ParseOnly_Tokens_20() => ParseOnlyWithSqlScriptDOM(Tokens20);
 
-    [Benchmark] public string SqModel_Parse_Middle() => ParseWithSqModel(Middle);
-    [Benchmark] public string Carbunql_Parse_Middle() => ParseWithCarbunql(Middle);
-    [Benchmark] public string Carbunqlex_Parse_Middle() => ParseWithCarbunqlex(Middle);
-    [Benchmark] public void Carbunqlex_ParseOnly_Middle() => ParseOnlyWithCarbunqlex(Middle);
+    [Benchmark] public void Carbunqlex_ParseOnly_Tokens_70() => ParseOnlyWithCarbunqlex(Tokens70);
+    [Benchmark] public void SqlScriptDOM_ParseOnly_Tokens_70() => ParseOnlyWithSqlScriptDOM(Tokens70);
 
-    [Benchmark] public string SqModel_Parse_Long() => ParseWithSqModel(Long);
-    [Benchmark] public string Carbunql_Parse_Long() => ParseWithCarbunql(Long);
-    [Benchmark] public string Carbunqlex_Parse_Long() => ParseWithCarbunqlex(Long);
-    [Benchmark] public void Carbunqlex_ParseOnly_Long() => ParseOnlyWithCarbunqlex(Long);
+    [Benchmark] public void Carbunqlex_ParseOnly_Tokens_140() => ParseOnlyWithCarbunqlex(Tokens140);
+    [Benchmark] public void SqlScriptDOM_ParseOnly_Tokens_140() => ParseOnlyWithSqlScriptDOM(Tokens140);
 
-    [Benchmark] public string SqModel_Parse_SuperLong() => ParseWithSqModel(SuperLong);
-    [Benchmark] public string Carbunql_Parse_SuperLong() => ParseWithCarbunql(SuperLong);
-    [Benchmark] public string Carbunqlex_Parse_SuperLong() => ParseWithCarbunqlex(SuperLong);
-    [Benchmark] public void Carbunqlex_ParseOnly_SuperLong() => ParseOnlyWithCarbunqlex(SuperLong);
+    [Benchmark] public void Carbunqlex_ParseOnly_Tokens_230() => ParseOnlyWithCarbunqlex(Tokens230);
+    [Benchmark] public void SqlScriptDOM_ParseOnly_Tokens_230() => ParseOnlyWithSqlScriptDOM(Tokens230);
+
+
+    [Benchmark] public string Carbunqlex_Parse_Tokens_20() => ParseWithCarbunqlex(Tokens20);
+    [Benchmark] public string SqlScriptDOM_Parse_Tokens_20() => ParseWithSqlScriptDOM(Tokens20);
+
+    [Benchmark] public string Carbunqlex_Parse_Tokens_70() => ParseWithCarbunqlex(Tokens70);
+    [Benchmark] public string SqlScriptDOM_Parse_Tokens_70() => ParseWithSqlScriptDOM(Tokens70);
+
+    [Benchmark] public string Carbunqlex_Parse_Tokens_140() => ParseWithCarbunqlex(Tokens140);
+    [Benchmark] public string SqlScriptDOM_Parse_Tokens_140() => ParseWithSqlScriptDOM(Tokens140);
+
+    [Benchmark] public string Carbunqlex_Parse_Tokens_230() => ParseWithCarbunqlex(Tokens230);
+    [Benchmark] public string SqlScriptDOM_Parse_Tokens_230() => ParseWithSqlScriptDOM(Tokens230);
 
     private void ParseOnlyWithCarbunqlex(string query)
     {
@@ -140,22 +169,44 @@ public class SelectQueryParseBenchmark
         var sq = SelectQueryParser.Parse(tokenizer);
     }
 
-    private string ParseWithSqModel(string query)
-    {
-        var sq = SqlParser.Parse(query);
-        return sq.ToQuery().CommandText;
-    }
-
-    private string ParseWithCarbunql(string query)
-    {
-        var sq = new Carbunql.SelectQuery(query);
-        return sq.ToOneLineText();
-    }
-
     private string ParseWithCarbunqlex(string query)
     {
         var tokenizer = new SqlTokenizer(query);
         var sq = SelectQueryParser.Parse(tokenizer);
         return sq.ToSql();
+    }
+
+    private void ParseOnlyWithSqlScriptDOM(string query)
+    {
+        using var reader = new StringReader(query);
+        Parser.Parse(reader, out var errors);
+    }
+
+    private string ParseWithSqlScriptDOM(string query)
+    {
+        using var reader = new StringReader(query);
+        var fragment = Parser.Parse(reader, out var errors);
+
+        Generator.GenerateScript(fragment, out string script);
+        return script;
+    }
+
+    private int CountTokens(string sql)
+    {
+        var tokenizer = new SqlTokenizer(sql);
+        int count = 0;
+        while (tokenizer.TryRead(out var token))
+        {
+            count++;
+        }
+        return count;
+    }
+
+    public void PrintTokenCounts()
+    {
+        Console.WriteLine($"CarbunleX Tokens[Short]: {CountTokens(Tokens20)} tokens");
+        Console.WriteLine($"CarbunleX Tokens[Middle]: {CountTokens(Tokens70)} tokens");
+        Console.WriteLine($"CarbunleX Tokens[Long]: {CountTokens(Tokens140)} tokens");
+        Console.WriteLine($"CarbunleX Tokens[SuperLong]: {CountTokens(Tokens230)} tokens");
     }
 }
