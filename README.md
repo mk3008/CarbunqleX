@@ -344,6 +344,95 @@ var deleteQuery = query.ToDeleteQuery("table_b", new[] { "table_a_id" });
 var expected = "DELETE FROM table_b WHERE table_b.table_a_id IN (SELECT q.table_a_id FROM (SELECT a.table_a_id, 1 AS value FROM table_a AS a) AS q)";
 ```
 
+### 10. Converting a Query to Return JSON (Postgres-only)
+
+In PostgreSQL, you can transform a query to return JSON using functions like `json_build_object` and `row_to_json`.
+
+```csharp
+var query = QueryAstParser.Parse("""
+    SELECT 
+        posts.post_id, 
+        posts.title, 
+        posts.content, 
+        posts.created_at, 
+        users.user_id, 
+        users.name AS user_name, 
+        blogs.blog_id, 
+        blogs.name AS blog_name, 
+        organizations.organization_id, 
+        organizations.name AS organization_name
+    FROM posts
+    INNER JOIN users ON posts.user_id = users.user_id
+    INNER JOIN blogs ON posts.blog_id = blogs.blog_id
+    INNER JOIN organizations ON blogs.organization_id = organizations.organization_id
+    WHERE posts.post_id = 1
+""");
+
+query.NormalizeSelectClause()
+    .Serialize("organizations", objectName: "organization")
+    .Serialize("users", objectName: "user")
+    .Serialize("blogs", objectName: "blog", include: ["organization"])
+    .Serialize("posts", objectName: "post", include: ["user", "blog"])
+    .ToJson();
+```
+
+#### 🔍 Expected SQL output
+
+```sql
+SELECT row_to_json(d) 
+FROM (
+    SELECT json_build_object(
+        'post_id', posts.post_id, 
+        'title', posts.title, 
+        'content', posts.content, 
+        'created_at', posts.created_at, 
+        'user', json_build_object(
+            'user_id', users.user_id, 
+            'user_name', users.name
+        ), 
+        'blog', json_build_object(
+            'blog_id', blogs.blog_id, 
+            'blog_name', blogs.name, 
+            'organization', json_build_object(
+                'organization_id', organizations.organization_id, 
+                'organization_name', organizations.name
+            )
+        )
+    ) AS post 
+    FROM posts
+    INNER JOIN users ON posts.user_id = users.user_id
+    INNER JOIN blogs ON posts.blog_id = blogs.blog_id
+    INNER JOIN organizations ON blogs.organization_id = organizations.organization_id
+    WHERE posts.post_id = :post_id
+) AS d 
+LIMIT 1;
+```
+
+#### 🔍 Query Output
+
+```json
+{
+    "post": {
+        "post_id": 9,
+        "title": "Understanding AI",
+        "content": "This is a post about AI.",
+        "created_at": "2025-02-18T20:25:21.974106",
+        "user": {
+            "user_id": 1,
+            "user_name": "Alice"
+        },
+        "blog": {
+            "blog_id": 1,
+            "blog_name": "AI Insights",
+            "organization": {
+                "organization_id": 1,
+                "organization_name": "Tech Corp"
+            }
+        }
+    }
+}
+```
+
 ## 📌 Conclusion
 
 CarbunqleX makes raw SQL **more maintainable, reusable, and dynamically modifiable** without sacrificing performance. Its AST-based transformations provide a powerful way to manipulate queries at scale, making it an essential tool for advanced SQL users.
