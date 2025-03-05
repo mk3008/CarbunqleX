@@ -413,7 +413,7 @@ LIMIT 1;
 ```json
 {
     "post": {
-        "post_id": 9,
+        "post_id": 1,
         "title": "Understanding AI",
         "content": "This is a post about AI.",
         "created_at": "2025-02-18T20:25:21.974106",
