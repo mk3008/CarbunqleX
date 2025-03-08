@@ -156,14 +156,14 @@ public class PostgresJsonEditorTests_Sales(ITestOutputHelper output)
         """;
 
     [Fact]
-    public void JsonSerializeRootByCustomer()
+    public void JsonSerializeRootBySalesDetails()
     {
         // Arrange
         var query = QueryAstParser.Parse(JsonTestQuery);
         output.WriteLine(query.Query.ToSql());
 
         // Act
-        query = query.ToJsonQuery(columnNormalization: true, static e =>
+        query = query.ToJsonQuery(columnNormalization: true, propertyBuilder: StringExtensions.ToPascalCase, static e =>
         {
             //e.Serialize("customer", objectName: "Customer");
             return e.ArraySerialize("sd", objectName: "SalesDetails", upperNode: static e =>

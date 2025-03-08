@@ -417,7 +417,7 @@ public class QueryNode : IQuery
 
         var name = string.IsNullOrEmpty(alias) ? cteName : alias;
 
-        var selectExpressions = SelectExpressionMap.Select(x => new SelectExpression(new ColumnExpression(name, x.Key)));
+        var selectExpressions = SelectExpressionMap.Select(x => new SelectExpression(new ColumnExpression(name, x.Value.Alias)));
 
         if (selectColumns != null && selectColumns.Any())
         {
@@ -763,10 +763,15 @@ public class QueryNode : IQuery
 
     public QueryNode ToJsonQuery()
     {
-        return ToJsonQuery(false, x => x);
+        return ToJsonQuery(false, x => x, x => x);
     }
 
     public QueryNode ToJsonQuery(bool columnNormalization, Func<PostgresJsonEditor, PostgresJsonEditor> action)
+    {
+        return ToJsonQuery(columnNormalization, x => x, action);
+    }
+
+    public QueryNode ToJsonQuery(bool columnNormalization, Func<string, string> propertyBuilder, Func<PostgresJsonEditor, PostgresJsonEditor> action)
     {
         if (MustRefresh) Refresh();
         // The processing target is only the terminal SelectQuery
@@ -782,7 +787,16 @@ public class QueryNode : IQuery
 
         ToCteQuery("__json", overrideNode: true);
 
-        var editor = action(new PostgresJsonEditor(this));
+        var editor = action(new PostgresJsonEditor(this, propertyBuilder: propertyBuilder));
+
+        // escape alias 
+        if (editor.Query.TryGetSelectClause(out var selectClause))
+        {
+            foreach (var item in selectClause.Expressions)
+            {
+                item.Alias = item.Alias.StartsWith("\"") ? item.Alias : $"\"{item.Alias}\"";
+            }
+        }
 
         var text = "row_to_json(d)";
         var newQuery = new SelectQuery(
@@ -797,10 +811,15 @@ public class QueryNode : IQuery
 
     public QueryNode ToArrayJsonQuery()
     {
-        return ToArrayJsonQuery(false, x => { });
+        return ToArrayJsonQuery(false, x => x, x => { });
     }
 
     public QueryNode ToArrayJsonQuery(bool columnNormalization, Action<PostgresJsonEditor> action)
+    {
+        return ToArrayJsonQuery(columnNormalization, x => x, action);
+    }
+
+    public QueryNode ToArrayJsonQuery(bool columnNormalization, Func<string, string> propertyBuilder, Action<PostgresJsonEditor> action)
     {
         if (MustRefresh) Refresh();
 
@@ -815,7 +834,7 @@ public class QueryNode : IQuery
             NormalizeSelectClause();
         }
 
-        action(new PostgresJsonEditor(this));
+        action(new PostgresJsonEditor(this, propertyBuilder: propertyBuilder));
 
         var text = "json_agg(row_to_json(d))";
         var newQuery = new SelectQuery(
