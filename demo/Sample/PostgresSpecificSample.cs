@@ -34,16 +34,16 @@ public class PostgresSpecificSample(ITestOutputHelper output)
               inner join users on posts.user_id = users.user_id
               inner join blogs on posts.blog_id = blogs.blog_id
               inner join organizations on blogs.organization_id = organizations.organization_id
-          where
-              posts.post_id = :post_id
           """);
 
-        query.NormalizeSelectClause()
-            .Serialize("organizations", objectName: "organization")
-            .Serialize("users", objectName: "user")
-            .Serialize("blogs", objectName: "blog", include: ["organization"])
-            .Serialize("posts", objectName: "post", include: ["user", "blog"])
-            .ToJson();
+        query.Where("post_id", action: x => x.Equal(":post_id"))
+            .ToJsonQuery(columnNormalization: true, x =>
+            {
+                x.Serialize("organizations", objectName: "organization");
+                x.Serialize("users", objectName: "user");
+                x.Serialize("blogs", objectName: "blog", include: ["organization"]);
+                x.Serialize("posts", objectName: "post", include: ["user", "blog"]);
+            });
 
         var actual = query.ToSql();
 
