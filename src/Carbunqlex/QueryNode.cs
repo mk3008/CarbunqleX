@@ -789,12 +789,21 @@ public class QueryNode : IQuery
 
         var editor = action(new PostgresJsonEditor(this, propertyBuilder: propertyBuilder));
 
-        // escape alias 
+        // NOTE:
+        // 選択クエリの列エイリアスは、「object__property」という命名規則になっているので、
+        // 正規化されなかった列は、ルートに所属するプロパティとして、「object__property」から「property」に変更する
+        // また、プロパティ名が大文字小文字を区別されるように、ダブルクォートで囲んでエスケープ処理する
         if (editor.Query.TryGetSelectClause(out var selectClause))
         {
             foreach (var item in selectClause.Expressions)
             {
-                item.Alias = item.Alias.StartsWith("\"") ? item.Alias : $"\"{item.Alias}\"";
+                var alias = item.Alias;
+                alias = alias.StartsWith("\"") ? alias : $"\"{alias}\"";
+                if (alias.Contains("__"))
+                {
+                    alias = "\"" + alias.Substring(alias.LastIndexOf("__") + 2);
+                }
+                item.Alias = alias;
             }
         }
 
@@ -804,6 +813,7 @@ public class QueryNode : IQuery
             new FromClause(new DatasourceExpression(new SubQuerySource(editor.Query), "d"))
             );
         newQuery.LimitClause = new LimitClause(new LiteralExpression("1"));
+
         Query = newQuery;
         MustRefresh = true;
         return this;

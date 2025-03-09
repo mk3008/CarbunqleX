@@ -218,7 +218,7 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
 
-        var expected = "select row_to_json(d) from (select users.user_id as id, users.name from users) as d limit 1";
+        var expected = "with __json as (select users.user_id as id, users.name from users) select row_to_json(d) from (select __json.id as \"id\", __json.name as \"name\" from __json) as d limit 1";
         Assert.Equal(expected, actual);
     }
 
@@ -298,20 +298,22 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var query = SelectQueryParser.Parse(JsonTestQuery);
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("post_id", w => w.Equal(":post_id"))
-            .ToJsonQuery(columnNormalization: true, x =>
+            .ToJsonQuery(columnNormalization: true, static x =>
             {
-                x.Serialize("organizations", objectName: "organization");
-                x.Serialize("users", objectName: "user");
-                x.Serialize("blogs", objectName: "blog", include: ["organization"]);
-                x.Serialize("posts", objectName: "post", include: ["user", "blog"]);
-                return x;
+                return x.ArraySerialize("posts", objectName: "post", upperNode: static x =>
+                {
+                    return x.Serialize("blogs", objectName: "blog", upperNode: static x =>
+                    {
+                        return x.Serialize("organizations", objectName: "organization");
+                    }).Serialize("users", objectName: "user");
+                });
             });
 
         var actual = queryNode.Query.ToSql();
 
         output.WriteLine(actual);
 
-        var expected = "select row_to_json(d) from (select json_build_object('post_id', posts.post_id, 'title', posts.title, 'content', posts.content, 'created_at', posts.created_at, 'user', json_build_object('user_id', users.user_id, 'user_name', users.name), 'blog', json_build_object('blog_id', blogs.blog_id, 'blog_name', blogs.name, 'organization', json_build_object('organization_id', organizations.organization_id, 'organization_name', organizations.name))) as post from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id where posts.post_id = :post_id) as d limit 1";
+        var expected = "with __json as (select posts.post_id as posts__post_id, posts.title as posts__title, posts.content as posts__content, posts.created_at as posts__created_at, users.user_id as users__user_id, users.name as users__user_name, blogs.blog_id as blogs__blog_id, blogs.name as blogs__blog_name, organizations.organization_id as organizations__organization_id, organizations.name as organizations__organization_name from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id where posts.post_id = :post_id), __json_post as (select json_agg(json_build_object('post_id', __json.posts__post_id, 'title', __json.posts__title, 'content', __json.posts__content, 'created_at', __json.posts__created_at, 'blog', json_build_object('blog_id', __json.blogs__blog_id, 'blog_name', __json.blogs__blog_name, 'organization', json_build_object('organization_id', __json.organizations__organization_id, 'organization_name', __json.organizations__organization_name)), 'user', json_build_object('user_id', __json.users__user_id, 'user_name', __json.users__user_name))) as post from __json) select row_to_json(d) from (select __json_post.post as \"post\" from __json_post) as d limit 1";
         Assert.Equal(expected, actual);
 
         /* return sample
@@ -410,65 +412,57 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         queryNode.Where("organization_id", w => w.Equal(":organization_id"))
             .ToJsonQuery(columnNormalization: true, static x =>
             {
-                x.Serialize("users", objectName: "user");
-                x.ArraySerialize("blogs", objectName: "blogs", upperNode: static x =>
+                return x.ArraySerialize("blogs", objectName: "blogs", upperNode: static x =>
                 {
-                    return x.ArraySerialize("posts", objectName: "posts", include: ["user"]);
+                    return x.Serialize("organizations", objectName: "organization")
+                    .ArraySerialize("posts", objectName: "posts", upperNode: static x =>
+                    {
+                        return x.Serialize("users", objectName: "user");
+                    });
                 });
-                x.Serialize("organizations", objectName: "organization", include: ["blogs"]);
-                return x;
             });
         var actual = queryNode.Query.ToSql();
 
-        /*        var query = SelectQueryParser.Parse(JsonTestQuery);
-                var queryNode = QueryAstParser.Parse(query);
-                queryNode.Where("organization_id", w => w.Equal(":organization_id"))
-                    .ToJsonQuery(columnNormalization: true, x =>
-                    {
-                        x.Serialize("users", objectName: "user");
-                        x.ArraySerialize("posts", objectName: "posts", include: ["user"]);
-                        x.ArraySerialize("blogs", objectName: "blogs", include: ["posts"]);
-                        x.Serialize("organizations", objectName: "organization", include: ["blogs"], isRoot: true);
-                    });
-                var actual = queryNode.Query.ToSql();*/
         output.WriteLine(actual);
-        var expected = "select row_to_json(d) from (select json_build_object('organization_id', organizations.organization_id, 'organization_name', organizations.name, 'blogs', json_agg(json_build_object('blog_id', blogs.blog_id, 'blog_name', blogs.name, 'users', json_agg(json_build_object('user_id', users.user_id, 'user_name', users.name, 'posts', json_agg(json_build_object('post_id', posts.post_id, 'title', posts.title, 'content', posts.content, 'created_at', posts.created_at))))))) as organization from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id where organizations.organization_id = :organization_id group by organizations.organization_id, organizations.name) as d limit 1";
+        var expected = "with __json as (select posts.post_id as posts__post_id, posts.title as posts__title, posts.content as posts__content, posts.created_at as posts__created_at, users.user_id as users__user_id, users.name as users__user_name, blogs.blog_id as blogs__blog_id, blogs.name as blogs__blog_name, organizations.organization_id as organizations__organization_id, organizations.name as organizations__organization_name from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id where organizations.organization_id = :organization_id), __json_posts as (select __json.blogs__blog_id, __json.blogs__blog_name, json_build_object('organization_id', __json.organizations__organization_id, 'organization_name', __json.organizations__organization_name) as blogs__organization, json_agg(json_build_object('post_id', __json.posts__post_id, 'title', __json.posts__title, 'content', __json.posts__content, 'created_at', __json.posts__created_at, 'user', json_build_object('user_id', __json.users__user_id, 'user_name', __json.users__user_name))) as blogs__posts from __json group by __json.blogs__blog_id, __json.blogs__blog_name, __json.organizations__organization_id, __json.organizations__organization_name), __json_blogs as (select json_agg(json_build_object('blog_id', __json_posts.blogs__blog_id, 'blog_name', __json_posts.blogs__blog_name, 'organization', __json_posts.blogs__organization, 'posts', __json_posts.blogs__posts)) as blogs from __json_posts) select row_to_json(d) from (select __json_blogs.blogs as \"blogs\" from __json_blogs) as d limit 1";
         Assert.Equal(expected, actual);
 
         /*
 {
   "blogs": [
     {
+      "blog_id": 1,
+      "blog_name": "AI Insights",
+      "organization": {
+        "organization_id": 1,
+        "organization_name": "Tech Corp"
+      },
       "posts": [
         {
-          "title": "Understanding AI",
-          "user": {
-              "user_id": 1,
-              "user_name": "Alice"
-            },
-          "content": "This is a post about AI.",
           "post_id": 9,
-          "created_at": "2025-02-18T20:25:21.974106"
+          "title": "Understanding AI",
+          "content": "This is a post about AI.",
+          "created_at": "2025-02-18T20:25:21.974106",
+          "user": {
+            "user_id": 1,
+            "user_name": "Alice"
+          }
         },
         {
-          "title": "Understanding AI",
-          "users": {
-              "user_id": 1,
-              "user_name": "Alice"
-            },
-          "content": "This is a post about AI.",
           "post_id": 11,
-          "created_at": "2025-03-07T17:53:49.168646"
+          "title": "Understanding AI",
+          "content": "This is a post about AI.",
+          "created_at": "2025-03-07T17:53:49.168646",
+          "user": {
+            "user_id": 1,
+            "user_name": "Alice"
+          }
         }
-      ],
-      "blog_id": 1,
-      "blog_name": "AI Insights"
+      ]
     }
-  ],
-  "organization_id": 1,
-  "organization_name": "Tech Corp"
+  ]
 }
-         */
+        */
     }
 
     [Fact]

@@ -144,9 +144,7 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
         string datasource,
         string objectName = "",
         IEnumerable<string>? include = null,
-        Func<PostgresJsonEditor, PostgresJsonEditor>? upperNode = null,
-        bool removePropertyColumn = true,
-        bool removePrefix = true)
+        Func<PostgresJsonEditor, PostgresJsonEditor>? upperNode = null)
     {
         if (MustRefresh) Refresh();
 
@@ -167,12 +165,9 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
         }
 
         // Remove prefix from column alias
-        if (removePrefix)
+        foreach (var column in serializeTargetColumns)
         {
-            foreach (var column in serializeTargetColumns)
-            {
-                column.Value.Alias = column.Value.Alias.Substring(datasource.Length + 2);
-            }
+            column.Value.Alias = column.Value.Alias.Substring(datasource.Length + 2);
         }
 
         // The processing target is only the terminal SelectQuery
@@ -187,19 +182,12 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
             .SelectMany(x => x.Value.ExtractColumnExpressions())
             .ToList();
 
-        if (removePropertyColumn)
+        // remove serialize component columns
+        foreach (var column in serializeTargetColumns)
         {
-            foreach (var column in serializeTargetColumns)
-            {
-                sq.SelectClause.Expressions.Remove(column.Value);
-            }
+            sq.SelectClause.Expressions.Remove(column.Value);
         }
 
-        // grouping
-        //foreach (var column in sq.SelectClause.Expressions)
-        //{
-        //    sq.GroupByClause.Add(column.Value);
-        //}
         foreach (var column in groupColumns)
         {
             sq.GroupByClause.Add(column);
