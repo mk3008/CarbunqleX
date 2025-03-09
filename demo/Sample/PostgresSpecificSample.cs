@@ -41,7 +41,7 @@ public class PostgresSpecificSample(ITestOutputHelper output)
 
         query.Where("post_id", action: x => x.Equal(":post_id"))
             .NormalizeSelectClause()
-            .ToJsonQuery(x =>
+            .ToPostgresJsonQuery(x =>
             {
                 return x.Serialize(datasource: "posts", jsonKey: "post", parent: static x =>
                 {
@@ -91,7 +91,7 @@ public class PostgresSpecificSample(ITestOutputHelper output)
 
         query.Where("post_id", action: x => x.Equal(":post_id"))
             .NormalizeSelectClause()
-            .ToJsonQuery(x =>
+            .ToPostgresJsonQuery(x =>
             {
                 return x.Serialize("posts", isFlat: true, parent: static x =>
                 {

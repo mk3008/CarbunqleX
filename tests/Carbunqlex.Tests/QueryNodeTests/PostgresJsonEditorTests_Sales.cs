@@ -165,7 +165,7 @@ public class PostgresJsonEditorTests_Sales(ITestOutputHelper output)
         // Act
         query = query.Where("sales_invoice_id", static w => w.Equal(1))
             .NormalizeSelectClause()
-            .ToJsonQuery(jsonKeyFormatter: StringExtensions.ToPascalCase, builder: static e =>
+            .ToPostgresJsonQuery(jsonKeyFormatter: StringExtensions.ToPascalCase, builder: static e =>
             {
                 return e.SerializeArray(datasource: "sd", jsonKey: "SalesDetails", parent: static e =>
                 {
@@ -267,7 +267,7 @@ public class PostgresJsonEditorTests_Sales(ITestOutputHelper output)
         // Act
         query = query.Where("sales_invoice_id", static w => w.Equal(1))
             .NormalizeSelectClause()
-            .ToJsonQuery(jsonKeyFormatter: StringExtensions.ToPascalCase, builder: buildSalesDetail);
+            .ToPostgresJsonQuery(jsonKeyFormatter: StringExtensions.ToPascalCase, builder: buildSalesDetail);
 
         var actual = query.ToSql();
 

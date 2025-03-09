@@ -213,7 +213,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.ToJsonQuery();
+        queryNode.ToPostgresJsonQuery();
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);

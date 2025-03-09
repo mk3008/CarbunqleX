@@ -772,9 +772,9 @@ public class QueryNode : IQuery
     /// Converts the current query to a JSON representation using PostgreSQL's JSON functions.
     /// </summary>
     /// <returns></returns>
-    public QueryNode ToJsonQuery()
+    public QueryNode ToPostgresJsonQuery()
     {
-        return ToJsonQuery(x => x, x => x);
+        return ToPostgresJsonQuery(x => x, x => x);
     }
 
     /// <summary>
@@ -782,9 +782,9 @@ public class QueryNode : IQuery
     /// </summary>
     /// <param name="builder"></param>
     /// <returns></returns>
-    public QueryNode ToJsonQuery(Func<PostgresJsonEditor, PostgresJsonEditor> builder)
+    public QueryNode ToPostgresJsonQuery(Func<PostgresJsonEditor, PostgresJsonEditor> builder)
     {
-        return ToJsonQuery(x => x, builder);
+        return ToPostgresJsonQuery(x => x, builder);
     }
 
     /// <summary>
@@ -802,13 +802,13 @@ public class QueryNode : IQuery
     /// <example>
     /// <code>
     /// var query = QueryAstParser.Parse("SELECT users.id, users.name FROM users");
-    /// query.ToJsonQuery(
+    /// query.ToPostgresJsonQuery(
     ///     jsonKeyFormatter: StringExtensions.ToPascalCase,
     ///     builder: e => e.SerializeArray(datasource: "users", jsonKey: "Users")
     /// );
     /// </code>
     /// </example>
-    public QueryNode ToJsonQuery(Func<string, string> jsonKeyFormatter, Func<PostgresJsonEditor, PostgresJsonEditor> builder)
+    public QueryNode ToPostgresJsonQuery(Func<string, string> jsonKeyFormatter, Func<PostgresJsonEditor, PostgresJsonEditor> builder)
     {
         if (MustRefresh) Refresh();
         // The processing target is only the terminal SelectQuery

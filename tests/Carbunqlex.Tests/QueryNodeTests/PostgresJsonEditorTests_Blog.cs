@@ -33,7 +33,7 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("blog_id", w => w.Equal(":blog_id"))
             .NormalizeSelectClause()
-            .ToJsonQuery(static x =>
+            .ToPostgresJsonQuery(static x =>
             {
                 return x.SerializeArray(datasource: "posts", jsonKey: "posts", parent: static x =>
                 {
@@ -90,7 +90,7 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("post_id", w => w.Equal(":post_id"))
             .NormalizeSelectClause()
-            .ToJsonQuery(static x =>
+            .ToPostgresJsonQuery(static x =>
             {
                 return x.Serialize(datasource: "posts", jsonKey: "post", parent: static x =>
                 {
@@ -140,7 +140,7 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("user_id", w => w.Equal(":user_id"))
             .NormalizeSelectClause()
-            .ToJsonQuery(static x =>
+            .ToPostgresJsonQuery(static x =>
             {
                 return x.Serialize(datasource: "users", jsonKey: "user", parent: static x =>
                 {
@@ -208,7 +208,7 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
 
         var queryNode = QueryAstParser.Parse(query);
         queryNode = queryNode.NormalizeSelectClause()
-            .ToJsonQuery(static x =>
+            .ToPostgresJsonQuery(static x =>
             {
                 return x.SerializeArray(datasource: "users", jsonKey: "users", parent: static x =>
                 {
@@ -285,7 +285,7 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("organization_id", w => w.Equal(":organization_id"))
             .NormalizeSelectClause()
-            .ToJsonQuery(static x =>
+            .ToPostgresJsonQuery(static x =>
             {
                 return x.Serialize(datasource: "organizations", jsonKey: "organization", parent: static x =>
                 {
@@ -349,7 +349,7 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("post_id", w => w.Equal(":post_id"))
             .NormalizeSelectClause()
-            .ToJsonQuery(static x =>
+            .ToPostgresJsonQuery(static x =>
             {
                 return x.SerializeArray(datasource: "organizations", jsonKey: "organizations", parent: static x =>
                 {
