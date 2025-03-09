@@ -91,11 +91,14 @@ public class PostgresSpecificSample(ITestOutputHelper output)
         query.Where("post_id", action: x => x.Equal(":post_id"))
             .ToJsonQuery(columnNormalization: true, x =>
             {
-                return x.Serialize("users", objectName: "user")
-                    .Serialize("blogs", objectName: "blog", upperNode: static x =>
-                    {
-                        return x.Serialize("organizations", objectName: "organization");
-                    });
+                return x.Serialize("posts", isFlat: true, upperNode: static x =>
+                {
+                    return x.Serialize("users", objectName: "user")
+                        .Serialize("blogs", objectName: "blog", upperNode: static x =>
+                        {
+                            return x.Serialize("organizations", objectName: "organization");
+                        });
+                });
             });
 
         var actual = query.ToSql();

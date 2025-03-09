@@ -72,10 +72,8 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
     public PostgresJsonEditor Serialize(
         string datasource,
         string objectName = "",
-        IEnumerable<string>? include = null,
         Func<PostgresJsonEditor, PostgresJsonEditor>? upperNode = null,
-        bool removePropertyColumn = true,
-        bool removePrefix = true)
+        bool isFlat = false)
     {
         if (MustRefresh) Refresh();
 
@@ -95,21 +93,10 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
             throw new InvalidOperationException($"No columns found for prefix '{datasource}'");
         }
 
-        if (removePrefix)
+        // Remove prefix from column alias
+        foreach (var column in propertyColumns)
         {
-            foreach (var column in propertyColumns)
-            {
-                column.Value.Alias = column.Value.Alias.Substring(datasource.Length + 2);
-            }
-        }
-
-        if (include != null)
-        {
-            foreach (var parentName in include)
-            {
-                var parent = editor.SelectExpressionMap.Where(x => x.Value.Alias.Equals(parentName, StringComparison.InvariantCultureIgnoreCase)).First();
-                propertyColumns.Add(parent);
-            }
+            column.Value.Alias = column.Value.Alias.Substring(datasource.Length + 2);
         }
 
         // The processing target is only the terminal SelectQuery
@@ -118,33 +105,33 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
             throw new InvalidOperationException("ToSelectJson can only be used on a SelectQuery");
         }
 
-        if (removePropertyColumn)
+        if (!isFlat)
         {
+            // Remove serialize component columns
             foreach (var column in propertyColumns)
             {
                 sq.SelectClause.Expressions.Remove(column.Value);
             }
+
+            // add serialize column
+            var columnStrings = propertyColumns
+                .Select(col => $"'{PropertyBuilder?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
+                .ToList();
+
+            var alias = string.IsNullOrEmpty(Owner) ? objectName : Owner + "__" + objectName;
+
+            var exp = $"json_build_object({string.Join(", ", columnStrings)}) as {alias}";
+
+            sq.SelectClause.Expressions.Add(SelectExpressionParser.Parse(exp));
         }
 
-        var columnStrings = propertyColumns
-            .Select(col => $"'{PropertyBuilder?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
-            .ToList();
-
-        var alias = string.IsNullOrEmpty(Owner) ? objectName : Owner + "__" + objectName;
-
-        var exp = $"json_build_object({string.Join(", ", columnStrings)}) as {alias}";
-
-        sq.SelectClause.Expressions.Add(SelectExpressionParser.Parse(exp));
-
         var newNode = QueryAstParser.Parse(sq);
-
         return new PostgresJsonEditor(newNode, owner: Owner, propertyBuilder: PropertyBuilder);
     }
 
     public PostgresJsonEditor ArraySerialize(
         string datasource,
         string objectName = "",
-        IEnumerable<string>? include = null,
         Func<PostgresJsonEditor, PostgresJsonEditor>? upperNode = null)
     {
         if (MustRefresh) Refresh();

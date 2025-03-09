@@ -790,19 +790,13 @@ public class QueryNode : IQuery
         var editor = action(new PostgresJsonEditor(this, propertyBuilder: propertyBuilder));
 
         // NOTE:
-        // The column alias of the select query follows the naming convention "datasource__property".
-        // Columns that are not normalized are changed from "datasource__property" to "property" as properties belonging to the root.
-        // Also, property names are escaped with double quotes to distinguish between uppercase and lowercase letters.
+        // Property names are escaped with double quotes to distinguish between uppercase and lowercase letters.
         if (editor.Query.TryGetSelectClause(out var selectClause))
         {
             foreach (var item in selectClause.Expressions)
             {
                 var alias = item.Alias;
                 alias = alias.StartsWith("\"") ? alias : $"\"{alias}\"";
-                if (alias.Contains("__"))
-                {
-                    alias = "\"" + alias.Substring(alias.LastIndexOf("__") + 2);
-                }
                 item.Alias = alias;
             }
         }
