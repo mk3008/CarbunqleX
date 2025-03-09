@@ -8,12 +8,13 @@
 		<RepositoryUrl>https://github.com/mk3008/CarbunqleX</RepositoryUrl>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<FileVersion></FileVersion>
-		<Version>0.0.2.1</Version>
+		<Version>0.0.3</Version>
 		<Authors>mk3008net</Authors>
 		<Description>CarbunqleX is a lightweight library that enhances the reusability and maintainability of RawSQL through advanced AST analysis.</Description>
 		<Copyright>mk3008net</Copyright>
 		<PackageProjectUrl>https://github.com/mk3008/CarbunqleX</PackageProjectUrl>
 		<PackageTags>postgres;sql;postgresql;ast;sql-parser;raw-sql;dynamic-query;postgres-sql-parser</PackageTags>
+		<SignAssembly>False</SignAssembly>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

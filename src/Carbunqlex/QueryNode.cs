@@ -6,7 +6,10 @@ using Carbunqlex.Parsing.QuerySources;
 using Carbunqlex.QuerySources;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text;
+
+[assembly: InternalsVisibleTo("Carbunqlex.Tests")]
 
 namespace Carbunqlex;
 
@@ -23,9 +26,9 @@ public class QueryNode : IQuery
     /// <summary>
     /// The column names selected by the query.
     /// </summary>
-    private ReadOnlyDictionary<string, SelectExpression> SelectExpressionMap { get; set; }
+    internal ReadOnlyDictionary<string, SelectExpression> SelectExpressionMap { get; set; }
 
-    private bool MustRefresh { get; set; }
+    internal bool MustRefresh { get; set; }
 
     /// <summary>
     /// The datasource nodes that make up the query.
@@ -408,175 +411,36 @@ public class QueryNode : IQuery
         return QueryAstParser.Parse(sq);
     }
 
-    public QueryNode NormalizeSelectClause()
+    public QueryNode ToCteQuery(string cteName, string? alias = null, IEnumerable<string>? selectColumns = null, bool overrideNode = false)
     {
         if (MustRefresh) Refresh();
 
-        // The processing target is only the terminal SelectQuery
-        if (Query is not SelectQuery sq)
+        var name = string.IsNullOrEmpty(alias) ? cteName : alias;
+
+        var selectExpressions = SelectExpressionMap.Select(x => new SelectExpression(new ColumnExpression(name, x.Value.Alias)));
+
+        if (selectColumns != null && selectColumns.Any())
         {
-            throw new InvalidOperationException("ToSelectJson can only be used on a SelectQuery");
+            selectExpressions = selectExpressions
+                .Where(x => selectColumns.Contains(x.Alias, StringComparer.InvariantCultureIgnoreCase));
         }
 
-        // columns
-        var columns = SelectExpressionMap
-            .Where(x => x.Value.Value is ColumnExpression ce);
+        var commonTableClause = new CommonTableClause(Query, cteName);
 
-        foreach (var column in columns)
-        {
-            var ce = (ColumnExpression)column.Value.Value;
-            column.Value.Alias = $"{ce.NamespaceFullName}_{column.Value.Alias}";
-        }
-        MustRefresh = true;
-        return this;
-    }
-
-    public QueryNode AddJsonColumn(string datasourceName, string objectName, bool removeNotStructColumn = true, Func<string, string>? propertyBuilder = null)
-    {
-        if (MustRefresh) Refresh();
-
-        // The processing target is only the terminal SelectQuery
-        if (Query is not SelectQuery sq)
-        {
-            throw new InvalidOperationException("ToSelectJson can only be used on a SelectQuery");
-        }
-
-        // datasource
-        var ds = sq.GetDatasources().Where(x => x.Alias.Equals(datasourceName, StringComparison.InvariantCultureIgnoreCase)).First();
-
-        // columns
-        var columns = SelectExpressionMap
-            .Where(x => x.Value.Value is ColumnExpression ce && ce.NamespaceFullName.Equals(datasourceName, StringComparison.InvariantCultureIgnoreCase)).ToList();
-
-        if (columns.Count() == 0)
-        {
-            throw new InvalidOperationException($"No columns found for datasource '{datasourceName}'");
-        }
-
-        if (removeNotStructColumn)
-        {
-            foreach (var column in columns)
-            {
-                sq.SelectClause.Expressions.Remove(column.Value);
-            }
-        }
-
-        var columnStrings = columns
-            .Select(col => $"'{propertyBuilder?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
-            .ToList();
-
-        var exp = $"json_build_object({string.Join(", ", columnStrings)}) AS {objectName}";
-
-        sq.SelectClause.Expressions.Add(SelectExpressionParser.Parse(exp));
-
-        MustRefresh = true;
-
-        return this;
-    }
-
-    public QueryNode Serialize(string datasource, string objectName = "", IEnumerable<string>? include = null, bool removePropertyColumn = true, Func<string, string>? propertyBuilder = null, bool removePrefix = true)
-    {
-        if (MustRefresh) Refresh();
-
-        if (string.IsNullOrEmpty(objectName))
-        {
-            objectName = datasource;
-        }
-
-        // The processing target is only the terminal SelectQuery
-        if (Query is not SelectQuery sq)
-        {
-            throw new InvalidOperationException("ToSelectJson can only be used on a SelectQuery");
-        }
-
-        // columns
-        var propertyColumns = SelectExpressionMap
-            .Where(x => x.Key.StartsWith(datasource + '_', StringComparison.InvariantCultureIgnoreCase)).ToList();
-
-        if (propertyColumns.Count() == 0)
-        {
-            throw new InvalidOperationException($"No columns found for prefix '{datasource}'");
-        }
-
-        if (removePrefix)
-        {
-            foreach (var column in propertyColumns)
-            {
-                column.Value.Alias = column.Key.Substring(datasource.Length + 1);
-            }
-        }
-
-        if (include != null)
-        {
-            foreach (var parentName in include)
-            {
-                var parent = SelectExpressionMap.Where(x => x.Key.Equals(parentName, StringComparison.InvariantCultureIgnoreCase)).First();
-                propertyColumns.Add(parent);
-            }
-        }
-
-        if (removePropertyColumn)
-        {
-            foreach (var column in propertyColumns)
-            {
-                sq.SelectClause.Expressions.Remove(column.Value);
-            }
-        }
-
-        var columnStrings = propertyColumns
-            .Select(col => $"'{propertyBuilder?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
-            .ToList();
-
-        var exp = $"json_build_object({string.Join(", ", columnStrings)}) as {objectName}";
-
-        sq.SelectClause.Expressions.Add(SelectExpressionParser.Parse(exp));
-
-        MustRefresh = true;
-
-        return this;
-    }
-
-    public QueryNode ToJson()
-    {
-        if (MustRefresh) Refresh();
-
-        // The processing target is only the terminal SelectQuery
-        if (Query is not SelectQuery sq)
-        {
-            throw new InvalidOperationException("ToJson can only be used on a SelectQuery");
-        }
-
-        var text = "row_to_json(d)";
-        var newQuery = new SelectQuery(
-            new SelectClause(SelectExpressionParser.Parse(text)),
-            new FromClause(new DatasourceExpression(new SubQuerySource(sq), "d"))
+        var sq = new SelectQuery(
+            new SelectClause(selectExpressions.ToList()),
+            new FromClause(new DatasourceExpression(new TableSource(name)))
             );
-        newQuery.LimitClause = new LimitClause(new LiteralExpression("1"));
+        sq.WithClause.Add(commonTableClause);
 
-        Query = newQuery;
-        MustRefresh = true;
-        return this;
-    }
-
-    public QueryNode ToJsonArray()
-    {
-        if (MustRefresh) Refresh();
-
-        // The processing target is only the terminal SelectQuery
-        if (Query is not SelectQuery sq)
+        if (overrideNode)
         {
-            throw new InvalidOperationException("ToJson can only be used on a SelectQuery");
+            Query = sq;
+            Refresh();
+            return this;
         }
 
-        var text = "json_agg(row_to_json(d))";
-        var newQuery = new SelectQuery(
-            new SelectClause(SelectExpressionParser.Parse(text)),
-            new FromClause(new DatasourceExpression(new SubQuerySource(sq), "d"))
-            );
-
-        Query = newQuery;
-        MustRefresh = true;
-        return this;
+        return QueryAstParser.Parse(sq);
     }
 
     private List<ColumnEditor> GetColumnEditors(string columnName, bool isSelectableOnly, bool isCurrentOnly)
@@ -779,7 +643,7 @@ public class QueryNode : IQuery
         return this;
     }
 
-    private void Refresh()
+    internal void Refresh()
     {
         var node = QueryAstParser.Parse(Query);
         Query = node.Query;
@@ -874,4 +738,111 @@ public class QueryNode : IQuery
     {
         return Query.TryGetSelectClause(out selectClause);
     }
+
+    /// <summary>
+    /// Unifies alias names to TableName + "__" + ColumnName.
+    /// Calculated columns are not processed.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public QueryNode NormalizeSelectClause()
+    {
+        if (MustRefresh) Refresh();
+
+        // The processing target is only the terminal SelectQuery
+        if (Query is not SelectQuery sq)
+        {
+            throw new InvalidOperationException("ToSelectJson can only be used on a SelectQuery");
+        }
+
+        // columns
+        var columns = SelectExpressionMap
+            .Where(x => x.Value.Value is ColumnExpression ce);
+
+        foreach (var column in columns)
+        {
+            var ce = (ColumnExpression)column.Value.Value;
+            column.Value.Alias = $"{ce.NamespaceFullName}__{column.Value.Alias}";
+        }
+        MustRefresh = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Converts the current query to a JSON representation using PostgreSQL's JSON functions.
+    /// </summary>
+    /// <returns></returns>
+    public QueryNode ToPostgresJsonQuery()
+    {
+        return ToPostgresJsonQuery(x => x, x => x);
+    }
+
+    /// <summary>
+    /// Converts the current query to a JSON representation using PostgreSQL's JSON functions.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
+    public QueryNode ToPostgresJsonQuery(Func<PostgresJsonEditor, PostgresJsonEditor> builder)
+    {
+        return ToPostgresJsonQuery(x => x, builder);
+    }
+
+    /// <summary>
+    /// Converts the current query to a JSON representation using PostgreSQL's JSON functions.
+    /// This method transforms a regular SQL query into a query that returns results in JSON format.
+    /// </summary>
+    /// <param name="jsonKeyFormatter">A function to format JSON property names. For example, converting to PascalCase or camelCase.</param>
+    /// <param name="builder">A function that defines the JSON structure using PostgresJsonEditor operations like Serialize and SerializeArray.</param>
+    /// <returns>The current QueryNode instance with a modified query that produces JSON output.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the current query is not a SelectQuery.</exception>
+    /// <remarks>
+    /// This method first converts the query to a CTE named "__json", then applies the JSON structure defined by the builder.
+    /// It also adds double quotes around property names in the final JSON to preserve case sensitivity.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var query = QueryAstParser.Parse("SELECT users.id, users.name FROM users");
+    /// query.ToPostgresJsonQuery(
+    ///     jsonKeyFormatter: StringExtensions.ToPascalCase,
+    ///     builder: e => e.SerializeArray(datasource: "users", jsonKey: "Users")
+    /// );
+    /// </code>
+    /// </example>
+    public QueryNode ToPostgresJsonQuery(Func<string, string> jsonKeyFormatter, Func<PostgresJsonEditor, PostgresJsonEditor> builder)
+    {
+        if (MustRefresh) Refresh();
+        // The processing target is only the terminal SelectQuery
+        if (Query is not SelectQuery sq)
+        {
+            throw new InvalidOperationException("ToJson can only be used on a SelectQuery");
+        }
+
+        ToCteQuery("__json", overrideNode: true);
+
+        var newEditor = builder(new PostgresJsonEditor(this, jsonKeyFormatter: jsonKeyFormatter));
+
+        // NOTE:
+        // Property names are escaped with double quotes to distinguish between uppercase and lowercase letters.
+        if (newEditor.Query.TryGetSelectClause(out var selectClause))
+        {
+            foreach (var item in selectClause.Expressions)
+            {
+                var alias = item.Alias;
+                alias = alias.StartsWith("\"") ? alias : $"\"{alias}\"";
+                item.Alias = alias;
+            }
+        }
+
+        var text = "row_to_json(d)";
+        var newQuery = new SelectQuery(
+            new SelectClause(SelectExpressionParser.Parse(text)),
+            new FromClause(new DatasourceExpression(new SubQuerySource(newEditor.Query), "d"))
+            );
+        newQuery.LimitClause = new LimitClause(new LiteralExpression("1"));
+
+        Query = newQuery;
+        MustRefresh = true;
+        return this;
+    }
+
 }

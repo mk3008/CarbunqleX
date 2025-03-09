@@ -17,13 +17,27 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-
-        var newQueryNode = queryNode.ToSubQuery("d");
-
-        var actual = newQueryNode.Query.ToSql();
+        var actual = queryNode.ToSubQuery("d").ToSql();
         output.WriteLine(actual);
 
         var expected = "select d.user_id, d.name from (select users.user_id, users.name from users) as d";
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void TestToCteQuery()
+    {
+        // Arrange
+        var query = SelectQueryParser.Parse("select users.user_id, users.name from users");
+
+        // Act
+        var queryNode = QueryAstParser.Parse(query);
+        output.WriteLine(queryNode.Query.ToSql());
+
+        var actual = queryNode.ToCteQuery("d").ToSql();
+        output.WriteLine(actual);
+
+        var expected = "with d as (select users.user_id, users.name from users) select d.user_id, d.name from d";
         Assert.Equal(expected, actual);
     }
 
@@ -42,7 +56,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
 
-        var expected = "select users.user_id as users_user_id, users.name as users_name from users";
+        var expected = "select users.user_id as users__user_id, users.name as users__name from users";
         Assert.Equal(expected, actual);
     }
 
@@ -61,7 +75,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
 
-        var expected = "select u.user_id as u_id, u.name as u_name from users as u";
+        var expected = "select u.user_id as u__id, u.name as u__name from users as u";
         Assert.Equal(expected, actual);
     }
 
@@ -75,7 +89,8 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.AddJsonColumn("u", "user");
+        var editor = new PostgresJsonEditor(queryNode);
+        editor.AddJsonColumn("u", "user");
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -94,7 +109,8 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.AddJsonColumn("users", "user");
+        var editor = new PostgresJsonEditor(queryNode);
+        editor.AddJsonColumn("users", "user");
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -113,7 +129,8 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.AddJsonColumn("users", "user");
+        var editor = new PostgresJsonEditor(queryNode);
+        editor.AddJsonColumn("users", "user");
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -134,7 +151,8 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.AddJsonColumn("users", "user", propertyBuilder: upperCaseBuilder);
+        var editor = new PostgresJsonEditor(queryNode, jsonKeyFormatter: upperCaseBuilder);
+        editor.AddJsonColumn("users", "user");
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -147,13 +165,14 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
     public void AddJsonColumnStartWith()
     {
         // Arrange
-        var query = SelectQueryParser.Parse("select users.user_id, users.name as user_name from users");
+        var query = SelectQueryParser.Parse("select users.user_id as user__id, users.name as user__name from users");
 
         // Act
         var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.Serialize("user", "user");
+        var editor = new PostgresJsonEditor(queryNode);
+        editor.Serialize("user", "user");
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -168,13 +187,14 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var upperCaseBuilder = (string s) => s.ToUpper();
 
         // Arrange
-        var query = SelectQueryParser.Parse("select users.user_id, users.name as user_name from users");
+        var query = SelectQueryParser.Parse("select users.user_id as user__id, users.name as user__name from users");
 
         // Act
         var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.Serialize("user", "user", propertyBuilder: upperCaseBuilder);
+        var editor = new PostgresJsonEditor(queryNode, jsonKeyFormatter: upperCaseBuilder);
+        editor.Serialize("user", "user");
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
@@ -193,72 +213,12 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        queryNode.ToJson();
+        queryNode.ToPostgresJsonQuery();
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
 
-        var expected = "select row_to_json(d) from (select users.user_id as id, users.name from users) as d limit 1";
-        Assert.Equal(expected, actual);
-    }
-
-    [Fact]
-    public void ToJsonArray()
-    {
-        // Arrange
-        var query = SelectQueryParser.Parse("select users.user_id as id, users.name from users");
-
-        // Act
-        var queryNode = QueryAstParser.Parse(query);
-        output.WriteLine(queryNode.Query.ToSql());
-
-        queryNode.ToJsonArray();
-
-        var actual = queryNode.Query.ToSql();
-        output.WriteLine(actual);
-
-        var expected = "select json_agg(row_to_json(d)) from (select users.user_id as id, users.name from users) as d";
-        Assert.Equal(expected, actual);
-    }
-
-    [Fact]
-    public void Test()
-    {
-        var sql = """
-            select
-                posts.post_id
-                , posts.title
-                , posts.content
-                , posts.created_at
-                , users.user_id
-                , users.name as user_name
-                , blogs.blog_id
-                , blogs.name as blog_name
-                , organizations.organization_id
-                , organizations.name as organization_name
-            from
-                posts
-                inner join users on posts.user_id = users.user_id
-                inner join blogs on posts.blog_id = blogs.blog_id
-                inner join organizations on blogs.organization_id = organizations.organization_id
-            where
-                posts.post_id = :post_id
-            """;
-
-        var query = SelectQueryParser.Parse(sql);
-        var queryNode = QueryAstParser.Parse(query);
-        queryNode.NormalizeSelectClause()
-            .Serialize("organizations", objectName: "organization")
-            .Serialize("users", objectName: "user")
-            .Serialize("blogs", objectName: "blog", include: ["organization"])
-            .Serialize("posts", objectName: "post", include: ["user", "blog"])
-            .ToJson();
-
-        var actual = queryNode.Query.ToSql();
-
-        output.WriteLine(actual);
-
-        var expected = "select row_to_json(d) from (select json_build_object('post_id', posts.post_id, 'title', posts.title, 'content', posts.content, 'created_at', posts.created_at, 'user', json_build_object('user_id', users.user_id, 'user_name', users.name), 'blog', json_build_object('blog_id', blogs.blog_id, 'blog_name', blogs.name, 'organization', json_build_object('organization_id', organizations.organization_id, 'organization_name', organizations.name))) as post from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id where posts.post_id = :post_id) as d limit 1";
+        var expected = "with __json as (select users.user_id as id, users.name from users) select row_to_json(d) from (select __json.id as \"id\", __json.name as \"name\" from __json) as d limit 1";
         Assert.Equal(expected, actual);
     }
 }
