@@ -27,7 +27,7 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
 
     private ReadOnlyDictionary<string, SelectExpression> SelectExpressionMap => Node.SelectExpressionMap;
 
-    public PostgresJsonEditor AddJsonColumn(string datasourceName, string objectName, bool removeNotStructColumn = true)
+    internal PostgresJsonEditor AddJsonColumn(string datasourceName, string objectName, bool removeNotStructColumn = true)
     {
         if (MustRefresh) Refresh();
 
@@ -69,6 +69,32 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
         return this;
     }
 
+    /// <summary>
+    /// Converts columns from a specified datasource into a JSON object using PostgreSQL's json_build_object function.
+    /// </summary>
+    /// <param name="datasource">The alias of the datasource whose columns will be serialized.</param>
+    /// <param name="jsonKey">The name to use for the JSON object in the result. If empty, uses the datasource name.</param>
+    /// <param name="parent">Optional function to define nested JSON structure for related entities.</param>
+    /// <param name="isFlat">When true, doesn't remove the original columns from the result. Default is false.</param>
+    /// <returns>A new PostgresJsonEditor instance with the modified query structure.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no columns are found with the specified datasource prefix or when the query is not a SelectQuery.
+    /// </exception>
+    /// <remarks>
+    /// This method looks for columns that follow the naming pattern "{datasource}__columnName" and transforms them into a JSON object.
+    /// The prefix is removed from each column name during serialization, and property names in the JSON can be formatted using the jsonKeyFormatter.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Create a JSON object with user properties
+    /// editor.Serialize(datasource: "user", jsonKey: "Author");
+    /// 
+    /// // Create a nested JSON structure
+    /// editor.Serialize(datasource: "blog", jsonKey: "Blog", parent: e => 
+    ///     e.Serialize(datasource: "category", jsonKey: "Category")
+    /// );
+    /// </code>
+    /// </example>
     public PostgresJsonEditor Serialize(
         string datasource,
         string jsonKey = "",
@@ -129,6 +155,34 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
         return new PostgresJsonEditor(newNode, owner: Owner, jsonKeyFormatter: JsonKeyFormatter);
     }
 
+    /// <summary>
+    /// Converts columns from a specified datasource into a JSON array of objects using PostgreSQL's json_agg function.
+    /// </summary>
+    /// <param name="datasource">The alias of the datasource whose columns will be serialized into an array of objects.</param>
+    /// <param name="jsonKey">The name to use for the JSON array in the result. If empty, uses the datasource name.</param>
+    /// <param name="parent">Optional function to define nested JSON structure for each object in the array.</param>
+    /// <returns>A new PostgresJsonEditor instance with the modified query structure.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no columns are found with the specified datasource prefix or when the query is not a SelectQuery.
+    /// </exception>
+    /// <remarks>
+    /// This method looks for columns that follow the naming pattern "{datasource}__columnName" and transforms them into 
+    /// an array of JSON objects using PostgreSQL's json_agg function. The prefix is removed from each column name during serialization.
+    /// 
+    /// The method automatically adds the necessary GROUP BY clauses for non-serialized columns and creates a Common Table Expression (CTE)
+    /// named "__json_{jsonKey}" to hold the aggregated array result.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Create an array of comment objects
+    /// editor.SerializeArray(datasource: "comment", jsonKey: "Comments");
+    /// 
+    /// // Create an array with nested objects
+    /// editor.SerializeArray(datasource: "post", jsonKey: "Posts", parent: e => 
+    ///     e.Serialize(datasource: "author", jsonKey: "Author")
+    /// );
+    /// </code>
+    /// </example>
     public PostgresJsonEditor SerializeArray(
         string datasource,
         string jsonKey = "",

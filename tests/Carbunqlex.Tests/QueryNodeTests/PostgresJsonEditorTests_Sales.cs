@@ -165,7 +165,7 @@ public class PostgresJsonEditorTests_Sales(ITestOutputHelper output)
         // Act
         query = query.Where("sales_invoice_id", static w => w.Equal(1))
             .NormalizeSelectClause()
-            .ToJsonQuery(jsonKeyFormatter: StringExtensions.ToPascalCase, parent: static e =>
+            .ToJsonQuery(jsonKeyFormatter: StringExtensions.ToPascalCase, builder: static e =>
             {
                 return e.SerializeArray(datasource: "sd", jsonKey: "SalesDetails", parent: static e =>
                 {
@@ -242,4 +242,42 @@ public class PostgresJsonEditorTests_Sales(ITestOutputHelper output)
 }
          */
     }
+
+    [Fact]
+    public void JsonSerializeRootBySalesDetails_WithLocalFunctions()
+    {
+        // Arrange
+        var query = QueryAstParser.Parse(QueryCommandText);
+        output.WriteLine(query.Query.ToSql());
+
+        // Define JSON hierarchy structure with local functions
+        static PostgresJsonEditor buildSalesDetail(PostgresJsonEditor e) =>
+            e.SerializeArray(datasource: "sd", jsonKey: "SalesDetails", parent: buildSalesDetailParent);
+
+        static PostgresJsonEditor buildSalesDetailParent(PostgresJsonEditor e) =>
+            e.Serialize(datasource: "si", jsonKey: "SalesInvoice", parent: buildSaleInvoiceParent);
+
+        static PostgresJsonEditor buildSaleInvoiceParent(PostgresJsonEditor e) =>
+            e.Serialize(datasource: "cust", jsonKey: "Customer")
+             .Serialize(datasource: "p", jsonKey: "Product", parent: buildProductParent);
+
+        static PostgresJsonEditor buildProductParent(PostgresJsonEditor e) =>
+            e.Serialize(datasource: "c", jsonKey: "Category");
+
+        // Act
+        query = query.Where("sales_invoice_id", static w => w.Equal(1))
+            .NormalizeSelectClause()
+            .ToJsonQuery(jsonKeyFormatter: StringExtensions.ToPascalCase, builder: buildSalesDetail);
+
+        var actual = query.ToSql();
+
+        var expected = "with __json as (select sd.sales_detail_id as sd__sales_detail_id, sd.quantity as sd__quantity, sd.unit_price as sd__unit_price, (sd.quantity * sd.unit_price) as sd__subtotal, p.product_id as p__product_id, p.name as p__product_name, c.category_id as c__category_id, c.name as c__category_name, si.sales_invoice_id as si__sales_invoice_id, si.created_at as si__invoice_date, si.total_amount as si__total_amount, cust.customer_id as cust__customer_id, cust.name as cust__customer_name from sales_detail as sd inner join product as p on sd.product_id = p.product_id inner join category as c on p.category_id = c.category_id inner join sales_invoice as si on sd.sales_invoice_id = si.sales_invoice_id inner join customers as cust on si.customer_id = cust.customer_id where si.sales_invoice_id = 1), __json_SalesDetails as (select json_agg(json_build_object('SalesDetailId', __json.sd__sales_detail_id, 'Quantity', __json.sd__quantity, 'UnitPrice', __json.sd__unit_price, 'Subtotal', __json.sd__subtotal, 'Salesinvoice', json_build_object('SalesInvoiceId', __json.si__sales_invoice_id, 'InvoiceDate', __json.si__invoice_date, 'TotalAmount', __json.si__total_amount, 'Customer', json_build_object('CustomerId', __json.cust__customer_id, 'CustomerName', __json.cust__customer_name), 'Product', json_build_object('ProductId', __json.p__product_id, 'ProductName', __json.p__product_name, 'Category', json_build_object('CategoryId', __json.c__category_id, 'CategoryName', __json.c__category_name))))) as SalesDetails from __json) select row_to_json(d) from (select __json_SalesDetails.SalesDetails as \"SalesDetails\" from __json_SalesDetails) as d limit 1";
+
+        output.WriteLine($"/*expected*/ {expected}");
+        output.WriteLine($"/*actual  */ {actual}");
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
 }

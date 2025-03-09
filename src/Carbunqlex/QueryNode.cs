@@ -768,17 +768,47 @@ public class QueryNode : IQuery
         return this;
     }
 
+    /// <summary>
+    /// Converts the current query to a JSON representation using PostgreSQL's JSON functions.
+    /// </summary>
+    /// <returns></returns>
     public QueryNode ToJsonQuery()
     {
         return ToJsonQuery(x => x, x => x);
     }
 
-    public QueryNode ToJsonQuery(Func<PostgresJsonEditor, PostgresJsonEditor> action)
+    /// <summary>
+    /// Converts the current query to a JSON representation using PostgreSQL's JSON functions.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
+    public QueryNode ToJsonQuery(Func<PostgresJsonEditor, PostgresJsonEditor> builder)
     {
-        return ToJsonQuery(x => x, action);
+        return ToJsonQuery(x => x, builder);
     }
 
-    public QueryNode ToJsonQuery(Func<string, string> jsonKeyFormatter, Func<PostgresJsonEditor, PostgresJsonEditor> parent)
+    /// <summary>
+    /// Converts the current query to a JSON representation using PostgreSQL's JSON functions.
+    /// This method transforms a regular SQL query into a query that returns results in JSON format.
+    /// </summary>
+    /// <param name="jsonKeyFormatter">A function to format JSON property names. For example, converting to PascalCase or camelCase.</param>
+    /// <param name="builder">A function that defines the JSON structure using PostgresJsonEditor operations like Serialize and SerializeArray.</param>
+    /// <returns>The current QueryNode instance with a modified query that produces JSON output.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the current query is not a SelectQuery.</exception>
+    /// <remarks>
+    /// This method first converts the query to a CTE named "__json", then applies the JSON structure defined by the builder.
+    /// It also adds double quotes around property names in the final JSON to preserve case sensitivity.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var query = QueryAstParser.Parse("SELECT users.id, users.name FROM users");
+    /// query.ToJsonQuery(
+    ///     jsonKeyFormatter: StringExtensions.ToPascalCase,
+    ///     builder: e => e.SerializeArray(datasource: "users", jsonKey: "Users")
+    /// );
+    /// </code>
+    /// </example>
+    public QueryNode ToJsonQuery(Func<string, string> jsonKeyFormatter, Func<PostgresJsonEditor, PostgresJsonEditor> builder)
     {
         if (MustRefresh) Refresh();
         // The processing target is only the terminal SelectQuery
@@ -789,11 +819,11 @@ public class QueryNode : IQuery
 
         ToCteQuery("__json", overrideNode: true);
 
-        var editor = parent(new PostgresJsonEditor(this, jsonKeyFormatter: jsonKeyFormatter));
+        var newEditor = builder(new PostgresJsonEditor(this, jsonKeyFormatter: jsonKeyFormatter));
 
         // NOTE:
         // Property names are escaped with double quotes to distinguish between uppercase and lowercase letters.
-        if (editor.Query.TryGetSelectClause(out var selectClause))
+        if (newEditor.Query.TryGetSelectClause(out var selectClause))
         {
             foreach (var item in selectClause.Expressions)
             {
@@ -806,7 +836,7 @@ public class QueryNode : IQuery
         var text = "row_to_json(d)";
         var newQuery = new SelectQuery(
             new SelectClause(SelectExpressionParser.Parse(text)),
-            new FromClause(new DatasourceExpression(new SubQuerySource(editor.Query), "d"))
+            new FromClause(new DatasourceExpression(new SubQuerySource(newEditor.Query), "d"))
             );
         newQuery.LimitClause = new LimitClause(new LiteralExpression("1"));
 
