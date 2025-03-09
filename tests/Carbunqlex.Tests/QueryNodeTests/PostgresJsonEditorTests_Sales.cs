@@ -132,7 +132,7 @@ public class PostgresJsonEditorTests_Sales(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
 
-    private string JsonTestQuery = """
+    private string QueryCommandText = """
         SELECT 
             sd.sales_detail_id, 
             sd.quantity, 
@@ -159,7 +159,7 @@ public class PostgresJsonEditorTests_Sales(ITestOutputHelper output)
     public void JsonSerializeRootBySalesDetails()
     {
         // Arrange
-        var query = QueryAstParser.Parse(JsonTestQuery);
+        var query = QueryAstParser.Parse(QueryCommandText);
         output.WriteLine(query.Query.ToSql());
 
         // Act

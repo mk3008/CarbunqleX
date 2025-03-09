@@ -112,7 +112,6 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
             }
         }
 
-
         // The processing target is only the terminal SelectQuery
         if (editor.Query is not SelectQuery sq)
         {
@@ -136,9 +135,10 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
         var exp = $"json_build_object({string.Join(", ", columnStrings)}) as {alias}";
 
         sq.SelectClause.Expressions.Add(SelectExpressionParser.Parse(exp));
-        Refresh();
 
-        return this;
+        var newNode = QueryAstParser.Parse(sq);
+
+        return new PostgresJsonEditor(newNode, owner: Owner, propertyBuilder: PropertyBuilder);
     }
 
     public PostgresJsonEditor ArraySerialize(
@@ -208,6 +208,6 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
         var newNode = QueryAstParser.Parse(sq);
         newNode = newNode.ToCteQuery($"__json_{objectName}");
 
-        return new PostgresJsonEditor(newNode, propertyBuilder: PropertyBuilder);
+        return new PostgresJsonEditor(newNode, owner: Owner, propertyBuilder: PropertyBuilder);
     }
 }
