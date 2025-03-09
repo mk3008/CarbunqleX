@@ -163,18 +163,18 @@ public class PostgresJsonEditorTests_Sales(ITestOutputHelper output)
         output.WriteLine(query.Query.ToSql());
 
         // Act
-        query = query
-            .Where("sales_invoice_id", static w => w.Equal(1))
-            .ToJsonQuery(columnNormalization: true, propertyBuilder: StringExtensions.ToPascalCase, static e =>
+        query = query.Where("sales_invoice_id", static w => w.Equal(1))
+            .NormalizeSelectClause()
+            .ToJsonQuery(jsonKeyFormatter: StringExtensions.ToPascalCase, parent: static e =>
             {
-                return e.ArraySerialize("sd", objectName: "SalesDetails", upperNode: static e =>
+                return e.SerializeArray(datasource: "sd", jsonKey: "SalesDetails", parent: static e =>
                 {
-                    return e.Serialize("si", objectName: "SalesInvoice", upperNode: static e =>
+                    return e.Serialize(datasource: "si", jsonKey: "SalesInvoice", parent: static e =>
                     {
-                        return e.Serialize("cust", objectName: "Customer")
-                            .Serialize("p", objectName: "Product", upperNode: static e =>
+                        return e.Serialize(datasource: "cust", jsonKey: "Customer")
+                            .Serialize(datasource: "p", jsonKey: "Product", parent: static e =>
                             {
-                                return e.Serialize("c", objectName: "Category");
+                                return e.Serialize(datasource: "c", jsonKey: "Category");
                             });
                     });
                 });

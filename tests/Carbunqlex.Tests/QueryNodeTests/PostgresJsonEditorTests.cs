@@ -151,7 +151,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        var editor = new PostgresJsonEditor(queryNode, propertyBuilder: upperCaseBuilder);
+        var editor = new PostgresJsonEditor(queryNode, jsonKeyFormatter: upperCaseBuilder);
         editor.AddJsonColumn("users", "user");
 
         var actual = queryNode.Query.ToSql();
@@ -193,7 +193,7 @@ public class PostgresJsonEditorTests(ITestOutputHelper output)
         var queryNode = QueryAstParser.Parse(query);
         output.WriteLine(queryNode.Query.ToSql());
 
-        var editor = new PostgresJsonEditor(queryNode, propertyBuilder: upperCaseBuilder);
+        var editor = new PostgresJsonEditor(queryNode, jsonKeyFormatter: upperCaseBuilder);
         editor.Serialize("user", "user");
 
         var actual = queryNode.Query.ToSql();

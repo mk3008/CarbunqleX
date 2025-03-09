@@ -40,14 +40,15 @@ public class PostgresSpecificSample(ITestOutputHelper output)
         var query = QueryAstParser.Parse(QueryText);
 
         query.Where("post_id", action: x => x.Equal(":post_id"))
-            .ToJsonQuery(columnNormalization: true, x =>
+            .NormalizeSelectClause()
+            .ToJsonQuery(x =>
             {
-                return x.Serialize("posts", objectName: "post", upperNode: static x =>
+                return x.Serialize(datasource: "posts", jsonKey: "post", parent: static x =>
                 {
-                    return x.Serialize("users", objectName: "user")
-                        .Serialize("blogs", objectName: "blog", upperNode: static x =>
+                    return x.Serialize(datasource: "users", jsonKey: "user")
+                        .Serialize(datasource: "blogs", jsonKey: "blog", parent: static x =>
                         {
-                            return x.Serialize("organizations", objectName: "organization");
+                            return x.Serialize(datasource: "organizations", jsonKey: "organization");
                         });
                 });
             });
@@ -89,14 +90,15 @@ public class PostgresSpecificSample(ITestOutputHelper output)
         var query = QueryAstParser.Parse(QueryText);
 
         query.Where("post_id", action: x => x.Equal(":post_id"))
-            .ToJsonQuery(columnNormalization: true, x =>
+            .NormalizeSelectClause()
+            .ToJsonQuery(x =>
             {
-                return x.Serialize("posts", isFlat: true, upperNode: static x =>
+                return x.Serialize("posts", isFlat: true, parent: static x =>
                 {
-                    return x.Serialize("users", objectName: "user")
-                        .Serialize("blogs", objectName: "blog", upperNode: static x =>
+                    return x.Serialize("users", jsonKey: "user")
+                        .Serialize("blogs", jsonKey: "blog", parent: static x =>
                         {
-                            return x.Serialize("organizations", objectName: "organization");
+                            return x.Serialize("organizations", jsonKey: "organization");
                         });
                 });
             });

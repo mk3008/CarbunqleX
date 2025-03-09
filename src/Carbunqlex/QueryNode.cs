@@ -739,7 +739,13 @@ public class QueryNode : IQuery
         return Query.TryGetSelectClause(out selectClause);
     }
 
-    internal void NormalizeSelectClause()
+    /// <summary>
+    /// Unifies alias names to TableName + "__" + ColumnName.
+    /// Calculated columns are not processed.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public QueryNode NormalizeSelectClause()
     {
         if (MustRefresh) Refresh();
 
@@ -759,19 +765,20 @@ public class QueryNode : IQuery
             column.Value.Alias = $"{ce.NamespaceFullName}__{column.Value.Alias}";
         }
         MustRefresh = true;
+        return this;
     }
 
     public QueryNode ToJsonQuery()
     {
-        return ToJsonQuery(false, x => x, x => x);
+        return ToJsonQuery(x => x, x => x);
     }
 
-    public QueryNode ToJsonQuery(bool columnNormalization, Func<PostgresJsonEditor, PostgresJsonEditor> action)
+    public QueryNode ToJsonQuery(Func<PostgresJsonEditor, PostgresJsonEditor> action)
     {
-        return ToJsonQuery(columnNormalization, x => x, action);
+        return ToJsonQuery(x => x, action);
     }
 
-    public QueryNode ToJsonQuery(bool columnNormalization, Func<string, string> propertyBuilder, Func<PostgresJsonEditor, PostgresJsonEditor> action)
+    public QueryNode ToJsonQuery(Func<string, string> jsonKeyFormatter, Func<PostgresJsonEditor, PostgresJsonEditor> parent)
     {
         if (MustRefresh) Refresh();
         // The processing target is only the terminal SelectQuery
@@ -780,14 +787,9 @@ public class QueryNode : IQuery
             throw new InvalidOperationException("ToJson can only be used on a SelectQuery");
         }
 
-        if (columnNormalization)
-        {
-            NormalizeSelectClause();
-        }
-
         ToCteQuery("__json", overrideNode: true);
 
-        var editor = action(new PostgresJsonEditor(this, propertyBuilder: propertyBuilder));
+        var editor = parent(new PostgresJsonEditor(this, jsonKeyFormatter: jsonKeyFormatter));
 
         // NOTE:
         // Property names are escaped with double quotes to distinguish between uppercase and lowercase letters.

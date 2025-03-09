@@ -32,14 +32,15 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var query = SelectQueryParser.Parse(QueryCommandText);
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("blog_id", w => w.Equal(":blog_id"))
-            .ToJsonQuery(columnNormalization: true, static x =>
+            .NormalizeSelectClause()
+            .ToJsonQuery(static x =>
             {
-                return x.ArraySerialize("posts", objectName: "posts", upperNode: static x =>
+                return x.SerializeArray(datasource: "posts", jsonKey: "posts", parent: static x =>
                 {
-                    return x.Serialize("blogs", objectName: "blog", upperNode: static x =>
+                    return x.Serialize(datasource: "blogs", jsonKey: "blog", parent: static x =>
                     {
-                        return x.Serialize("organizations", objectName: "organization");
-                    }).Serialize("users", objectName: "user");
+                        return x.Serialize(datasource: "organizations", jsonKey: "organization");
+                    }).Serialize(datasource: "users", jsonKey: "user");
                 });
             });
 
@@ -88,14 +89,15 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var query = SelectQueryParser.Parse(QueryCommandText);
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("post_id", w => w.Equal(":post_id"))
-            .ToJsonQuery(columnNormalization: true, static x =>
+            .NormalizeSelectClause()
+            .ToJsonQuery(static x =>
             {
-                return x.Serialize("posts", objectName: "post", upperNode: static x =>
+                return x.Serialize(datasource: "posts", jsonKey: "post", parent: static x =>
                 {
-                    return x.Serialize("blogs", objectName: "blog", upperNode: static x =>
+                    return x.Serialize(datasource: "blogs", jsonKey: "blog", parent: static x =>
                     {
-                        return x.Serialize("organizations", objectName: "organization");
-                    }).Serialize("users", objectName: "user");
+                        return x.Serialize(datasource: "organizations", jsonKey: "organization");
+                    }).Serialize(datasource: "users", jsonKey: "user");
                 });
             });
 
@@ -137,15 +139,16 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
 
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("user_id", w => w.Equal(":user_id"))
-            .ToJsonQuery(columnNormalization: true, static x =>
+            .NormalizeSelectClause()
+            .ToJsonQuery(static x =>
             {
-                return x.Serialize("users", objectName: "user", upperNode: static x =>
+                return x.Serialize(datasource: "users", jsonKey: "user", parent: static x =>
                 {
-                    return x.ArraySerialize("posts", objectName: "posts", upperNode: static x =>
+                    return x.SerializeArray(datasource: "posts", jsonKey: "posts", parent: static x =>
                     {
-                        return x.Serialize("blogs", objectName: "blog", upperNode: static x =>
+                        return x.Serialize(datasource: "blogs", jsonKey: "blog", parent: static x =>
                         {
-                            return x.Serialize("organizations", objectName: "organization");
+                            return x.Serialize(datasource: "organizations", jsonKey: "organization");
                         });
                     });
                 });
@@ -204,15 +207,16 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var query = SelectQueryParser.Parse(QueryCommandText);
 
         var queryNode = QueryAstParser.Parse(query);
-        queryNode = queryNode.ToJsonQuery(columnNormalization: true, static x =>
+        queryNode = queryNode.NormalizeSelectClause()
+            .ToJsonQuery(static x =>
             {
-                return x.ArraySerialize("users", objectName: "users", upperNode: static x =>
+                return x.SerializeArray(datasource: "users", jsonKey: "users", parent: static x =>
                 {
-                    return x.ArraySerialize("posts", objectName: "posts", upperNode: static x =>
+                    return x.SerializeArray(datasource: "posts", jsonKey: "posts", parent: static x =>
                     {
-                        return x.Serialize("blogs", objectName: "blog", upperNode: static x =>
+                        return x.Serialize(datasource: "blogs", jsonKey: "blog", parent: static x =>
                         {
-                            return x.Serialize("organizations", objectName: "organization");
+                            return x.Serialize(datasource: "organizations", jsonKey: "organization");
                         });
                     });
                 });
@@ -280,15 +284,16 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var query = SelectQueryParser.Parse(QueryCommandText);
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("organization_id", w => w.Equal(":organization_id"))
-            .ToJsonQuery(columnNormalization: true, static x =>
+            .NormalizeSelectClause()
+            .ToJsonQuery(static x =>
             {
-                return x.Serialize("organizations", objectName: "organization", upperNode: static x =>
+                return x.Serialize(datasource: "organizations", jsonKey: "organization", parent: static x =>
                 {
-                    return x.ArraySerialize("blogs", objectName: "blogs", upperNode: static x =>
+                    return x.SerializeArray(datasource: "blogs", jsonKey: "blogs", parent: static x =>
                     {
-                        return x.ArraySerialize("posts", objectName: "posts", upperNode: static x =>
+                        return x.SerializeArray(datasource: "posts", jsonKey: "posts", parent: static x =>
                         {
-                            return x.Serialize("users", objectName: "user");
+                            return x.Serialize(datasource: "users", jsonKey: "user");
                         });
                     });
                 });
@@ -343,15 +348,16 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var query = SelectQueryParser.Parse(QueryCommandText);
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("post_id", w => w.Equal(":post_id"))
-            .ToJsonQuery(columnNormalization: true, static x =>
+            .NormalizeSelectClause()
+            .ToJsonQuery(static x =>
             {
-                return x.ArraySerialize("organizations", objectName: "organizations", upperNode: static x =>
+                return x.SerializeArray(datasource: "organizations", jsonKey: "organizations", parent: static x =>
                 {
-                    return x.ArraySerialize("blogs", objectName: "blogs", upperNode: static x =>
+                    return x.SerializeArray(datasource: "blogs", jsonKey: "blogs", parent: static x =>
                     {
-                        return x.ArraySerialize("posts", objectName: "posts", upperNode: static x =>
+                        return x.SerializeArray(datasource: "posts", jsonKey: "posts", parent: static x =>
                         {
-                            return x.Serialize("users", objectName: "user");
+                            return x.Serialize(datasource: "users", jsonKey: "user");
                         });
                     });
                 });

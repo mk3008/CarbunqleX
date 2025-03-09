@@ -8,7 +8,7 @@ namespace Carbunqlex;
 /// Utility class using Postgres-specific JSON functions
 /// </summary>
 /// <param name="node"></param>
-public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<string, string>? propertyBuilder = null)
+public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<string, string>? jsonKeyFormatter = null)
 {
     private QueryNode Node { get; } = node;
     private string? Owner { get; } = owner;
@@ -19,7 +19,7 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
         set => Node.MustRefresh = value;
     }
 
-    Func<string, string>? PropertyBuilder { get; set; } = propertyBuilder;
+    Func<string, string>? JsonKeyFormatter { get; set; } = jsonKeyFormatter;
 
     private void Refresh() => Node.Refresh();
 
@@ -58,7 +58,7 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
         }
 
         var columnStrings = columns
-            .Select(col => $"'{PropertyBuilder?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
+            .Select(col => $"'{JsonKeyFormatter?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
             .ToList();
 
         var exp = $"json_build_object({string.Join(", ", columnStrings)}) AS {objectName}";
@@ -71,18 +71,18 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
 
     public PostgresJsonEditor Serialize(
         string datasource,
-        string objectName = "",
-        Func<PostgresJsonEditor, PostgresJsonEditor>? upperNode = null,
+        string jsonKey = "",
+        Func<PostgresJsonEditor, PostgresJsonEditor>? parent = null,
         bool isFlat = false)
     {
         if (MustRefresh) Refresh();
 
-        if (string.IsNullOrEmpty(objectName))
+        if (string.IsNullOrEmpty(jsonKey))
         {
-            objectName = datasource;
+            jsonKey = datasource;
         }
 
-        var editor = upperNode != null ? upperNode.Invoke(new PostgresJsonEditor(Node, owner: datasource, propertyBuilder: PropertyBuilder)) : this;
+        var editor = parent != null ? parent.Invoke(new PostgresJsonEditor(Node, owner: datasource, jsonKeyFormatter: JsonKeyFormatter)) : this;
 
         // columns
         var propertyColumns = editor.SelectExpressionMap
@@ -115,10 +115,10 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
 
             // add serialize column
             var columnStrings = propertyColumns
-                .Select(col => $"'{PropertyBuilder?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
+                .Select(col => $"'{JsonKeyFormatter?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
                 .ToList();
 
-            var alias = string.IsNullOrEmpty(Owner) ? objectName : Owner + "__" + objectName;
+            var alias = string.IsNullOrEmpty(Owner) ? jsonKey : Owner + "__" + jsonKey;
 
             var exp = $"json_build_object({string.Join(", ", columnStrings)}) as {alias}";
 
@@ -126,22 +126,22 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
         }
 
         var newNode = QueryAstParser.Parse(sq);
-        return new PostgresJsonEditor(newNode, owner: Owner, propertyBuilder: PropertyBuilder);
+        return new PostgresJsonEditor(newNode, owner: Owner, jsonKeyFormatter: JsonKeyFormatter);
     }
 
-    public PostgresJsonEditor ArraySerialize(
+    public PostgresJsonEditor SerializeArray(
         string datasource,
-        string objectName = "",
-        Func<PostgresJsonEditor, PostgresJsonEditor>? upperNode = null)
+        string jsonKey = "",
+        Func<PostgresJsonEditor, PostgresJsonEditor>? parent = null)
     {
         if (MustRefresh) Refresh();
 
-        if (string.IsNullOrEmpty(objectName))
+        if (string.IsNullOrEmpty(jsonKey))
         {
-            objectName = datasource;
+            jsonKey = datasource;
         }
 
-        var editor = upperNode != null ? upperNode.Invoke(new PostgresJsonEditor(Node, owner: datasource, propertyBuilder: PropertyBuilder)) : this;
+        var editor = parent != null ? parent.Invoke(new PostgresJsonEditor(Node, owner: datasource, jsonKeyFormatter: JsonKeyFormatter)) : this;
 
         // columns
         var serializeTargetColumns = editor.SelectExpressionMap
@@ -183,18 +183,18 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
 
         // add serialize column
         var columnStrings = serializeTargetColumns
-            .Select(col => $"'{PropertyBuilder?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
+            .Select(col => $"'{JsonKeyFormatter?.Invoke(col.Value.Alias) ?? col.Value.Alias}', {col.Value.Value.ToSqlWithoutCte()}")
             .ToList();
 
-        var alias = string.IsNullOrEmpty(Owner) ? objectName : $"{Owner}__{objectName}";
+        var alias = string.IsNullOrEmpty(Owner) ? jsonKey : $"{Owner}__{jsonKey}";
         var exp = $"json_agg(json_build_object({string.Join(", ", columnStrings)})) as {alias}";
 
         sq.SelectClause.Expressions.Add(SelectExpressionParser.Parse(exp));
 
         // convert to CTE
         var newNode = QueryAstParser.Parse(sq);
-        newNode = newNode.ToCteQuery($"__json_{objectName}");
+        newNode = newNode.ToCteQuery($"__json_{jsonKey}");
 
-        return new PostgresJsonEditor(newNode, owner: Owner, propertyBuilder: PropertyBuilder);
+        return new PostgresJsonEditor(newNode, owner: Owner, jsonKeyFormatter: JsonKeyFormatter);
     }
 }
