@@ -790,9 +790,9 @@ public class QueryNode : IQuery
         var editor = action(new PostgresJsonEditor(this, propertyBuilder: propertyBuilder));
 
         // NOTE:
-        // 選択クエリの列エイリアスは、「object__property」という命名規則になっているので、
-        // 正規化されなかった列は、ルートに所属するプロパティとして、「object__property」から「property」に変更する
-        // また、プロパティ名が大文字小文字を区別されるように、ダブルクォートで囲んでエスケープ処理する
+        // The column alias of the select query follows the naming convention "datasource__property".
+        // Columns that are not normalized are changed from "datasource__property" to "property" as properties belonging to the root.
+        // Also, property names are escaped with double quotes to distinguish between uppercase and lowercase letters.
         if (editor.Query.TryGetSelectClause(out var selectClause))
         {
             foreach (var item in selectClause.Expressions)
