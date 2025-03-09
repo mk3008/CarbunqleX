@@ -163,28 +163,83 @@ public class PostgresJsonEditorTests_Sales(ITestOutputHelper output)
         output.WriteLine(query.Query.ToSql());
 
         // Act
-        query = query.ToJsonQuery(columnNormalization: true, propertyBuilder: StringExtensions.ToPascalCase, static e =>
-        {
-            //e.Serialize("customer", objectName: "Customer");
-            return e.ArraySerialize("sd", objectName: "SalesDetails", upperNode: static e =>
+        query = query
+            .Where("sales_invoice_id", static w => w.Equal(1))
+            .ToJsonQuery(columnNormalization: true, propertyBuilder: StringExtensions.ToPascalCase, static e =>
             {
-                return e.Serialize("p", objectName: "Product", upperNode: static e =>
+                return e.ArraySerialize("sd", objectName: "SalesDetails", upperNode: static e =>
                 {
-                    return e.Serialize("c", objectName: "Category");
-                }).ArraySerialize("si", objectName: "SalesInvoices", upperNode: static e =>
-                {
-                    return e.Serialize("cust", objectName: "Customer");
+                    return e.Serialize("si", objectName: "SalesInvoice", upperNode: static e =>
+                    {
+                        return e.Serialize("cust", objectName: "Customer")
+                            .Serialize("p", objectName: "Product", upperNode: static e =>
+                            {
+                                return e.Serialize("c", objectName: "Category");
+                            });
+                    });
                 });
             });
-        });
         var actual = query.ToSql();
 
-        var expected = "with __json as (select sd.sales_detail_id as sd__sales_detail_id, sd.quantity as sd__quantity, sd.unit_price as sd__unit_price, (sd.quantity * sd.unit_price) as subtotal, p.product_id as p__product_id, p.name as p__product_name, c.category_id as c__category_id, c.name as c__category_name, si.sales_invoice_id as si__sales_invoice_id, si.created_at as si__invoice_date, si.total_amount as si__total_amount, cust.customer_id as cust__customer_id, cust.name as cust__customer_name from sales_detail as sd inner join product as p on sd.product_id = p.product_id inner join category as c on p.category_id = c.category_id inner join sales_invoice as si on sd.sales_invoice_id = si.sales_invoice_id inner join customers as cust on si.customer_id = cust.customer_id), __json_SalesInvoices as (select __json.sd__sales_detail_id, __json.sd__quantity, __json.sd__unit_price, __json.subtotal, __json.c__category_id, __json.c__category_name, __json.cust__customer_id, __json.cust__customer_name, json_build_object('_product_id', __json.p__product_id, '_product_name', __json.p__product_name) as sd__Product, json_agg(json_build_object('sales_invoice_id', __json.si__sales_invoice_id, 'invoice_date', __json.si__invoice_date, 'total_amount', __json.si__total_amount)) as sd__SalesInvoices from __json group by __json.sd__sales_detail_id, __json.sd__quantity, __json.sd__unit_price, __json.subtotal, __json.c__category_id, __json.c__category_name, __json.cust__customer_id, __json.cust__customer_name, __json.p__product_id, __json.p__product_name), __json_SalesDetails as (select __json_SalesInvoices.subtotal, __json_SalesInvoices.c__category_id, __json_SalesInvoices.c__category_name, __json_SalesInvoices.cust__customer_id, __json_SalesInvoices.cust__customer_name, json_agg(json_build_object('sales_detail_id', __json_SalesInvoices.sd__sales_detail_id, 'quantity', __json_SalesInvoices.sd__quantity, 'unit_price', __json_SalesInvoices.sd__unit_price, 'product', __json_SalesInvoices.sd__product, 'salesinvoices', __json_SalesInvoices.sd__salesinvoices)) as SalesDetails from __json_SalesInvoices group by __json_SalesInvoices.subtotal, __json_SalesInvoices.c__category_id, __json_SalesInvoices.c__category_name, __json_SalesInvoices.cust__customer_id, __json_SalesInvoices.cust__customer_name) select row_to_json(d) from (select __json_SalesDetails.subtotal, __json_SalesDetails.c__category_id, __json_SalesDetails.c__category_name, __json_SalesDetails.cust__customer_id, __json_SalesDetails.cust__customer_name, __json_SalesDetails.salesdetails from __json_SalesDetails) as d limit 1";
+        var expected = "with __json as (select sd.sales_detail_id as sd__sales_detail_id, sd.quantity as sd__quantity, sd.unit_price as sd__unit_price, (sd.quantity * sd.unit_price) as sd__subtotal, p.product_id as p__product_id, p.name as p__product_name, c.category_id as c__category_id, c.name as c__category_name, si.sales_invoice_id as si__sales_invoice_id, si.created_at as si__invoice_date, si.total_amount as si__total_amount, cust.customer_id as cust__customer_id, cust.name as cust__customer_name from sales_detail as sd inner join product as p on sd.product_id = p.product_id inner join category as c on p.category_id = c.category_id inner join sales_invoice as si on sd.sales_invoice_id = si.sales_invoice_id inner join customers as cust on si.customer_id = cust.customer_id), __json_SalesInvoices as (select __json.sd__sales_detail_id, __json.sd__quantity, __json.sd__unit_price, __json.sd__subtotal, json_build_object('ProductId', __json.p__product_id, 'ProductName', __json.p__product_name, 'Category', json_build_object('CategoryId', __json.c__category_id, 'CategoryName', __json.c__category_name)) as sd__Product, json_agg(json_build_object('SalesInvoiceId', __json.si__sales_invoice_id, 'InvoiceDate', __json.si__invoice_date, 'TotalAmount', __json.si__total_amount, 'Customer', json_build_object('CustomerId', __json.cust__customer_id, 'CustomerName', __json.cust__customer_name))) as sd__SalesInvoices from __json group by __json.sd__sales_detail_id, __json.sd__quantity, __json.sd__unit_price, __json.sd__subtotal, __json.p__product_id, __json.p__product_name, __json.c__category_id, __json.c__category_name), __json_SalesDetails as (select json_agg(json_build_object('SalesDetailId', __json_SalesInvoices.sd__sales_detail_id, 'Quantity', __json_SalesInvoices.sd__quantity, 'UnitPrice', __json_SalesInvoices.sd__unit_price, 'Subtotal', __json_SalesInvoices.sd__subtotal, 'Product', __json_SalesInvoices.sd__Product, 'Salesinvoices', __json_SalesInvoices.sd__SalesInvoices)) as SalesDetails from __json_SalesInvoices) select row_to_json(d) from (select __json_SalesDetails.SalesDetails as \"SalesDetails\" from __json_SalesDetails) as d limit 1";
 
         output.WriteLine($"/*expected*/ {expected}");
         output.WriteLine($"/*actual  */ {actual}");
 
         // Assert
         Assert.Equal(expected, actual);
+
+        /* JSON sample
+{
+  "SalesDetails": [
+    {
+      "SalesDetailId": 1,
+      "Quantity": 1,
+      "UnitPrice": 150000,
+      "Subtotal": 150000,
+      "Salesinvoice": {
+        "SalesInvoiceId": 1,
+        "InvoiceDate": "2024-03-01T00:00:00",
+        "TotalAmount": 20000,
+        "Customer": {
+          "CustomerId": 1,
+          "CustomerName": "Alice"
+        },
+        "Product": {
+          "ProductId": 1,
+          "ProductName": "Laptop",
+          "Category": {
+            "CategoryId": 1,
+            "CategoryName": "Electronics"
+          }
+        }
+      }
+    },
+    {
+      "SalesDetailId": 2,
+      "Quantity": 2,
+      "UnitPrice": 2000,
+      "Subtotal": 4000,
+      "Salesinvoice": {
+        "SalesInvoiceId": 1,
+        "InvoiceDate": "2024-03-01T00:00:00",
+        "TotalAmount": 20000,
+        "Customer": {
+          "CustomerId": 1,
+          "CustomerName": "Alice"
+        },
+        "Product": {
+          "ProductId": 3,
+          "ProductName": "T-Shirt",
+          "Category": {
+            "CategoryId": 2,
+            "CategoryName": "Clothing"
+          }
+        }
+      }
+    }
+  ]
+}
+         */
     }
 }
