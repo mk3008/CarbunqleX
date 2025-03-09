@@ -84,12 +84,6 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
             objectName = datasource;
         }
 
-        // The processing target is only the terminal SelectQuery
-        if (Query is not SelectQuery sq)
-        {
-            throw new InvalidOperationException("ToSelectJson can only be used on a SelectQuery");
-        }
-
         var editor = upperNode != null ? upperNode.Invoke(new PostgresJsonEditor(Node, owner: datasource, propertyBuilder: PropertyBuilder)) : this;
 
         // columns
@@ -116,6 +110,13 @@ public class PostgresJsonEditor(QueryNode node, string? owner = null, Func<strin
                 var parent = editor.SelectExpressionMap.Where(x => x.Value.Alias.Equals(parentName, StringComparison.InvariantCultureIgnoreCase)).First();
                 propertyColumns.Add(parent);
             }
+        }
+
+
+        // The processing target is only the terminal SelectQuery
+        if (editor.Query is not SelectQuery sq)
+        {
+            throw new InvalidOperationException("ToSelectJson can only be used on a SelectQuery");
         }
 
         if (removePropertyColumn)

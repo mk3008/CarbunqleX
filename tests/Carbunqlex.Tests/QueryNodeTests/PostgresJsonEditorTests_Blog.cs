@@ -56,7 +56,7 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
 
-        var expected = "select users.user_id as users_user_id, users.name as users_name from users";
+        var expected = "select users.user_id as users__user_id, users.name as users__name from users";
         Assert.Equal(expected, actual);
     }
 
@@ -75,7 +75,7 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
 
-        var expected = "select u.user_id as u_id, u.name as u_name from users as u";
+        var expected = "select u.user_id as u__id, u.name as u__name from users as u";
         Assert.Equal(expected, actual);
     }
 
@@ -165,7 +165,7 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
     public void AddJsonColumnStartWith()
     {
         // Arrange
-        var query = SelectQueryParser.Parse("select users.user_id, users.name as user_name from users");
+        var query = SelectQueryParser.Parse("select users.user_id as user__id, users.name as user__name from users");
 
         // Act
         var queryNode = QueryAstParser.Parse(query);
@@ -187,7 +187,7 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         var upperCaseBuilder = (string s) => s.ToUpper();
 
         // Arrange
-        var query = SelectQueryParser.Parse("select users.user_id, users.name as user_name from users");
+        var query = SelectQueryParser.Parse("select users.user_id as user__id, users.name as user__name from users");
 
         // Act
         var queryNode = QueryAstParser.Parse(query);
@@ -222,25 +222,6 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
-    public void ToJsonArray()
-    {
-        // Arrange
-        var query = SelectQueryParser.Parse("select users.user_id as id, users.name from users");
-
-        // Act
-        var queryNode = QueryAstParser.Parse(query);
-        output.WriteLine(queryNode.Query.ToSql());
-
-        queryNode.ToArrayJsonQuery();
-
-        var actual = queryNode.Query.ToSql();
-        output.WriteLine(actual);
-
-        var expected = "select json_agg(row_to_json(d)) from (select users.user_id as id, users.name from users) as d";
-        Assert.Equal(expected, actual);
-    }
-
     private string JsonTestQuery = """
         select
             posts.post_id
@@ -259,38 +240,6 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
             inner join blogs on posts.blog_id = blogs.blog_id
             inner join organizations on blogs.organization_id = organizations.organization_id
         """;
-
-    [Fact]
-    public void AddJsonArray_debug()
-    {
-        // Arrange
-        var query = SelectQueryParser.Parse(JsonTestQuery);
-
-        // Act
-        var queryNode = QueryAstParser.Parse(query);
-        output.WriteLine(queryNode.Query.ToSql());
-
-        // cte
-        queryNode.NormalizeSelectClause();
-        queryNode = queryNode.ToCteQuery("__json");
-
-        // posts
-        var editor = new PostgresJsonEditor(queryNode);
-        editor.Serialize("users", objectName: "user");
-        editor.ArraySerialize("posts", objectName: "posts", include: ["user"]);
-        queryNode = queryNode.ToCteQuery("__json_post");
-
-        // blogs
-        editor = new PostgresJsonEditor(queryNode);
-        editor.ArraySerialize("blogs", objectName: "blogs", include: ["posts"]);
-        queryNode = queryNode.ToCteQuery("__json_blog");
-
-        var actual = queryNode.ToArrayJsonQuery().ToSql();
-        output.WriteLine(actual);
-
-        var expected = "with __json as (select posts.post_id as posts_post_id, posts.title as posts_title, posts.content as posts_content, posts.created_at as posts_created_at, users.user_id as users_user_id, users.name as users_user_name, blogs.blog_id as blogs_blog_id, blogs.name as blogs_blog_name, organizations.organization_id as organizations_organization_id, organizations.name as organizations_organization_name from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id), __json_post as (select __json.blogs_blog_id, __json.blogs_blog_name, __json.organizations_organization_id, __json.organizations_organization_name, json_agg(json_build_object('post_id', __json.posts_post_id, 'title', __json.posts_title, 'content', __json.posts_content, 'created_at', __json.posts_created_at, 'user', json_build_object('user_id', __json.users_user_id, 'user_name', __json.users_user_name))) as posts from __json group by __json.blogs_blog_id, __json.blogs_blog_name, __json.organizations_organization_id, __json.organizations_organization_name), __json_blog as (select __json_post.organizations_organization_id, __json_post.organizations_organization_name, json_agg(json_build_object('blog_id', __json_post.blogs_blog_id, 'blog_name', __json_post.blogs_blog_name, 'posts', __json_post.posts)) as blogs from __json_post group by __json_post.organizations_organization_id, __json_post.organizations_organization_name) select json_agg(row_to_json(d)) from (select __json_blog.organizations_organization_id, __json_blog.organizations_organization_name, __json_blog.blogs from __json_blog) as d";
-        Assert.Equal(expected, actual);
-    }
 
     [Fact]
     public void TestPostJsonSerialization()
@@ -341,64 +290,67 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
     }
 
     [Fact]
-    public void TestUserJsonSerialization()
+    public void TestUserJson()
     {
         var query = SelectQueryParser.Parse(JsonTestQuery);
 
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("user_id", w => w.Equal(":user_id"))
-            .ToJsonQuery(columnNormalization: true, x =>
+            .ToJsonQuery(columnNormalization: true, static x =>
             {
-                x.Serialize("organizations", objectName: "organization");
-                x.Serialize("blogs", objectName: "blog", include: ["organization"]);
-                x.ArraySerialize("posts", objectName: "posts", include: ["blog"]);
-                x.Serialize("users", objectName: "user", include: ["posts"]);
-                return x;
+                return x.Serialize("users", objectName: "user", upperNode: static x =>
+                {
+                    return x.ArraySerialize("posts", objectName: "posts", upperNode: static x =>
+                    {
+                        return x.Serialize("blogs", objectName: "blog", upperNode: static x =>
+                        {
+                            return x.Serialize("organizations", objectName: "organization");
+                        });
+                    });
+                });
             });
 
         var actual = queryNode.Query.ToSql();
 
         output.WriteLine(actual);
 
-        var expected = "select row_to_json(d) from (select json_build_object('user_id', users.user_id, 'user_name', users.name, 'posts', json_agg(json_build_object('post_id', posts.post_id, 'title', posts.title, 'content', posts.content, 'created_at', posts.created_at, 'blog', json_build_object('blog_id', blogs.blog_id, 'blog_name', blogs.name, 'organization', json_build_object('organization_id', organizations.organization_id, 'organization_name', organizations.name))))) as user from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id where users.user_id = :user_id group by users.user_id, users.name) as d limit 1";
+        var expected = "with __json as (select posts.post_id as posts__post_id, posts.title as posts__title, posts.content as posts__content, posts.created_at as posts__created_at, users.user_id as users__user_id, users.name as users__user_name, blogs.blog_id as blogs__blog_id, blogs.name as blogs__blog_name, organizations.organization_id as organizations__organization_id, organizations.name as organizations__organization_name from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id where users.user_id = :user_id) select row_to_json(d) from (select __json.users__user_id as \"user_id\", __json.users__user_name as \"user_name\", json_agg(json_build_object('post_id', __json.posts__post_id, 'title', __json.posts__title, 'content', __json.posts__content, 'created_at', __json.posts__created_at, 'blog', json_build_object('blog_id', __json.blogs__blog_id, 'blog_name', __json.blogs__blog_name, 'organization', json_build_object('organization_id', __json.organizations__organization_id, 'organization_name', __json.organizations__organization_name)))) as \"posts\" from __json group by __json.users__user_id, __json.users__user_name) as d limit 1";
         Assert.Equal(expected, actual);
 
         /* return sample
 {
-  "user": {
-    "user_id": 1,
-    "user_name": "Alice",
-    "posts": [
-      {
-        "post_id": 9,
-        "title": "Understanding AI",
-        "content": "This is a post about AI.",
-        "created_at": "2025-02-18T20:25:21.974106",
-        "blog": {
-          "blog_id": 1,
-          "blog_name": "AI Insights",
-          "organization": {
-            "organization_id": 1,
-            "organization_name": "Tech Corp"
-          }
-        }
-      },
-      {
-        "post_id": 11,
-        "title": "Understanding AI",
-        "content": "This is a post about AI.",
-        "created_at": "2025-03-07T17:53:49.168646",
-        "blog": {
-          "blog_id": 1,
-          "blog_name": "AI Insights",
-          "organization": {
-            "organization_id": 1,
-            "organization_name": "Tech Corp"
-          }
+  "user_id": 1,
+  "user_name": "Alice",
+  "posts": [
+    {
+      "post_id": 9,
+      "title": "Understanding AI",
+      "content": "This is a post about AI.",
+      "created_at": "2025-02-18T20:25:21.974106",
+      "blog": {
+        "blog_id": 1,
+        "blog_name": "AI Insights",
+        "organization": {
+          "organization_id": 1,
+          "organization_name": "Tech Corp"
         }
       }
-    ]
-  }
+    },
+    {
+      "post_id": 11,
+      "title": "Understanding AI",
+      "content": "This is a post about AI.",
+      "created_at": "2025-03-07T17:53:49.168646",
+      "blog": {
+        "blog_id": 1,
+        "blog_name": "AI Insights",
+        "organization": {
+          "organization_id": 1,
+          "organization_name": "Tech Corp"
+        }
+      }
+    }
+  ]
 }
      */
     }
@@ -412,13 +364,13 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         queryNode.Where("organization_id", w => w.Equal(":organization_id"))
             .ToJsonQuery(columnNormalization: true, static x =>
             {
-                return x.ArraySerialize("blogs", objectName: "blogs", upperNode: static x =>
+                return x.ArraySerialize("users", objectName: "users", upperNode: static x =>
                 {
-                    return x.Serialize("organizations", objectName: "organization")
-                    .ArraySerialize("posts", objectName: "posts", upperNode: static x =>
-                    {
-                        return x.Serialize("users", objectName: "user");
-                    });
+                    return x.Serialize("posts", objectName: "posts")
+                        .Serialize("blogs", objectName: "blogs", upperNode: static x =>
+                        {
+                            return x.Serialize("organizations", objectName: "organization");
+                        });
                 });
             });
         var actual = queryNode.Query.ToSql();
@@ -474,9 +426,19 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
         queryNode = queryNode.Where("organization_id", w => w.Equal(":organization_id"))
             .ToJsonQuery(columnNormalization: true, static x =>
             {
-                return x.Serialize("users", objectName: "user")
-                    .ArraySerialize("posts", objectName: "posts", include: ["user"])
-                    .ArraySerialize("blogs", objectName: "blogs", include: ["posts"]);
+                return x.ArraySerialize("users", objectName: "users", upperNode: static x =>
+                {
+                    return x.ArraySerialize("blogs", objectName: "blogs", upperNode: static x =>
+                    {
+                        return x.Serialize("organizations", objectName: "organization")
+                            .ArraySerialize("posts", objectName: "posts", upperNode: static x =>
+                            {
+                                return x.Serialize("users", objectName: "user");
+                            });
+                    });
+                });
+                //    .ArraySerialize("posts", objectName: "posts", include: ["user"])
+                //    .ArraySerialize("blogs", objectName: "blogs", include: ["posts"]);
                 //.Serialize("organizations", objectName: "organization", include: ["blogs"]);
             });
         var actual = queryNode.Query.ToSql();
@@ -496,24 +458,28 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
 
         var queryNode = QueryAstParser.Parse(query);
         queryNode.Where("user_id", w => w.Equal(":user_id"))
-            .ToArrayJsonQuery(columnNormalization: true, x =>
+            .ToJsonQuery(columnNormalization: true, static x =>
             {
-                x.Serialize("organizations", objectName: "organization");
-                x.Serialize("users", objectName: "user");
-                x.Serialize("blogs", objectName: "blog", include: ["organization"]);
-                x.Serialize("posts", objectName: "post", include: ["user", "blog"]);
+                return x.ArraySerialize("posts", objectName: "posts", upperNode: static x =>
+                {
+                    return x.Serialize("users", objectName: "user")
+                        .Serialize("blogs", objectName: "blog", upperNode: static x =>
+                        {
+                            return x.Serialize("organizations", objectName: "organization");
+                        });
+                });
             });
 
         var actual = queryNode.Query.ToSql();
         output.WriteLine(actual);
 
-        var expected = "select json_agg(row_to_json(d)) from (select json_build_object('post_id', posts.post_id, 'title', posts.title, 'content', posts.content, 'created_at', posts.created_at, 'user', json_build_object('user_id', users.user_id, 'user_name', users.name), 'blog', json_build_object('blog_id', blogs.blog_id, 'blog_name', blogs.name, 'organization', json_build_object('organization_id', organizations.organization_id, 'organization_name', organizations.name))) as post from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id where users.user_id = :user_id) as d";
+        var expected = "with __json as (select posts.post_id as posts__post_id, posts.title as posts__title, posts.content as posts__content, posts.created_at as posts__created_at, users.user_id as users__user_id, users.name as users__user_name, blogs.blog_id as blogs__blog_id, blogs.name as blogs__blog_name, organizations.organization_id as organizations__organization_id, organizations.name as organizations__organization_name from posts inner join users on posts.user_id = users.user_id inner join blogs on posts.blog_id = blogs.blog_id inner join organizations on blogs.organization_id = organizations.organization_id where users.user_id = :user_id), __json_posts as (select json_agg(json_build_object('post_id', __json.posts__post_id, 'title', __json.posts__title, 'content', __json.posts__content, 'created_at', __json.posts__created_at, 'user', json_build_object('user_id', __json.users__user_id, 'user_name', __json.users__user_name), 'blog', json_build_object('blog_id', __json.blogs__blog_id, 'blog_name', __json.blogs__blog_name, 'organization', json_build_object('organization_id', __json.organizations__organization_id, 'organization_name', __json.organizations__organization_name)))) as posts from __json) select row_to_json(d) from (select __json_posts.posts as \"posts\" from __json_posts) as d limit 1";
         Assert.Equal(expected, actual);
 
         /*
-[
-  {
-    "post": {
+{
+  "posts": [
+    {
       "post_id": 9,
       "title": "Understanding AI",
       "content": "This is a post about AI.",
@@ -530,10 +496,8 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
           "organization_name": "Tech Corp"
         }
       }
-    }
-  },
-  {
-    "post": {
+    },
+    {
       "post_id": 11,
       "title": "Understanding AI",
       "content": "This is a post about AI.",
@@ -550,9 +514,63 @@ public class PostgresJsonEditorTests_Blog(ITestOutputHelper output)
           "organization_name": "Tech Corp"
         }
       }
+    },
+    {
+      "post_id": 12,
+      "title": "Deep Learning Advances",
+      "content": "Exploring the latest in deep learning.",
+      "created_at": "2025-03-07T17:53:49.168646",
+      "user": {
+        "user_id": 1,
+        "user_name": "Alice"
+      },
+      "blog": {
+        "blog_id": 1,
+        "blog_name": "AI Insights",
+        "organization": {
+          "organization_id": 1,
+          "organization_name": "Tech Corp"
+        }
+      }
+    },
+    {
+      "post_id": 15,
+      "title": "Understanding AI",
+      "content": "This is a post about AI.",
+      "created_at": "2025-03-07T17:54:06.599913",
+      "user": {
+        "user_id": 1,
+        "user_name": "Alice"
+      },
+      "blog": {
+        "blog_id": 1,
+        "blog_name": "AI Insights",
+        "organization": {
+          "organization_id": 1,
+          "organization_name": "Tech Corp"
+        }
+      }
+    },
+    {
+      "post_id": 16,
+      "title": "Deep Learning Advances",
+      "content": "Exploring the latest in deep learning.",
+      "created_at": "2025-03-07T17:54:06.599913",
+      "user": {
+        "user_id": 1,
+        "user_name": "Alice"
+      },
+      "blog": {
+        "blog_id": 1,
+        "blog_name": "AI Insights",
+        "organization": {
+          "organization_id": 1,
+          "organization_name": "Tech Corp"
+        }
+      }
     }
-  }
-]
+  ]
+}
          */
     }
 }

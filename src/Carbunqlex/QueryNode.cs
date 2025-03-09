@@ -819,41 +819,4 @@ public class QueryNode : IQuery
         return this;
     }
 
-    public QueryNode ToArrayJsonQuery()
-    {
-        return ToArrayJsonQuery(false, x => x, x => { });
-    }
-
-    public QueryNode ToArrayJsonQuery(bool columnNormalization, Action<PostgresJsonEditor> action)
-    {
-        return ToArrayJsonQuery(columnNormalization, x => x, action);
-    }
-
-    public QueryNode ToArrayJsonQuery(bool columnNormalization, Func<string, string> propertyBuilder, Action<PostgresJsonEditor> action)
-    {
-        if (MustRefresh) Refresh();
-
-        // The processing target is only the terminal SelectQuery
-        if (Query is not SelectQuery sq)
-        {
-            throw new InvalidOperationException("ToJson can only be used on a SelectQuery");
-        }
-
-        if (columnNormalization)
-        {
-            NormalizeSelectClause();
-        }
-
-        action(new PostgresJsonEditor(this, propertyBuilder: propertyBuilder));
-
-        var text = "json_agg(row_to_json(d))";
-        var newQuery = new SelectQuery(
-            new SelectClause(SelectExpressionParser.Parse(text)),
-            new FromClause(new DatasourceExpression(new SubQuerySource(sq), "d"))
-            );
-
-        Query = newQuery;
-        MustRefresh = true;
-        return this;
-    }
 }
