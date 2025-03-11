@@ -17,26 +17,40 @@ public class DatasourceParser
         // TableSource or FunctionSource
         if (next.Type == TokenType.Identifier)
         {
-            var identifier = tokenizer.Read();
+            // If it is an identifier, dot, identifier, ..., continue reading
+            var tokens = new List<Token>();
+            while (true)
+            {
+                tokens.Add(tokenizer.Read(TokenType.Identifier));
+                if (tokenizer.IsEnd)
+                {
+                    break;
+                }
+                if (tokenizer.Peek().Type == TokenType.Dot)
+                {
+                    // Do not cache Dot
+                    tokenizer.CommitPeek();
+                    continue;
+                }
+                break;
+            }
+
             if (tokenizer.IsEnd)
             {
-                return new TableSource(identifier.Value);
+                return ParseAsTableSource(tokens);
             }
 
             next = tokenizer.Peek();
 
-            if (next.CommandOrOperatorText == "as")
-            {
-                return new TableSource(identifier.Value);
-            }
-
             if (next.Type == TokenType.OpenParen)
             {
-                return FunctionDatasourceParser.Parse(tokenizer, functionName: identifier.Value);
+                // Treat as a function table.
+                // Combine tokens into a single identifier
+                var functionFullName = tokens.Select(t => t.Value).Aggregate((a, b) => $"{a}.{b}");
+                return FunctionDatasourceParser.Parse(tokenizer, functionName: functionFullName);
             }
 
-            // Without AS keyword alias
-            return new TableSource(identifier.Value);
+            return ParseAsTableSource(tokens);
         }
 
         // SubQuerySource or UnionQuerySource
@@ -47,5 +61,19 @@ public class DatasourceParser
         }
 
         throw SqlParsingExceptionBuilder.UnexpectedTokenType(tokenizer, [TokenType.Identifier, TokenType.OpenParen], next);
+    }
+
+    private static TableSource ParseAsTableSource(List<Token> tokens)
+    {
+        // If there is only one element, it is a table with a schema name omitted
+        if (tokens.Count == 1)
+        {
+            return new TableSource(tokens[0].Value);
+        }
+        // If there is a schema name, the last of tokens is the table name
+        // Otherwise, it is a schema name (correct the dot)
+        var schema = tokens.Take(tokens.Count - 1).Select(t => t.Value);
+        var table = tokens.Last().Value;
+        return new TableSource(schema, table);
     }
 }
