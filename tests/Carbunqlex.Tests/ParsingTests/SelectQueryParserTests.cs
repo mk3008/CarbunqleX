@@ -321,4 +321,34 @@ public class SelectQueryParserTests
         Output.WriteLine(actual);
         Assert.Equal("with max_users as (select max(user_id) as max_id from users) select id from (select max_id as id from max_users) as d", actual);
     }
+
+    [Fact]
+    public void ParseSelectQueryFromShcemaTable()
+    {
+        var sql = """
+            select * from pg_catalog.pg_user
+            """;
+        // Arrange
+        var tokenizer = new SqlTokenizer(sql);
+        // Act
+        var result = SelectQueryParser.Parse(tokenizer);
+        var actual = result.ToSql();
+        Output.WriteLine(actual);
+        Assert.Equal("select * from pg_catalog.pg_user", actual);
+    }
+
+    [Fact]
+    public void ParseSelectQueryFromShcemaFunction()
+    {
+        var sql = """
+            select * from pg_catalog.generate_series(1, 10)
+            """;
+        // Arrange
+        var tokenizer = new SqlTokenizer(sql);
+        // Act
+        var result = SelectQueryParser.Parse(tokenizer);
+        var actual = result.ToSql();
+        Output.WriteLine(actual);
+        Assert.Equal("select * from pg_catalog.generate_series(1, 10)", actual);
+    }
 }
