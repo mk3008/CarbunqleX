@@ -344,7 +344,7 @@ var deleteQuery = query.ToDeleteQuery("table_b", new[] { "table_a_id" });
 var expected = "DELETE FROM table_b WHERE table_b.table_a_id IN (SELECT q.table_a_id FROM (SELECT a.table_a_id, 1 AS value FROM table_a AS a) AS q)";
 ```
 
-### 10. Converting a Query to Return JSON (Postgres-only)
+### 10. Converting a Query to Return JSON (Postgres-only) ver 0.0.3 or later
 
 In PostgreSQL, you can transform a query to return JSON using functions like `json_build_object` and `row_to_json`.
 
@@ -365,47 +365,75 @@ var query = QueryAstParser.Parse("""
     INNER JOIN users ON posts.user_id = users.user_id
     INNER JOIN blogs ON posts.blog_id = blogs.blog_id
     INNER JOIN organizations ON blogs.organization_id = organizations.organization_id
-    WHERE posts.post_id = 1
 """);
 
-query.NormalizeSelectClause()
-    .Serialize("organizations", objectName: "organization")
-    .Serialize("users", objectName: "user")
-    .Serialize("blogs", objectName: "blog", include: ["organization"])
-    .Serialize("posts", objectName: "post", include: ["user", "blog"])
-    .ToJson();
+query.Where("post_id", action: x => x.Equal(":post_id"))
+    .NormalizeSelectClause()
+    .ToPostgresJsonQuery(x =>
+    {
+        return x.Serialize(datasource: "posts", jsonKey: "post", parent: static x =>
+        {
+            return x.Serialize(datasource: "users", jsonKey: "user")
+                .Serialize(datasource: "blogs", jsonKey: "blog", parent: static x =>
+                {
+                    return x.Serialize(datasource: "organizations", jsonKey: "organization");
+                });
+        });
+    });
 ```
 
 #### 🔍 Expected SQL output
 
 ```sql
-SELECT row_to_json(d) 
-FROM (
-    SELECT json_build_object(
-        'post_id', posts.post_id, 
-        'title', posts.title, 
-        'content', posts.content, 
-        'created_at', posts.created_at, 
-        'user', json_build_object(
-            'user_id', users.user_id, 
-            'user_name', users.name
-        ), 
-        'blog', json_build_object(
-            'blog_id', blogs.blog_id, 
-            'blog_name', blogs.name, 
-            'organization', json_build_object(
-                'organization_id', organizations.organization_id, 
-                'organization_name', organizations.name
-            )
-        )
-    ) AS post 
-    FROM posts
-    INNER JOIN users ON posts.user_id = users.user_id
-    INNER JOIN blogs ON posts.blog_id = blogs.blog_id
-    INNER JOIN organizations ON blogs.organization_id = organizations.organization_id
-    WHERE posts.post_id = :post_id
-) AS d 
-LIMIT 1;
+WITH
+    __json AS (
+        SELECT
+            posts.post_id AS posts__post_id,
+            posts.title AS posts__title,
+            posts.content AS posts__content,
+            posts.created_at AS posts__created_at,
+            users.user_id AS users__user_id,
+            users.name AS users__user_name,
+            blogs.blog_id AS blogs__blog_id,
+            blogs.name AS blogs__blog_name,
+            organizations.organization_id AS organizations__organization_id,
+            organizations.name AS organizations__organization_name
+        FROM
+            posts
+            INNER JOIN users ON posts.user_id = users.user_id
+            INNER JOIN blogs ON posts.blog_id = blogs.blog_id
+            INNER JOIN organizations ON blogs.organization_id = organizations.organization_id
+        WHERE
+            posts.post_id = :post_id
+    )
+SELECT
+    ROW_TO_JSON(d)
+FROM
+    (
+        SELECT
+            JSON_BUILD_OBJECT(
+                'post_id', __json.posts__post_id,
+                'title', __json.posts__title,
+                'content', __json.posts__content,
+                'created_at', __json.posts__created_at,
+                'user', JSON_BUILD_OBJECT(
+                    'user_id', __json.users__user_id,
+                    'user_name', __json.users__user_name
+                ),
+                'blog', JSON_BUILD_OBJECT(
+                    'blog_id', __json.blogs__blog_id,
+                    'blog_name', __json.blogs__blog_name,
+                    'organization', JSON_BUILD_OBJECT(
+                        'organization_id', __json.organizations__organization_id,
+                        'organization_name', __json.organizations__organization_name
+                    )
+                )
+            ) AS "post"
+        FROM
+            __json
+    ) AS d
+LIMIT
+    1
 ```
 
 #### 🔍 Query Output
@@ -430,6 +458,139 @@ LIMIT 1;
             }
         }
     }
+}
+```
+
+### 11. Converting a Query to Return JSON Array (Postgres-only) ver 0.0.3 or later
+
+You can also get a JSON array. Since the results are aggregated on the DB server, there is no need to loop through the DataReader. There is also no need to issue multiple queries.
+
+```csharp
+var query = QueryAstParser.Parse("""
+    SELECT 
+        posts.post_id, 
+        posts.title, 
+        posts.content, 
+        posts.created_at, 
+        users.user_id, 
+        users.name AS user_name, 
+        blogs.blog_id, 
+        blogs.name AS blog_name, 
+        organizations.organization_id, 
+        organizations.name AS organization_name
+    FROM posts
+    INNER JOIN users ON posts.user_id = users.user_id
+    INNER JOIN blogs ON posts.blog_id = blogs.blog_id
+    INNER JOIN organizations ON blogs.organization_id = organizations.organization_id
+""");
+
+query.Where("user_id", action: x => x.Equal(":user_id"))
+    .NormalizeSelectClause()
+    .ToPostgresJsonQuery(x =>
+    {
+        return x.Serialize(datasource: "users", jsonKey: "user", parent: static x =>
+        {
+            return x.SerializeArray(datasource: "posts", jsonKey: "posts", parent: static x =>
+            {
+                return x.Serialize(datasource: "blogs", jsonKey: "blog", parent: static x =>
+                {
+                    return x.Serialize(datasource: "organizations", jsonKey: "organization");
+                });
+            });
+        });
+    });
+```
+
+#### 🔍 Expected SQL output
+
+```sql
+WITH
+    __json AS (
+        SELECT
+            posts.post_id AS posts__post_id,
+            posts.title AS posts__title,
+            posts.content AS posts__content,
+            posts.created_at AS posts__created_at,
+            users.user_id AS users__user_id,
+            users.name AS users__user_name,
+            blogs.blog_id AS blogs__blog_id,
+            blogs.name AS blogs__blog_name,
+            organizations.organization_id AS organizations__organization_id,
+            organizations.name AS organizations__organization_name
+        FROM
+            posts
+            INNER JOIN users ON posts.user_id = users.user_id
+            INNER JOIN blogs ON posts.blog_id = blogs.blog_id
+            INNER JOIN organizations ON blogs.organization_id = organizations.organization_id
+        WHERE
+            users.user_id = :user_id
+    ),
+    __json_posts AS (
+        SELECT
+            __json.users__user_id,
+            __json.users__user_name,
+            JSON_AGG(JSON_BUILD_OBJECT('post_id', __json.posts__post_id, 'title', __json.posts__title, 'content', __json.posts__content, 'created_at', __json.posts__created_at, 'blog', JSON_BUILD_OBJECT('blog_id', __json.blogs__blog_id, 'blog_name', __json.blogs__blog_name, 'organization', JSON_BUILD_OBJECT('organization_id', __json.organizations__organization_id, 'organization_name', __json.organizations__organization_name)))) AS users__posts
+        FROM
+            __json
+        GROUP BY
+            __json.users__user_id,
+            __json.users__user_name
+    )
+SELECT
+    ROW_TO_JSON(d)
+FROM
+    (
+        SELECT
+            JSON_BUILD_OBJECT(
+                'user_id', __json_posts.users__user_id,
+                'user_name', __json_posts.users__user_name,
+                'posts', __json_posts.users__posts
+            ) AS "user"
+        FROM
+            __json_posts
+    ) AS d
+LIMIT
+    1
+```
+
+#### 🔍 Query Output
+
+```json
+{
+  "user": {
+    "user_id": 1,
+    "user_name": "Alice",
+    "posts": [
+      {
+        "post_id": 9,
+        "title": "Understanding AI",
+        "content": "This is a post about AI.",
+        "created_at": "2025-02-18T20:25:21.974106",
+        "blog": {
+          "blog_id": 1,
+          "blog_name": "AI Insights",
+          "organization": {
+            "organization_id": 1,
+            "organization_name": "Tech Corp"
+          }
+        }
+      },
+      {
+        "post_id": 11,
+        "title": "Understanding AI",
+        "content": "This is a post about AI.",
+        "created_at": "2025-03-07T17:53:49.168646",
+        "blog": {
+          "blog_id": 1,
+          "blog_name": "AI Insights",
+          "organization": {
+            "organization_id": 1,
+            "organization_name": "Tech Corp"
+          }
+        }
+      }
+    ]
+  }
 }
 ```
 
