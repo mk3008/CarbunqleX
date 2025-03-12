@@ -594,6 +594,12 @@ LIMIT
 }
 ```
 
+### To improve maintainability
+
+Defining parent-child relationships using local functions makes them easier to maintain.
+
+![image](https://github.com/user-attachments/assets/1a06a0d3-4e05-4c38-bd53-7297fb51131b)
+
 ## 📌 Conclusion
 
 CarbunqleX makes raw SQL **more maintainable, reusable, and dynamically modifiable** without sacrificing performance. Its AST-based transformations provide a powerful way to manipulate queries at scale, making it an essential tool for advanced SQL users.
